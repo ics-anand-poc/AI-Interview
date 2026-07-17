@@ -30,7 +30,6 @@ export default function HomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showCompanySelectModal, setShowCompanySelectModal] = useState(false);
 
   const handleAccessSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,14 +79,15 @@ export default function HomePage() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowCompanySelectModal(true)}
-              className="rounded-xl text-sm font-bold border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 hover:text-indigo-800 transition-all shadow-sm"
-            >
-              Employee Portal
-            </Button>
+            <Link href="/employee?org=BizX">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl text-sm font-bold border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 hover:text-indigo-800 transition-all shadow-sm"
+              >
+                Employee Portal
+              </Button>
+            </Link>
             <Link href="/admin">
               <Button
                 variant="outline"
@@ -126,16 +126,14 @@ export default function HomePage() {
               transition={{ duration: 0.2 }}
               className="md:hidden border-t border-indigo-50/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-6 py-4 flex flex-col space-y-3.5 shadow-lg overflow-hidden"
             >
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  setShowCompanySelectModal(true);
-                }}
-                className="w-full rounded-xl text-sm font-bold border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 hover:text-indigo-800 transition-all py-3 justify-center shadow-sm"
-              >
-                Employee Portal
-              </Button>
+              <Link href="/employee?org=BizX" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl text-sm font-bold border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 hover:text-indigo-800 transition-all py-3 justify-center shadow-sm"
+                >
+                  Employee Portal
+                </Button>
+              </Link>
               <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
                 <Button
                   variant="outline"
@@ -292,13 +290,12 @@ export default function HomePage() {
               </div>
               
               <div className="text-center pt-3 border-t border-slate-100 dark:border-slate-800 mt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowCompanySelectModal(true)}
+                <Link
+                  href="/employee?org=BizX"
                   className="text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:underline inline-flex items-center gap-1 focus:outline-none"
                 >
                   Are you an employee? Access your portal to take assessments <ArrowRight className="w-3 h-3" />
-                </button>
+                </Link>
               </div>
             </Card>
           </motion.div>
@@ -306,71 +303,6 @@ export default function HomePage() {
 
       </section>
 
-      {/* Company Selection Modal */}
-      <AnimatePresence>
-        {showCompanySelectModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-md p-6 bg-white dark:bg-slate-900 border border-indigo-50 dark:border-slate-800/80 rounded-3xl shadow-2xl flex flex-col space-y-4 text-slate-900 dark:text-slate-100"
-            >
-              {/* Accent top line */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500" />
-              
-              {/* Close Button */}
-              <button 
-                onClick={() => setShowCompanySelectModal(false)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-650 dark:hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="text-center pt-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mx-auto mb-3 shadow-md shadow-indigo-500/25">
-                  <ShieldCheck className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-lg font-black text-slate-950 dark:text-white">Select Your Organization</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                  Choose your company to go to the corresponding login portal.
-                </p>
-              </div>
-
-              <div className="space-y-2.5 pt-2">
-                <button
-                  onClick={() => {
-                    setShowCompanySelectModal(false);
-                    router.push("/employee?org=Nokia");
-                  }}
-                  className="w-full p-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 hover:border-indigo-500 dark:hover:border-indigo-500 text-left transition-all group flex items-center justify-between"
-                >
-                  <div>
-                    <h4 className="font-extrabold text-sm text-slate-950 dark:text-white group-hover:text-indigo-500 transition-colors">Nokia</h4>
-                    <p className="text-[10px] text-slate-450 dark:text-slate-550 mt-0.5 font-medium">Telecommunications Portal</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
-                </button>
-
-
-                <button
-                  onClick={() => {
-                    setShowCompanySelectModal(false);
-                    router.push("/employee?org=BizX");
-                  }}
-                  className="w-full p-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 hover:border-indigo-500 dark:hover:border-indigo-500 text-left transition-all group flex items-center justify-between"
-                >
-                  <div>
-                    <h4 className="font-extrabold text-sm text-slate-950 dark:text-white group-hover:text-indigo-500 transition-colors">BizX Portal</h4>
-                    <p className="text-[10px] text-slate-450 dark:text-slate-550 mt-0.5 font-medium">Standard Enterprise Portal</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

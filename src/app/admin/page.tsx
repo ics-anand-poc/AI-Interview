@@ -280,7 +280,10 @@ export default function AdminResumeDashboard() {
   const [showClearLogsModal, setShowClearLogsModal] = useState(false);
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<"employee" | "suitable" | "unsuitable" | "outbox" | "requirements" | "logs">("employee");
+  const [activeTab, setActiveTab] = useState<"employee" | "suitable" | "unsuitable" | "outbox" | "requirements" | "logs" | "employee-portal">("employee");
+  const [allTestResults, setAllTestResults] = useState<any[]>([]);
+  const [testResultsSearch, setTestResultsSearch] = useState("");
+  const [expandedEmployees, setExpandedEmployees] = useState<Record<string, boolean>>({});
   const [emails, setEmails] = useState<any[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<any>(null);
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -584,6 +587,7 @@ export default function AdminResumeDashboard() {
       const res = await fetch(`/api/admin/employees${jdQuery}`);
       const data = await res.json();
       setEmployees(data.employees || []);
+      setAllTestResults(data.allTestResults || []);
     } catch (err) {
       console.error("Failed to fetch employees", err);
     } finally {
@@ -681,6 +685,7 @@ export default function AdminResumeDashboard() {
       setResumes(resumesData.resumes || []);
       setEmails(emailsData.emails || []);
       setEmployees(employeesData.employees || []);
+      setAllTestResults(employeesData.allTestResults || []);
       setResetLogs(resetLogsData.logs || []);
       setSystemLogs(logsData.logs || []);
       
@@ -2568,6 +2573,19 @@ export default function AdminResumeDashboard() {
                   </Badge>
                 </button>
                 <button
+                  onClick={() => setActiveTab("employee-portal")}
+                  className={`flex-1 py-4 px-6 font-black text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-2 flex-shrink-0 whitespace-nowrap ${
+                    activeTab === "employee-portal"
+                      ? "border-indigo-600 text-indigo-700 bg-white dark:bg-slate-900 dark:text-violet-400"
+                      : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                  }`}
+                >
+                  Employee Portal
+                  <Badge className={`border-0 text-[10px] ${activeTab === "employee-portal" ? "bg-indigo-100 text-indigo-700 dark:bg-slate-800 dark:text-violet-400" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
+                    {Array.from(new Set(allTestResults.map(t => t.employeeId))).length}
+                  </Badge>
+                </button>
+                <button
                   onClick={() => setActiveTab("outbox")}
                   className={`flex-1 py-4 px-6 font-black text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "outbox"
@@ -3226,6 +3244,256 @@ export default function AdminResumeDashboard() {
                       </div>
                     </div>
                   )
+                ) : activeTab === "employee-portal" ? (
+                  <div className="space-y-4">
+                    {/* Summary Metrics */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
+                      <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 rounded-2xl shadow-sm text-center">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Total Registered Accounts</span>
+                        <span className="text-xl md:text-2xl font-black text-indigo-600 dark:text-violet-400">
+                          {Array.from(new Set(allTestResults.map(t => t.employeeId))).length}
+                        </span>
+                      </div>
+                      <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 rounded-2xl shadow-sm text-center">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Total Tests Taken</span>
+                        <span className="text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                          {allTestResults.length}
+                        </span>
+                      </div>
+                      <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 rounded-2xl shadow-sm text-center">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Avg Tests / Account</span>
+                        <span className="text-xl md:text-2xl font-black text-amber-500">
+                          {Array.from(new Set(allTestResults.map(t => t.employeeId))).length > 0
+                            ? (allTestResults.length / Array.from(new Set(allTestResults.map(t => t.employeeId))).length).toFixed(1)
+                            : 0}
+                        </span>
+                      </div>
+                      <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 rounded-2xl shadow-sm text-center">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Global Avg Score</span>
+                        <span className="text-xl md:text-2xl font-black text-indigo-600 dark:text-violet-400">
+                          {allTestResults.filter(t => t.status === "completed").length > 0
+                            ? Math.round(
+                                allTestResults
+                                  .filter(t => t.status === "completed")
+                                  .reduce((acc, curr) => acc + (curr.score || 0), 0) /
+                                  allTestResults.filter(t => t.status === "completed").length
+                              )
+                            : 0}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Search and refresh controls */}
+                    <div className="flex flex-col sm:flex-row gap-3 justify-between items-center shrink-0">
+                      <div className="w-full sm:w-72 relative">
+                        <input
+                          type="text"
+                          placeholder="Search accounts or details..."
+                          value={testResultsSearch}
+                          onChange={(e) => setTestResultsSearch(e.target.value)}
+                          className="w-full rounded-xl border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 p-2.5 pl-3 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
+                        />
+                      </div>
+                      <div className="flex gap-2 w-full sm:w-auto">
+                        <Button
+                          onClick={loadEmployees}
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 sm:flex-none rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 gap-1.5 font-bold text-xs"
+                        >
+                          <RefreshCcw className="w-3.5 h-3.5" />
+                          Refresh Portal Data
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Accounts Table */}
+                    <div className="border border-indigo-50 dark:border-slate-800 rounded-2xl overflow-hidden">
+                      <div className="overflow-auto max-h-[600px]">
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead>
+                            <tr className="bg-slate-100/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-indigo-50 dark:border-slate-800 text-slate-500 font-extrabold uppercase tracking-wider text-[10px] sticky top-0 z-10">
+                              <th className="p-3 w-10"></th>
+                              <th className="p-3">Employee Name</th>
+                              <th className="p-3">Employee ID</th>
+                              <th className="p-3">Department</th>
+                              <th className="p-3">Designation</th>
+                              <th className="p-3">Registered Status</th>
+                              <th className="p-3">Tests Taken</th>
+                              <th className="p-3">Avg Score</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-indigo-50/50 dark:divide-slate-800/50">
+                            {Array.from(new Set(allTestResults.map(t => t.employeeId)))
+                              .map(empId => {
+                                const empTests = allTestResults.filter(t => t.employeeId === empId);
+                                const matchingEmp = employees.find(e => e.employee_id === empId);
+                                
+                                const name = matchingEmp?.full_name || empTests[0]?.employeeName || empId;
+                                const department = matchingEmp?.department || "Auto-Registered";
+                                const designation = matchingEmp?.designation || "External Candidate";
+                                const registeredStatus = matchingEmp?.status || "Registered";
+                                const skills = matchingEmp?.skills || "—";
+                                
+                                const completedTests = empTests.filter(t => t.status === "completed");
+                                const avgScore = completedTests.length > 0
+                                  ? Math.round(completedTests.reduce((acc, curr) => acc + (curr.score || 0), 0) / completedTests.length)
+                                  : null;
+
+                                return {
+                                  empId,
+                                  name,
+                                  department,
+                                  designation,
+                                  registeredStatus,
+                                  skills,
+                                  testsCount: empTests.length,
+                                  avgScore,
+                                  tests: empTests
+                                };
+                              })
+                              .filter(account => {
+                                if (!testResultsSearch) return true;
+                                const term = testResultsSearch.toLowerCase();
+                                return (
+                                  account.name?.toLowerCase().includes(term) ||
+                                  account.empId?.toLowerCase().includes(term) ||
+                                  account.department?.toLowerCase().includes(term) ||
+                                  account.designation?.toLowerCase().includes(term)
+                                );
+                              })
+                              .map(account => {
+                                const isExpanded = !!expandedEmployees[account.empId];
+                                return (
+                                  <React.Fragment key={account.empId}>
+                                    <tr 
+                                      className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors duration-150 cursor-pointer"
+                                      onClick={() => setExpandedEmployees(prev => ({
+                                        ...prev,
+                                        [account.empId]: !prev[account.empId]
+                                      }))}
+                                    >
+                                      <td className="p-3 text-center">
+                                        <button className="text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors duration-150">
+                                          {isExpanded ? (
+                                            <ChevronUp className="w-4 h-4" />
+                                          ) : (
+                                            <ChevronDown className="w-4 h-4" />
+                                          )}
+                                        </button>
+                                      </td>
+                                      <td className="p-3">
+                                        <div className="font-semibold text-slate-800 dark:text-slate-150">{account.name}</div>
+                                        <div className="text-[10px] text-slate-400 font-medium max-w-xs truncate" title={account.skills}>
+                                          Skills: {account.skills}
+                                        </div>
+                                      </td>
+                                      <td className="p-3 font-bold text-slate-500">{account.empId}</td>
+                                      <td className="p-3 font-semibold text-slate-600 dark:text-slate-400">{account.department}</td>
+                                      <td className="p-3 font-medium text-slate-500">{account.designation}</td>
+                                      <td className="p-3">
+                                        <Badge className={`border-0 text-[10px] px-2 py-0.5 font-bold ${
+                                          account.registeredStatus.toLowerCase() === "active" || account.registeredStatus.toLowerCase() === "registered"
+                                            ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-950/35 dark:text-indigo-300"
+                                            : "bg-slate-100 text-slate-700 dark:bg-slate-850 dark:text-slate-300"
+                                        }`}>
+                                          {account.registeredStatus}
+                                        </Badge>
+                                      </td>
+                                      <td className="p-3">
+                                        <Badge className="border-0 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[10px] px-2 py-0.5">
+                                          {account.testsCount} {account.testsCount === 1 ? "Test" : "Tests"}
+                                        </Badge>
+                                      </td>
+                                      <td className="p-3">
+                                        <span className={`font-black text-sm ${
+                                          account.avgScore !== null
+                                            ? (account.avgScore >= 70 ? "text-emerald-600 dark:text-emerald-400" : (account.avgScore >= 40 ? "text-amber-500" : "text-rose-500"))
+                                            : "text-slate-400"
+                                        }`}>
+                                          {account.avgScore !== null ? `${account.avgScore}%` : "—"}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                    {isExpanded && (
+                                      <tr className="bg-slate-50/40 dark:bg-slate-900/10">
+                                        <td colSpan={8} className="p-4 border-t border-b border-indigo-50/50 dark:border-slate-800/50">
+                                          <div className="pl-6 space-y-2">
+                                            <h4 className="font-extrabold text-[11px] uppercase tracking-wider text-slate-500">
+                                              Test Details for {account.name} ({account.empId})
+                                            </h4>
+                                            <div className="border border-indigo-50 dark:border-slate-850 rounded-xl overflow-hidden bg-white dark:bg-slate-950 shadow-inner">
+                                              <table className="w-full text-left border-collapse text-xs">
+                                                <thead>
+                                                  <tr className="bg-slate-50 dark:bg-slate-900 border-b border-indigo-50 dark:border-slate-850 text-slate-500 font-bold uppercase tracking-wider text-[9px]">
+                                                    <th className="p-2.5">Topic / Subject</th>
+                                                    <th className="p-2.5">Difficulty</th>
+                                                    <th className="p-2.5">Questions</th>
+                                                    <th className="p-2.5">Score</th>
+                                                    <th className="p-2.5">Status</th>
+                                                    <th className="p-2.5">Date / Time</th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-indigo-50/50 dark:divide-slate-850/50">
+                                                  {account.tests.map(test => (
+                                                    <tr key={test.id} className="hover:bg-slate-50/30 dark:hover:bg-slate-900/20">
+                                                      <td className="p-2.5">
+                                                        <div className="font-semibold text-slate-800 dark:text-slate-200">{test.topicTitle}</div>
+                                                        <div className="text-[9px] text-slate-400 font-medium">{test.subjectTitle}</div>
+                                                      </td>
+                                                      <td className="p-2.5 capitalize text-slate-600 dark:text-slate-400 font-medium">
+                                                        {test.difficulty}
+                                                      </td>
+                                                      <td className="p-2.5 text-slate-500 font-medium">{test.totalQuestions} Qs</td>
+                                                      <td className="p-2.5">
+                                                        <span className={`font-black ${
+                                                          test.score >= 70 ? "text-emerald-600" : (test.score >= 40 ? "text-amber-500" : "text-rose-500")
+                                                        }`}>
+                                                          {test.status === "completed" ? `${test.score}%` : "—"}
+                                                        </span>
+                                                      </td>
+                                                      <td className="p-2.5">
+                                                        <Badge className={`border-0 text-[9px] px-1.5 py-0.25 font-bold ${
+                                                          test.status === "completed" 
+                                                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/35 dark:text-emerald-300"
+                                                            : test.status === "in_progress"
+                                                              ? "bg-amber-100 text-amber-805 dark:bg-amber-955/35 dark:text-amber-300"
+                                                              : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-350"
+                                                        }`}>
+                                                          {test.status === "completed" ? "Completed" : (test.status === "in_progress" ? "In Progress" : "Pending")}
+                                                        </Badge>
+                                                      </td>
+                                                      <td className="p-2.5 text-slate-550 font-medium">
+                                                        {test.completedAt 
+                                                          ? new Date(test.completedAt).toLocaleString()
+                                                          : (test.startedAt
+                                                            ? `Started ${new Date(test.startedAt).toLocaleString()}`
+                                                            : "—")}
+                                                      </td>
+                                                    </tr>
+                                                  ))}
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </React.Fragment>
+                                );
+                              })}
+                            {allTestResults.length === 0 && (
+                              <tr>
+                                <td colSpan={8} className="text-center py-12 text-slate-400 italic">
+                                  No accounts found.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
                 ) : activeTab === "outbox" ? (
                   isEmailsLoading ? (
                     <div className="flex-1 flex flex-col items-center justify-center py-24 gap-3">

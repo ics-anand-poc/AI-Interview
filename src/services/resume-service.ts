@@ -1339,7 +1339,7 @@ export class ResumeService {
   async getAllResumes(): Promise<ResumeData[]> {
     let rows: any[] = [];
     try {
-      const { data, error } = await supabase.from('resumes').select('id, filename, parsed, analysis, enhanced, report, error, created_at, file_hash, file_base64').order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('resumes').select('id, filename, parsed, analysis, enhanced, report, error, created_at, file_hash').order('created_at', { ascending: false });
       if (!error && data) {
         rows = data;
       } else if (error) {

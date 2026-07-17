@@ -74,14 +74,20 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await request.json();
-    const { in_progress, current_question_index } = body;
+    const { in_progress, current_question_index, status, started_at } = body;
 
     const employeeUuid = await getEmployeeUuid(auth.employeeId);
+
+    const updates: any = {};
+    if (in_progress !== undefined) updates.in_progress = in_progress;
+    if (current_question_index !== undefined) updates.current_question_index = current_question_index;
+    if (status !== undefined) updates.status = status;
+    if (started_at !== undefined) updates.started_at = started_at;
 
     try {
       const { data, error } = await supabase
         .from("tests")
-        .update({ in_progress, current_question_index })
+        .update(updates)
         .eq("id", id)
         .eq("employee_id", employeeUuid)
         .select()
@@ -90,7 +96,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ success: true, data });
     } catch (dbErr) {
       console.warn("Supabase update progress failed, falling back to local database.", dbErr);
-      const updated = await localTestsDb.updateTest(id, { in_progress, current_question_index });
+      const updated = await localTestsDb.updateTest(id, updates);
       return NextResponse.json({ success: true, data: updated });
     }
   } catch (e: any) {

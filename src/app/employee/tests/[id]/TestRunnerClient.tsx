@@ -97,6 +97,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
   const savedRef     = useRef(false);
   const timerRef     = useRef<ReturnType<typeof setInterval> | null>(null);
   const sessionRef   = useRef("");
+  const submittingRef = useRef(false);
 
   const [token,       setToken]       = useState("");
   
@@ -112,6 +113,32 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
   useEffect(() => {
     setToken(window.localStorage.getItem("employee_token") ?? "");
   }, []);
+
+  // Helper to request fullscreen
+  const requestFullscreen = useCallback(async () => {
+    try {
+      const docEl = document.documentElement;
+      if (docEl.requestFullscreen) {
+        await docEl.requestFullscreen();
+      } else if ((docEl as any).mozRequestFullScreen) {
+        await (docEl as any).mozRequestFullScreen();
+      } else if ((docEl as any).webkitRequestFullscreen) {
+        await (docEl as any).webkitRequestFullscreen();
+      } else if ((docEl as any).msRequestFullscreen) {
+        await (docEl as any).msRequestFullscreen();
+      }
+    } catch (err) {
+      console.warn("Fullscreen request rejected or failed:", err);
+    }
+  }, []);
+
+  // Bind camera stream to video element when it becomes available
+  useEffect(() => {
+    if (phase === "running" && camStream && videoRef.current) {
+      videoRef.current.srcObject = camStream;
+      videoRef.current.play().catch((e) => console.warn("Failed to play video:", e));
+    }
+  }, [phase, camStream]);
 
   // ── fetch test + questions ─────────────────────────────────────
   useEffect(() => {
@@ -132,7 +159,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
         setTest(testData);
         setQuestions(questionsData);
         let finalTimeLeft = testData.time_limit_seconds ?? 900;
-        if (testData.started_at) {
+        if (testData.status === "in_progress" && testData.started_at) {
           const startedAtMs = new Date(testData.started_at).getTime();
           const elapsedSeconds = Math.floor((Date.now() - startedAtMs) / 1000);
           finalTimeLeft = Math.max(0, finalTimeLeft - elapsedSeconds);
@@ -194,14 +221,18 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
     return () => clearInterval(id);
   }, [phase, timeLeft]);
 
-  const isExpired = timeLeft === 0;
-  if (isExpired && phase === "running") handleSubmit(answers);
-
   // ── proctoring logic and refs ──────────────────────────────────
   const answersRef = useRef(answers);
   useEffect(() => {
     answersRef.current = answers;
   }, [answers]);
+
+  // Auto-submit when time is expired
+  useEffect(() => {
+    if (timeLeft === 0 && phase === "running") {
+      handleSubmit(answersRef.current);
+    }
+  }, [timeLeft, phase]);
 
   // Stop webcam tracks on unmount or phase change
   useEffect(() => {
@@ -273,9 +304,13 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
     lastTriggerRef.current = nowMs;
 
     setWarningCount((prev) => {
+      if (prev >= 3) return prev;
+
       const nextCount = prev + 1;
       let msgText = "";
-      if (violationType === "Tab Switch Detected") {
+      if (nextCount >= 3) {
+        msgText = "You have exceeded the maximum of 3 security violations. Your assessment is being automatically submitted.";
+      } else if (violationType === "Tab Switch Detected") {
         msgText = "You switched browser tabs. This is prohibited during the test.";
       } else if (violationType === "Window Lost Focus") {
         msgText = "You left the test window or opened another app.";
@@ -515,34 +550,39 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
   }, [phase, clmReady, triggerProctorWarning]);
 
   const handleStartTest = async () => {
-    try {
-      const docEl = document.documentElement;
-      if (docEl.requestFullscreen) {
-        await docEl.requestFullscreen();
-      } else if ((docEl as any).mozRequestFullScreen) {
-        await (docEl as any).mozRequestFullScreen();
-      } else if ((docEl as any).webkitRequestFullscreen) {
-        await (docEl as any).webkitRequestFullscreen();
-      } else if ((docEl as any).msRequestFullscreen) {
-        await (docEl as any).msRequestFullscreen();
-      }
-    } catch (err) {
-      console.warn("Fullscreen request rejected or failed:", err);
-    }
+    await requestFullscreen();
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 320, height: 240 }
       });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play().catch(e => console.warn(e));
-      }
       setCamStream(stream);
     } catch (err) {
       console.warn("Failed to access webcam:", err);
       alert("Proctoring camera access is required to take this test. Please enable camera access in your browser settings and click Start again.");
       return;
+    }
+
+    // If starting fresh (pending), update status and started_at in backend
+    if (test && test.status === "pending") {
+      const startTime = new Date().toISOString();
+      try {
+        await fetch(`/api/employee/tests/${testId}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: "in_progress",
+            started_at: startTime,
+          }),
+        });
+      } catch (err) {
+        console.warn("Failed to update test start time in database:", err);
+      }
+      // Set local start time so the timer starts fresh
+      setTimeLeft(test.time_limit_seconds ?? 900);
     }
 
     setPhase("running");
@@ -554,6 +594,8 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
   const hasNext     = currentIdx < (questions?.length ?? 0) - 1;
 
   async function handleSubmit(ans: Record<number, number>) {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setMsg("Submitting…");
     try {
       const responseList = Object.entries(ans).map(([qIdx, selected]) => ({
@@ -586,6 +628,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
       });
       setPhase("submitted");
     } catch (e: any) {
+      submittingRef.current = false;
       setErr(e.message ?? "Submit failed"); setPhase("error");
     }
   }
@@ -668,10 +711,12 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
         </div>
         <div className="space-y-3">
           <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
-            Active Proctoring & Integrity Agreement
+            {test?.status === "in_progress" ? "Resume Assessment" : "Active Proctoring & Integrity Agreement"}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 font-semibold max-w-md mx-auto leading-relaxed">
-            By proceeding, you agree to grant camera access for real-time face tracking. Exiting fullscreen or switching tabs will trigger violation warnings.
+            {test?.status === "in_progress"
+              ? "Re-enter the assessment window. Fullscreen mode and camera access will be reactivated."
+              : "By proceeding, you agree to grant camera access for real-time face tracking. Exiting fullscreen or switching tabs will trigger violation warnings."}
           </p>
         </div>
 
@@ -690,7 +735,8 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
           size="lg"
           className="w-full max-w-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md h-12 gap-2"
         >
-          Start Assessment <ArrowRight className="w-4 h-4" />
+          {test?.status === "in_progress" ? "Resume Assessment" : "Start Assessment"}{" "}
+          <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
     );
@@ -826,7 +872,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
             const answered   = answers[i] !== undefined;
             const flagged    = flags.has(i);
             const current    = i === currentIdx;
-            let cls = "w-7.5 h-7.5 rounded-full border-2 flex items-center justify-center text-[10px] font-extrabold transition-all duration-150 ";
+            let cls = "w-8 h-8 rounded-full border-2 flex items-center justify-center text-[10px] font-extrabold transition-all duration-150 ";
             if (current)    cls += "border-indigo-500 bg-indigo-500 text-white ring-2 ring-indigo-200 dark:ring-indigo-800 scale-110 shadow-md";
             else if (answered && flagged) cls += "border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-450";
             else if (answered)            cls += "border-emerald-400 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-450";
@@ -880,12 +926,24 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
             <p className="text-xs text-slate-400">
               Note: Reaching 3 strikes will automatically submit your assessment.
             </p>
-            <Button
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3 font-semibold text-sm"
-              onClick={() => setShowProctorWarning(null)}
-            >
-              Understand & Continue
-            </Button>
+            {warningCount >= 3 ? (
+              <Button
+                disabled
+                className="w-full bg-red-600 text-white rounded-xl py-3 font-semibold text-sm flex items-center justify-center gap-2"
+              >
+                <Loader2 className="w-4 h-4 animate-spin" /> Submitting Assessment...
+              </Button>
+            ) : (
+              <Button
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3 font-semibold text-sm"
+                onClick={async () => {
+                  setShowProctorWarning(null);
+                  await requestFullscreen();
+                }}
+              >
+                Understand & Continue
+              </Button>
+            )}
           </div>
         </div>
       )}

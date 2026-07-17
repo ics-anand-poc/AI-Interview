@@ -5,6 +5,7 @@ import { readFile, writeFile } from 'fs/promises';
 import { refreshEmployees, EmployeeRecord, calculateSkillMatch } from '@/services/automation-service';
 import { supabase } from '@/lib/db';
 import { writeLog } from '@/lib/structured-logger';
+import { localTestsDb } from '@/services/local-tests-db';
 
 const getUploadsRoot = () => {
   return process.env.VERCEL === "1" ? "/tmp" : join(process.cwd(), "uploads");
@@ -14,6 +15,20 @@ const getEmployeesJsonPath = () => {
   return join(getUploadsRoot(), "employees.json");
 };
 
+// In-memory cache for GET response
+let cachedResponse: {
+  employees: any[];
+  allTestResults: any[];
+  timestamp: number;
+  activeJdId: string | undefined;
+} | null = null;
+
+const CACHE_TTL_MS = 5000; // 5 seconds cache
+
+export function invalidateEmployeesCache() {
+  cachedResponse = null;
+}
+
 export async function GET(request: NextRequest) {
   if (!authenticateAdminRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -22,6 +37,10 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const activeJdId = searchParams.get('activeJdId') || undefined;
   const isExport = searchParams.get('export') === 'true';
+
+  if (cachedResponse && (Date.now() - cachedResponse.timestamp < CACHE_TTL_MS) && cachedResponse.activeJdId === activeJdId && !isExport) {
+    return NextResponse.json({ employees: cachedResponse.employees, allTestResults: cachedResponse.allTestResults });
+  }
 
   const jsonPath = getEmployeesJsonPath();
   let employees: EmployeeRecord[] = [];
@@ -72,6 +91,153 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // Query MCQ test results for each employee
+  const testResultsMap = new Map<string, { status: string; score: number; completedAt: string | null }[]>();
+  const allTestResults: any[] = [];
+
+  try {
+    const { data: dbTests } = await supabase
+      .from("tests")
+      .select(`
+        id,
+        employee_id,
+        topic_id,
+        subject_id,
+        difficulty,
+        total_questions,
+        status,
+        started_at,
+        completed_at,
+        employees (
+          employee_id,
+          full_name
+        ),
+        learning_topics (
+          title
+        ),
+        learning_subjects (
+          title
+        )
+      `);
+
+    const { data: dbAttempts } = await supabase
+      .from("test_attempts")
+      .select("test_id, is_correct");
+
+    const attemptsMap = new Map<string, { correct: number; total: number }>();
+    if (dbAttempts) {
+      dbAttempts.forEach(att => {
+        const current = attemptsMap.get(att.test_id) || { correct: 0, total: 0 };
+        current.total += 1;
+        if (att.is_correct) current.correct += 1;
+        attemptsMap.set(att.test_id, current);
+      });
+    }
+
+    if (dbTests) {
+      dbTests.forEach(test => {
+        const empInfo = test.employees as any;
+        const empId = empInfo?.employee_id;
+        if (!empId) return;
+
+        const attInfo = attemptsMap.get(test.id);
+        const score = attInfo && attInfo.total > 0 ? Math.round((attInfo.correct / attInfo.total) * 100) : 0;
+
+        const list = testResultsMap.get(empId) || [];
+        list.push({
+          status: test.status,
+          score,
+          completedAt: test.completed_at
+        });
+        testResultsMap.set(empId, list);
+
+        const topicInfo = test.learning_topics as any;
+        const subjectInfo = test.learning_subjects as any;
+
+        allTestResults.push({
+          id: test.id,
+          employeeUuid: test.employee_id,
+          employeeId: empId,
+          employeeName: empInfo?.full_name || empId,
+          topicId: test.topic_id,
+          topicTitle: topicInfo?.title || "Unknown Topic",
+          subjectId: test.subject_id,
+          subjectTitle: subjectInfo?.title || "Unknown Subject",
+          difficulty: test.difficulty,
+          totalQuestions: test.total_questions,
+          status: test.status,
+          score,
+          startedAt: test.started_at,
+          completedAt: test.completed_at
+        });
+      });
+    }
+  } catch (err) {
+    console.warn("Failed to fetch test results from Supabase:", err);
+  }
+
+  try {
+    const localTests = await localTestsDb.loadDB().catch(() => null);
+    if (localTests) {
+      const localAttempts = localTests.test_attempts || [];
+      const localAttemptsMap = new Map<string, { correct: number; total: number }>();
+      localAttempts.forEach(att => {
+        const current = localAttemptsMap.get(att.test_id) || { correct: 0, total: 0 };
+        current.total += 1;
+        if (att.is_correct) current.correct += 1;
+        localAttemptsMap.set(att.test_id, current);
+      });
+
+      localTests.tests.forEach(test => {
+        const empId = test.employee_id;
+        if (!empId) return;
+
+        const attInfo = localAttemptsMap.get(test.id);
+        const score = attInfo && attInfo.total > 0 ? Math.round((attInfo.correct / attInfo.total) * 100) : 0;
+
+        const list = testResultsMap.get(empId) || [];
+        if (!list.some(t => t.completedAt === test.completed_at)) {
+          list.push({
+            status: test.status,
+            score,
+            completedAt: test.completed_at
+          });
+          testResultsMap.set(empId, list);
+        }
+
+        if (!allTestResults.some(t => t.id === test.id)) {
+          const matchingEmp = employees.find(e => e.employee_id === empId);
+          allTestResults.push({
+            id: test.id,
+            employeeUuid: empId,
+            employeeId: empId,
+            employeeName: matchingEmp?.full_name || empId,
+            topicId: test.topic_id,
+            topicTitle: test.topic_title || "Unknown Topic",
+            subjectId: test.subject_id,
+            subjectTitle: test.subject_title || "Unknown Subject",
+            difficulty: test.difficulty,
+            totalQuestions: test.total_questions,
+            status: test.status,
+            score,
+            startedAt: test.started_at,
+            completedAt: test.completed_at
+          });
+        }
+      });
+    }
+  } catch (err) {
+    console.warn("Failed to fetch test results from local DB:", err);
+  }
+
+  // Attach testResults to employees
+  employees = employees.map(emp => {
+    return {
+      ...emp,
+      testResults: testResultsMap.get(emp.employee_id) || []
+    };
+  });
+
   // Handle Export to CSV
   if (isExport) {
     const headers = ["Employee ID", "Name", "Department", "Designation", "Skills", "Status", "Grade", "Match Score", "Shortlisted"];
@@ -107,7 +273,16 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  return NextResponse.json({ employees });
+  if (!isExport) {
+    cachedResponse = {
+      employees,
+      allTestResults,
+      timestamp: Date.now(),
+      activeJdId
+    };
+  }
+
+  return NextResponse.json({ employees, allTestResults });
 }
 
 export async function POST(request: NextRequest) {
@@ -147,6 +322,7 @@ export async function POST(request: NextRequest) {
     // Toggle shortlisted state
     matched.shortlisted = !matched.shortlisted;
     await writeFile(jsonPath, JSON.stringify(employees, null, 2), "utf8");
+    invalidateEmployeesCache();
 
     await writeLog('employee', 'SHORTLIST_EMPLOYEE', 'success', `Toggled shortlist for employee ID ${employeeId}: shortlisted=${matched.shortlisted}`);
 
@@ -181,6 +357,7 @@ export async function DELETE(request: NextRequest) {
       const parsed = JSON.parse(raw) as EmployeeRecord[];
       employees = parsed.filter(emp => !targetIds.includes(emp.employee_id));
       await writeFile(jsonPath, JSON.stringify(employees, null, 2), "utf8");
+      invalidateEmployeesCache();
     } catch (e) {
       return NextResponse.json({ error: "Employees not loaded" }, { status: 404 });
     }

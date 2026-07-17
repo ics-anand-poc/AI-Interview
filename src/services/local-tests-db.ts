@@ -144,7 +144,7 @@ export class LocalTestsDb {
     await mkdir(root, { recursive: true });
   }
 
-  private async loadDB(): Promise<LocalDB> {
+  async loadDB(): Promise<LocalDB> {
     if (this.dbCache) {
       return this.dbCache;
     }

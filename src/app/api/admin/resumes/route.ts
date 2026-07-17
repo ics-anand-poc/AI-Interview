@@ -9,6 +9,19 @@ import { checkCsrf, getClientIp } from '@/lib/security';
 import { auditLogService } from '@/services/audit-log-service';
 import { writeLog } from '@/lib/structured-logger';
 
+// In-memory cache for GET resumes response
+let cachedResumes: {
+  resumes: any[];
+  timestamp: number;
+  email: string | undefined;
+} | null = null;
+
+const CACHE_TTL_MS = 5000; // 5 seconds cache
+
+export function invalidateResumesCache() {
+  cachedResumes = null;
+}
+
 export async function GET(request: NextRequest) {
   if (!authenticateAdminRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -17,6 +30,10 @@ export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const email = url.searchParams.get("email")?.toLowerCase().trim();
+
+    if (cachedResumes && (Date.now() - cachedResumes.timestamp < CACHE_TTL_MS) && cachedResumes.email === email) {
+      return NextResponse.json({ resumes: cachedResumes.resumes });
+    }
 
     const resumes = await resumeService.getAllResumes();
     
@@ -78,6 +95,12 @@ export async function GET(request: NextRequest) {
       }))
     }));
 
+    cachedResumes = {
+      resumes: resumesWithAttempts,
+      timestamp: Date.now(),
+      email
+    };
+
     return NextResponse.json({ resumes: resumesWithAttempts });
   } catch (error) {
     console.error('Admin resumes fetch failed:', error);
@@ -106,6 +129,7 @@ export async function DELETE(request: NextRequest) {
     for (const id of ids) {
       await resumeService.deleteResumeById(id);
     }
+    invalidateResumesCache();
 
     await auditLogService.addLog({
       actorEmail: "admin@infinite.com",
