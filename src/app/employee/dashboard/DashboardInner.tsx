@@ -210,7 +210,7 @@ export function DashboardInner() {
         "MLOps": 70
       }[d.subject] || 75;
 
-      const scoreVal = s && typeof s.average_pct === 'number' ? Math.round(s.average_pct) : fallbackVal;
+      const scoreVal = s && typeof s.average_pct === 'number' && s.average_pct > 0 ? Math.round(s.average_pct) : fallbackVal;
       return { ...d, value: scoreVal };
     });
   }, [displayAnalytics]);
