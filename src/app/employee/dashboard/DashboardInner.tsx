@@ -107,6 +107,12 @@ const DUMMY_RESULTS = [
   },
 ];
 
+const EMPTY_RADAR = [
+  { subject: "ML", value: 0 }, { subject: "Data", value: 0 },
+  { subject: "Python", value: 0 }, { subject: "SQL", value: 0 },
+  { subject: "Cloud", value: 0 },  { subject: "MLOps", value: 0 },
+];
+
 export function DashboardInner() {
   const router = useRouter();
   const [analytics, setAnalytics] = useState<any>(null);
@@ -171,20 +177,14 @@ export function DashboardInner() {
     if (!analytics) return [];
     
     // Combine real results and dummy results so the list is full, rich, and beautiful
-    const combined = [...(results || [])];
+    const combined = [...(results || [])].filter(r => r && typeof r === 'object');
     DUMMY_RESULTS.forEach(dr => {
-      if (!combined.some(r => r.topic_title === dr.topic_title)) {
+      if (!combined.some(r => r && r.topic_title === dr.topic_title)) {
         combined.push(dr);
       }
     });
     return combined;
   }, [analytics, results]);
-
-  const EMPTY_RADAR = [
-    { subject: "ML", value: 0 }, { subject: "Data", value: 0 },
-    { subject: "Python", value: 0 }, { subject: "SQL", value: 0 },
-    { subject: "Cloud", value: 0 },  { subject: "MLOps", value: 0 },
-  ];
 
   const radarData = useMemo(() => {
     if (!displayAnalytics) return EMPTY_RADAR;
@@ -193,9 +193,11 @@ export function DashboardInner() {
     return EMPTY_RADAR.map(d => {
       // Find matching subject from the breakdown
       const s = subs.find((x:any) => 
-        labels[x.subject_id] === d.subject || 
-        x.subject_title?.toLowerCase().includes(d.subject.toLowerCase()) ||
-        d.subject.toLowerCase().includes(x.subject_title?.toLowerCase() || "")
+        x && (
+          labels[x.subject_id] === d.subject || 
+          (x.subject_title && x.subject_title.toLowerCase().includes(d.subject.toLowerCase())) ||
+          (x.subject_title && d.subject.toLowerCase().includes(x.subject_title.toLowerCase()))
+        )
       );
       
       // Beautiful fallbacks for visual mastery representation
@@ -208,23 +210,54 @@ export function DashboardInner() {
         "MLOps": 70
       }[d.subject] || 75;
 
-      return { ...d, value: s ? Math.round(s.average_pct) : fallbackVal };
+      const scoreVal = s && typeof s.average_pct === 'number' ? Math.round(s.average_pct) : fallbackVal;
+      return { ...d, value: scoreVal };
     });
   }, [displayAnalytics]);
 
-  const trendData = useMemo(() =>
-    displayAnalytics ? displayAnalytics.score_history.map((h:any) => ({
-      date: new Date(h.date).toLocaleDateString("en", { day:"numeric", month:"short" }),
-      score: h.score,
-    })) : [], [displayAnalytics]);
+  const trendData = useMemo(() => {
+    if (!displayAnalytics || !displayAnalytics.score_history) return [];
+    return displayAnalytics.score_history.map((h:any) => {
+      let dateLabel = "—";
+      if (h.date) {
+        try {
+          const d = new Date(h.date);
+          if (!isNaN(d.getTime())) {
+            dateLabel = d.toLocaleDateString("en", { day:"numeric", month:"short" });
+          }
+        } catch (e) {}
+      }
+      return {
+        date: dateLabel,
+        score: typeof h.score === 'number' ? h.score : 0,
+      };
+    });
+  }, [displayAnalytics]);
 
-  const weekData = useMemo(() =>
-    displayAnalytics ? displayAnalytics.weekly_activity.map((w:any) => ({
-      label: new Date(w.week_start).toLocaleDateString("en", { day:"numeric", month:"short" }),
-      tests: w.tests_taken, avg: Math.round(w.avg_score),
-    })) : [], [displayAnalytics]);
+  const weekData = useMemo(() => {
+    if (!displayAnalytics || !displayAnalytics.weekly_activity) return [];
+    return displayAnalytics.weekly_activity.map((w:any) => {
+      let label = "—";
+      if (w.week_start) {
+        try {
+          const d = new Date(w.week_start);
+          if (!isNaN(d.getTime())) {
+            label = d.toLocaleDateString("en", { day:"numeric", month:"short" });
+          }
+        } catch (e) {}
+      }
+      return {
+        label,
+        tests: typeof w.tests_taken === 'number' ? w.tests_taken : 0,
+        avg: typeof w.avg_score === 'number' ? Math.round(w.avg_score) : 0,
+      };
+    });
+  }, [displayAnalytics]);
 
-  const recentResults = useMemo(() => (displayResults ?? []).slice(0, 10).reverse(), [displayResults]);
+  const recentResults = useMemo(() => {
+    const items = (displayResults ?? []).filter(r => r && typeof r === 'object');
+    return items.slice(0, 10).reverse();
+  }, [displayResults]);
 
   // ── Render — loading
   if (loading) {
@@ -480,7 +513,13 @@ async function fetchResults(token: string): Promise<any[]> {
 
 function toDateStr(iso: string | undefined): string {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  } catch (e) {
+    return "—";
+  }
 }
 
 // ---------------------------------------------------------------------------
