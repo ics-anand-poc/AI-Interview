@@ -8,7 +8,7 @@ import { join } from 'path';
 import { readFile } from 'fs/promises';
 import AdmZip from 'adm-zip';
 import { authenticateAdminRequest } from '@/lib/employee-auth';
-import { invalidateResumesCache } from '@/app/api/admin/resumes/route';
+import { cacheStore } from '@/lib/cache-store';
 import { checkCsrf, isRateLimited, validateFileSignature, getClientIp } from '@/lib/security';
 import { auditLogService } from '@/services/audit-log-service';
 import { writeLog } from '@/lib/structured-logger';
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
 
       await writeLog('candidate-processing', 'BULK_UPLOAD_ZIP', 'success', `Successfully uploaded bulk ZIP ${file.name} with ${processedResumes.length} processed nested CVs.`);
 
-      invalidateResumesCache();
+      cacheStore.invalidate("resumes");
       return NextResponse.json({
         success: true,
         isZip: true,
@@ -258,7 +258,7 @@ export async function POST(request: NextRequest) {
 
     await writeLog('candidate-processing', 'SINGLE_UPLOAD_SUCCESS', 'success', `Successfully uploaded and analyzed single CV ${file.name} for candidate: ${email || 'unknown email'}.`);
 
-    invalidateResumesCache();
+    cacheStore.invalidate("resumes");
 
     return NextResponse.json({
       success: true,

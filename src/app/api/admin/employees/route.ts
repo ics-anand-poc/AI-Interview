@@ -15,19 +15,7 @@ const getEmployeesJsonPath = () => {
   return join(getUploadsRoot(), "employees.json");
 };
 
-// In-memory cache for GET response
-let cachedResponse: {
-  employees: any[];
-  allTestResults: any[];
-  timestamp: number;
-  activeJdId: string | undefined;
-} | null = null;
-
-const CACHE_TTL_MS = 5000; // 5 seconds cache
-
-export function invalidateEmployeesCache() {
-  cachedResponse = null;
-}
+import { cacheStore } from '@/lib/cache-store';
 
 export async function GET(request: NextRequest) {
   if (!authenticateAdminRequest(request)) {
@@ -38,8 +26,9 @@ export async function GET(request: NextRequest) {
   const activeJdId = searchParams.get('activeJdId') || undefined;
   const isExport = searchParams.get('export') === 'true';
 
-  if (cachedResponse && (Date.now() - cachedResponse.timestamp < CACHE_TTL_MS) && cachedResponse.activeJdId === activeJdId && !isExport) {
-    return NextResponse.json({ employees: cachedResponse.employees, allTestResults: cachedResponse.allTestResults });
+  const cached = cacheStore.get("employees", 5000, activeJdId);
+  if (cached && !isExport) {
+    return NextResponse.json(cached);
   }
 
   const jsonPath = getEmployeesJsonPath();
@@ -274,12 +263,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (!isExport) {
-    cachedResponse = {
-      employees,
-      allTestResults,
-      timestamp: Date.now(),
-      activeJdId
-    };
+    cacheStore.set("employees", { employees, allTestResults }, activeJdId);
   }
 
   return NextResponse.json({ employees, allTestResults });
@@ -322,7 +306,7 @@ export async function POST(request: NextRequest) {
     // Toggle shortlisted state
     matched.shortlisted = !matched.shortlisted;
     await writeFile(jsonPath, JSON.stringify(employees, null, 2), "utf8");
-    invalidateEmployeesCache();
+    cacheStore.invalidate("employees");
 
     await writeLog('employee', 'SHORTLIST_EMPLOYEE', 'success', `Toggled shortlist for employee ID ${employeeId}: shortlisted=${matched.shortlisted}`);
 
@@ -357,7 +341,7 @@ export async function DELETE(request: NextRequest) {
       const parsed = JSON.parse(raw) as EmployeeRecord[];
       employees = parsed.filter(emp => !targetIds.includes(emp.employee_id));
       await writeFile(jsonPath, JSON.stringify(employees, null, 2), "utf8");
-      invalidateEmployeesCache();
+      cacheStore.invalidate("employees");
     } catch (e) {
       return NextResponse.json({ error: "Employees not loaded" }, { status: 404 });
     }

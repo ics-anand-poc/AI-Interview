@@ -595,6 +595,103 @@ export default function AdminResumeDashboard() {
     }
   };
 
+  const handleExportPortalData = async () => {
+    try {
+      const ExcelJS = await import('exceljs');
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Employee Portal Results');
+
+      // Define columns
+      worksheet.columns = [
+        { header: 'Employee Name', key: 'name', width: 25 },
+        { header: 'Employee ID', key: 'empId', width: 15 },
+        { header: 'Department', key: 'department', width: 20 },
+        { header: 'Designation', key: 'designation', width: 22 },
+        { header: 'Registered Status', key: 'registeredStatus', width: 18 },
+        { header: 'Skills', key: 'skills', width: 30 },
+        { header: 'Tests Taken', key: 'testsCount', width: 12 },
+        { header: 'Average Score', key: 'avgScore', width: 15 },
+        { header: 'Detailed Test Attempts', key: 'testDetails', width: 50 }
+      ];
+
+      // Format header row (Row 1)
+      const headerRow = worksheet.getRow(1);
+      headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF4F46E5' } // Indigo color
+      };
+      headerRow.alignment = { vertical: 'middle', horizontal: 'left' };
+      headerRow.height = 25;
+
+      const accounts = Array.from(new Set(allTestResults.map(t => t.employeeId)))
+        .map(empId => {
+          const empTests = allTestResults.filter(t => t.employeeId === empId);
+          const matchingEmp = employees.find(e => e.employee_id === empId);
+          
+          const name = matchingEmp?.full_name || empTests[0]?.employeeName || empId;
+          const department = matchingEmp?.department || "Auto-Registered";
+          const designation = matchingEmp?.designation || "External Candidate";
+          const registeredStatus = matchingEmp?.status || "Registered";
+          const skills = matchingEmp?.skills || "—";
+          
+          const completedTests = empTests.filter(t => t.status === "completed");
+          const avgScore = completedTests.length > 0
+            ? Math.round(completedTests.reduce((acc, curr) => acc + (curr.score || 0), 0) / completedTests.length)
+            : null;
+
+          return {
+            name,
+            empId,
+            department,
+            designation,
+            registeredStatus,
+            skills,
+            testsCount: empTests.length,
+            avgScore: avgScore !== null ? `${avgScore}%` : "—",
+            testDetails: empTests.map(t => `${t.topicTitle} (${t.status === 'completed' ? t.score + '%' : t.status})`).join("; ")
+          };
+        });
+
+      // Add rows to worksheet
+      accounts.forEach(acc => {
+        worksheet.addRow(acc);
+      });
+
+      // Add styling and borders to data cells
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber > 1) {
+          row.height = 20;
+          row.eachCell((cell) => {
+            cell.alignment = { vertical: 'middle', horizontal: 'left' };
+            cell.border = {
+              top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+              bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+              left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+              right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
+            };
+          });
+        }
+      });
+
+      // Write to buffer
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `employee_portal_test_results_${new Date().toISOString().split('T')[0]}.xlsx`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (excelErr) {
+      console.error("Failed to export Excel:", excelErr);
+    }
+  };
+
   const loadLogs = async () => {
     setIsSystemLogsLoading(true);
     try {
@@ -3295,6 +3392,15 @@ export default function AdminResumeDashboard() {
                         />
                       </div>
                       <div className="flex gap-2 w-full sm:w-auto">
+                        <Button
+                          onClick={handleExportPortalData}
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 sm:flex-none rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 gap-1.5 font-bold text-xs"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          Export to Excel
+                        </Button>
                         <Button
                           onClick={loadEmployees}
                           variant="outline"
