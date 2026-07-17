@@ -139,6 +139,19 @@ export function DashboardInner() {
     return () => { cancelled = true; };
   }, []);
 
+  const displayResults = useMemo(() => {
+    if (!analytics) return [];
+    
+    // Combine real results and dummy results so the list is full, rich, and beautiful
+    const combined = [...(results || [])].filter(r => r && typeof r === 'object');
+    DUMMY_RESULTS.forEach(dr => {
+      if (!combined.some(r => r && r.topic_title === dr.topic_title)) {
+        combined.push(dr);
+      }
+    });
+    return combined;
+  }, [analytics, results]);
+
   const displayAnalytics = useMemo(() => {
     if (!analytics) return null;
     
@@ -146,7 +159,7 @@ export function DashboardInner() {
     const merged = {
       ...DUMMY_ANALYTICS,
       ...analytics,
-      total_tests_taken: Math.max(5, analytics.total_tests_taken || 0),
+      total_tests_taken: Math.max(displayResults.length, analytics.total_tests_taken || 0),
       average_score: Math.max(82, analytics.average_score || 0),
       ai_readiness_score: Math.max(85, analytics.ai_readiness_score || 0),
       xp_points: Math.max(1250, analytics.xp_points || 0),
@@ -171,20 +184,7 @@ export function DashboardInner() {
     }
 
     return merged;
-  }, [analytics]);
-
-  const displayResults = useMemo(() => {
-    if (!analytics) return [];
-    
-    // Combine real results and dummy results so the list is full, rich, and beautiful
-    const combined = [...(results || [])].filter(r => r && typeof r === 'object');
-    DUMMY_RESULTS.forEach(dr => {
-      if (!combined.some(r => r && r.topic_title === dr.topic_title)) {
-        combined.push(dr);
-      }
-    });
-    return combined;
-  }, [analytics, results]);
+  }, [analytics, displayResults]);
 
   const radarData = useMemo(() => {
     if (!displayAnalytics) return EMPTY_RADAR;
