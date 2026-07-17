@@ -465,7 +465,7 @@ export function DashboardInner() {
                     </div>
                     <ScorePill pct={r.accuracy_pct} />
                   </div>
-                  {r.ai_analysis && (
+                  {r.ai_analysis && typeof r.ai_analysis === 'string' && (
                     <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">{r.ai_analysis}</p>
                   )}
                   <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">

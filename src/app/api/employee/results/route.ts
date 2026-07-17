@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
         started_at: test.started_at,
         completed_at: test.completed_at,
         topic_breakdown: [],
-        ai_analysis: test.in_progress ?? "",
+        ai_analysis: typeof test.in_progress === "string" ? test.in_progress : "",
         improvement_suggestions: [],
       };
     });
