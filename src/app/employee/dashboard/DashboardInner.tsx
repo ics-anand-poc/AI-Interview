@@ -5,22 +5,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import {
-  BarChart as ReBarChart,
-  ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  LineChart,
-  Line,
-  ReferenceLine,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from "recharts";
+import dynamic from "next/dynamic";
+
+const DashboardRadarChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardRadarChart), { ssr: false, loading: () => <div className="animate-pulse bg-slate-100 dark:bg-slate-800 rounded-full w-full h-full" /> });
+const DashboardTrendChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardTrendChart), { ssr: false, loading: () => <div className="animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg w-full h-full" /> });
+const DashboardWeeklyChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardWeeklyChart), { ssr: false, loading: () => <div className="animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg w-full h-full" /> });
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,76 +25,6 @@ import {
   ClipboardList,
   Sparkles,
 } from "lucide-react";
-
-const DUMMY_ANALYTICS = {
-  total_tests_taken: 12,
-  average_score: 78,
-  ai_readiness_score: 82,
-  xp_points: 1250,
-  skill_level: "Intermediate",
-  strongest_subject: { subject_id: "8", subject_title: "Python", average_pct: 90 },
-  weakest_subject: { subject_id: "10", subject_title: "Cloud", average_pct: 60 },
-  score_history: [
-    { date: "2026-05-10T10:00:00Z", score: 65 },
-    { date: "2026-05-12T10:00:00Z", score: 70 },
-    { date: "2026-05-15T10:00:00Z", score: 75 },
-    { date: "2026-05-20T10:00:00Z", score: 72 },
-    { date: "2026-05-25T10:00:00Z", score: 80 },
-    { date: "2026-06-01T10:00:00Z", score: 85 },
-    { date: "2026-06-03T10:00:00Z", score: 78 },
-  ],
-  subject_breakdown: [
-    { subject_id: "2", subject_title: "AI / ML", average_pct: 82, topic_count: 5, mastery_pct: 40 },
-    { subject_id: "3", subject_title: "Data", average_pct: 75, topic_count: 4, mastery_pct: 50 },
-    { subject_id: "8", subject_title: "Python", average_pct: 90, topic_count: 6, mastery_pct: 83.3 },
-    { subject_id: "9", subject_title: "SQL", average_pct: 85, topic_count: 4, mastery_pct: 75 },
-    { subject_id: "10", subject_title: "Cloud", average_pct: 65, topic_count: 3, mastery_pct: 33.3 },
-    { subject_id: "11", subject_title: "MLOps", average_pct: 70, topic_count: 3, mastery_pct: 66.7 },
-  ],
-  weekly_activity: [
-    { week_start: "2026-05-04T00:00:00Z", tests_taken: 2, avg_score: 68 },
-    { week_start: "2026-05-11T00:00:00Z", tests_taken: 3, avg_score: 72 },
-    { week_start: "2026-05-18T00:00:00Z", tests_taken: 2, avg_score: 76 },
-    { week_start: "2026-05-25T00:00:00Z", tests_taken: 4, avg_score: 82 },
-    { week_start: "2026-06-01T00:00:00Z", tests_taken: 4, avg_score: 80 },
-  ],
-};
-
-const DUMMY_RESULTS = [
-  {
-    id: "r1",
-    topic_title: "Pandas DataFrames",
-    subject_title: "Data",
-    accuracy_pct: 80,
-    difficulty: "intermediate",
-    completed_at: "2026-06-03T10:00:00Z",
-    correct_answers: 8,
-    total_questions: 10,
-    ai_analysis: "Excellent understanding of DataFrame manipulation and indexing.",
-  },
-  {
-    id: "r2",
-    topic_title: "Python Data Types",
-    subject_title: "Python",
-    accuracy_pct: 90,
-    difficulty: "beginner",
-    completed_at: "2026-06-02T11:00:00Z",
-    correct_answers: 9,
-    total_questions: 10,
-    ai_analysis: "Perfect score on mutable vs immutable types. Solid logic.",
-  },
-  {
-    id: "r3",
-    topic_title: "Neural Networks Intro",
-    subject_title: "AI / ML",
-    accuracy_pct: 70,
-    difficulty: "advanced",
-    completed_at: "2026-06-01T15:30:00Z",
-    correct_answers: 7,
-    total_questions: 10,
-    ai_analysis: "Good grasp of backpropagation, needs work on optimization algorithms.",
-  },
-];
 
 const EMPTY_RADAR = [
   { subject: "ML", value: 0 }, { subject: "Data", value: 0 },
@@ -141,47 +60,31 @@ export function DashboardInner() {
 
   const displayResults = useMemo(() => {
     if (!analytics) return [];
-    
-    // Combine real results and dummy results so the list is full, rich, and beautiful
-    const combined = [...(results || [])].filter(r => r && typeof r === 'object');
-    DUMMY_RESULTS.forEach(dr => {
-      if (!combined.some(r => r && r.topic_title === dr.topic_title)) {
-        combined.push(dr);
-      }
-    });
-    return combined;
+    return [...(results || [])].filter(r => r && typeof r === 'object');
   }, [analytics, results]);
 
   const displayAnalytics = useMemo(() => {
     if (!analytics) return null;
     
-    // Merge actual analytics with dummy data to make it look full and beautiful
+    // Provide safe fallbacks for empty analytics
     const merged = {
-      ...DUMMY_ANALYTICS,
       ...analytics,
       total_tests_taken: Math.max(displayResults.length, analytics.total_tests_taken || 0),
-      average_score: Math.max(82, analytics.average_score || 0),
-      ai_readiness_score: Math.max(85, analytics.ai_readiness_score || 0),
-      xp_points: Math.max(1250, analytics.xp_points || 0),
-      skill_level: "Intermediate"
+      average_score: analytics.average_score || 0,
+      ai_readiness_score: analytics.ai_readiness_score || 0,
+      xp_points: analytics.xp_points || 0,
+      skill_level: analytics.skill_level || "Beginner"
     };
 
     if (!merged.strongest_subject || !merged.strongest_subject.subject_title || merged.strongest_subject.subject_title === "—") {
-      merged.strongest_subject = { subject_title: "SQL & Databases" };
+      merged.strongest_subject = { subject_title: "—" };
     }
     if (!merged.weakest_subject || !merged.weakest_subject.subject_title || merged.weakest_subject.subject_title === "—") {
-      merged.weakest_subject = { subject_title: "Cloud Infrastructure" };
+      merged.weakest_subject = { subject_title: "—" };
     }
 
-    // Combine score histories if empty/sparse
-    if (!merged.score_history || merged.score_history.length <= 1) {
-      merged.score_history = DUMMY_ANALYTICS.score_history;
-    }
-
-    // Combine subject breakdowns
-    if (!merged.subject_breakdown || merged.subject_breakdown.length <= 1) {
-      merged.subject_breakdown = DUMMY_ANALYTICS.subject_breakdown;
-    }
+    if (!merged.score_history) merged.score_history = [];
+    if (!merged.subject_breakdown) merged.subject_breakdown = [];
 
     return merged;
   }, [analytics, displayResults]);
@@ -367,14 +270,7 @@ export function DashboardInner() {
             <Card className="p-6 shadow-soft border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors duration-300">
               <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Subject Mastery</h2>
               <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                  <RadarChart data={radarData}>
-                    <PolarGrid stroke="#e0e7ff" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12 }} />
-                    <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} />
-                    <Radar name="Score" dataKey="value" stroke="#6366f1" fill="#6366f1" fillOpacity={0.2} />
-                  </RadarChart>
-                </ResponsiveContainer>
+                <DashboardRadarChart data={radarData} />
               </div>
             </Card>
 
@@ -384,15 +280,7 @@ export function DashboardInner() {
                 <EmptyChart msg="Complete a test to see your score history." />
               ) : (
                 <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                    <LineChart data={trendData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-                      <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                      <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
-                      <Tooltip />
-                      <ReferenceLine y={70} stroke="#c7d2fe" strokeDasharray="4 4" />
-                      <Line type="monotone" dataKey="score" stroke="#6366f1" strokeWidth={2} dot={{r:3}} activeDot={{r:6}} />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <DashboardTrendChart data={trendData} />
                 </div>
               )}
             </Card>
@@ -403,14 +291,7 @@ export function DashboardInner() {
                 <EmptyChart msg="We have no activity data yet. Take your first test!" />
               ) : (
                 <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                    <ReBarChart data={weekData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-                      <XAxis dataKey="label" tick={{ fontSize: 12 }} />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <Tooltip />
-                      <Bar dataKey="tests" fill="#8b5cf6" radius={[4,4,0,0]} name="Tests taken" />
-                    </ReBarChart>
-                  </ResponsiveContainer>
+                  <DashboardWeeklyChart data={weekData} />
                 </div>
               )}
             </Card>
