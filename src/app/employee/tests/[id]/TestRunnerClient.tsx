@@ -42,7 +42,7 @@ function ProgressBar({ current, total }: { current: number; total: number }) {
   const pct = (current / Math.max(1, total)) * 100;
   return (
     <div className="w-full h-2 bg-indigo-100 rounded-full overflow-hidden" role="progressbar" aria-valuenow={current} aria-valuemax={total}>
-      <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-200" style={{ width: `${pct}%` }} />
+      <div className="h-full bg-primary rounded-full transition-all duration-200" style={{ width: `${pct}%` }} />
     </div>
   );
 }
@@ -651,7 +651,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
   if (!currentQ) {
     return (
       <div className="py-24 mx-auto max-w-xl text-center text-slate-500 space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
         <p className="font-medium">Loading questions…</p>
       </div>
     );
@@ -705,15 +705,15 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
   // ── phase: ready ────────────────────────────────────────────────
   if (phase === "ready") {
     return (
-      <div className="max-w-2xl mx-auto py-16 px-4 space-y-8 text-center bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 rounded-3xl shadow-soft p-10 animate-fade-in mt-10">
-        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/25 animate-pulse">
+      <div className="max-w-2xl mx-auto py-16 px-4 space-y-8 text-center bg-card border border-border rounded-3xl shadow-soft p-10 animate-fade-in mt-10">
+        <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/25 animate-pulse">
           <AlertTriangle className="w-8 h-8 text-white" />
         </div>
         <div className="space-y-3">
-          <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl font-black text-foreground">
             {test?.status === "in_progress" ? "Resume Assessment" : "Active Proctoring & Integrity Agreement"}
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 font-semibold max-w-md mx-auto leading-relaxed">
+          <p className="text-sm text-muted-foreground font-semibold max-w-md mx-auto leading-relaxed">
             {test?.status === "in_progress"
               ? "Re-enter the assessment window. Fullscreen mode and camera access will be reactivated."
               : "By proceeding, you agree to grant camera access for real-time face tracking. Exiting fullscreen or switching tabs will trigger violation warnings."}
@@ -722,7 +722,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
 
         <div className="bg-slate-50 dark:bg-slate-950 p-6 rounded-2xl border border-slate-100 dark:border-slate-900/60 max-w-md mx-auto text-left space-y-4">
           <h3 className="text-xs font-black uppercase tracking-wider text-slate-850 dark:text-slate-200">Rules &amp; Guidelines:</h3>
-          <ul className="text-xs font-semibold text-slate-500 dark:text-slate-400 space-y-2 list-disc list-inside">
+          <ul className="text-xs font-semibold text-muted-foreground space-y-2 list-disc list-inside">
             <li>Fullscreen mode must remain active.</li>
             <li>Browser tab switching or minimizing is blocked.</li>
             <li>Face must be visible in the camera feed at all times.</li>
@@ -746,7 +746,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
   if (phase === "loading") {
     return (
       <div className="py-24 mx-auto max-w-xl text-center text-slate-500 space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
         <p className="font-medium">Preparing your test…</p>
       </div>
     );
@@ -779,7 +779,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
         <Button
           variant="outline"
           size="sm"
-          className={`gap-1.5 rounded-lg border ${allAnswered ? "border-indigo-500 dark:border-indigo-700 text-indigo-600 dark:text-violet-400 bg-indigo-50 dark:bg-slate-900 font-semibold" : "border-indigo-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-slate-800"}`}
+          className={`gap-1.5 rounded-lg border ${allAnswered ? "border-indigo-500 dark:border-indigo-700 text-primary bg-indigo-50 dark:bg-slate-900 font-semibold" : "border-border text-muted-foreground hover:bg-secondary"}`}
           disabled={!allAnswered}
           onClick={() => handleSubmit(answers)}
         >
@@ -792,12 +792,12 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
       <ProgressBar current={currentIdx} total={questions!.length} />
 
       {/* ── Question card ────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-white dark:bg-slate-900 shadow-soft border border-indigo-100 dark:border-slate-800 p-8 space-y-5">
+      <div className="rounded-2xl bg-card shadow-soft border border-border p-8 space-y-5">
 
         {/* flag */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-500 dark:text-violet-450 uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-primary dark:text-violet-450 uppercase tracking-wider">
               <span className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-505 to-violet-600 flex items-center justify-center text-white text-[10px]">{currentIdx + 1}</span>
               Q{currentIdx + 1}
             </span>
@@ -816,7 +816,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
         </div>
 
         {/* question text */}
-        <h2 className="text-lg font-bold leading-snug text-slate-900 dark:text-slate-100">
+        <h2 className="text-lg font-bold leading-snug text-foreground">
           {(currentQ as any).question_text}
         </h2>
 
@@ -832,7 +832,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
                   w-full text-left px-5 py-4 rounded-xl border-2 text-sm font-medium transition-all duration-200
                   ${isSelected
                     ? "border-indigo-500 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-900 dark:text-indigo-200 shadow-md shadow-indigo-500/15 ring-2 ring-indigo-200 dark:ring-indigo-800"
-                    : "border-indigo-100 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                    : "border-border hover:border-indigo-400 dark:hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-slate-800 text-muted-foreground"
                   }
                 `}
                 aria-pressed={isSelected}
@@ -859,7 +859,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
         {/* Previous */}
         <Button
           variant="outline"
-          className="rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 font-semibold"
+          className="rounded-xl border-border text-primary hover:bg-secondary font-semibold"
           onClick={() => setCurrentIdx((i) => Math.max(0, i - 1))}
           disabled={!hasPrevious}
         >
@@ -877,7 +877,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
             else if (answered && flagged) cls += "border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-450";
             else if (answered)            cls += "border-emerald-400 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-450";
             else if (flagged)             cls += "border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 text-amber-505 dark:text-amber-450";
-            else                          cls += "border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-indigo-300 dark:text-slate-600";
+            else                          cls += "border-border bg-card text-indigo-300 dark:text-slate-600";
             return (
               <button
                 key={i}
@@ -894,7 +894,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
 
         {/* Next / Finish */}
         {hasNext ? (
-          <Button className="gap-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/30 transition-all rounded-xl" onClick={() => setCurrentIdx((i) => i + 1)}>
+          <Button className="gap-1 bg-primary hover:from-indigo-700 hover:to-violet-700 text-white shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/30 transition-all rounded-xl" onClick={() => setCurrentIdx((i) => i + 1)}>
             Next <ArrowRight className="w-4 h-4" />
           </Button>
         ) : (
@@ -912,12 +912,12 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
       {/* Security Warning Modal Overlay */}
       {showProctorWarning && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl max-w-md w-full p-6 border border-red-100 dark:border-red-950/30 text-center space-y-4">
+          <div className="bg-card rounded-2xl shadow-xl max-w-md w-full p-6 border border-red-100 dark:border-red-950/30 text-center space-y-4">
             <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/30 flex items-center justify-center mx-auto text-red-600 dark:text-red-400 animate-pulse">
               <AlertTriangle className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Security Warning</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
+            <h3 className="text-lg font-bold text-foreground">Security Warning</h3>
+            <p className="text-sm text-muted-foreground">
               {showProctorWarning}
             </p>
             <div className="bg-red-50 dark:bg-red-950/20 py-2 px-4 rounded-xl text-xs font-bold text-red-700 dark:text-rose-400 inline-block">

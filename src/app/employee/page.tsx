@@ -215,7 +215,7 @@ export default function EmployeeLoginPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="group flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-indigo-50/50 dark:hover:bg-white/10 rounded-xl px-3.5 py-2 transition-all duration-200"
+            className="group flex items-center gap-2 text-muted-foreground hover:text-slate-700 dark:hover:text-white hover:bg-indigo-50/50 dark:hover:bg-white/10 rounded-xl px-3.5 py-2 transition-all duration-200"
           >
             <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
             <span className="font-semibold text-xs">Go to Candidate Portal</span>
@@ -233,14 +233,14 @@ export default function EmployeeLoginPage() {
 
         <div className="mb-4 text-center relative z-10">
           {/* Logo mark */}
-          <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/40 ring-2 ring-white/[0.08]">
+          <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-lg shadow-indigo-500/40 ring-2 ring-white/[0.08]">
             <ShieldCheck className="h-6 w-6 text-white" />
           </div>
 
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
             {isResetPassword ? "Reset Portal Password" : (org ? `${org} Portal Login` : "Employee Portal Login")}
           </h1>
-          <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
+          <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed max-w-sm mx-auto">
             {isResetPassword 
               ? "Verify your Employee ID and Email to set a new password." 
               : `Access your learning assessments, performance analytics, and personalized growth path.`}
@@ -301,7 +301,7 @@ export default function EmployeeLoginPage() {
                     placeholder="Enter your password"
                     autoComplete="current-password"
                   />
-                  <Key className="pointer-events-none absolute right-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+                  <Key className="pointer-events-none absolute right-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                 </div>
                 <div className="flex justify-end mt-1.5">
                   <button
@@ -311,7 +311,7 @@ export default function EmployeeLoginPage() {
                       setInfo("");
                       setIsResetPassword(true);
                     }}
-                    className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors"
+                    className="text-[11px] font-semibold text-primary hover:text-primary dark:hover:text-indigo-300 transition-colors"
                   >
                     Forgot Password?
                   </button>
@@ -320,7 +320,7 @@ export default function EmployeeLoginPage() {
 
               {/* Submit */}
               <Button
-                className="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all duration-200"
+                className="w-full px-4 py-2.5 rounded-xl bg-primary hover:from-indigo-500 hover:to-violet-500 text-white font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all duration-200"
                 type="submit"
                 disabled={loading}
               >
@@ -365,12 +365,12 @@ export default function EmployeeLoginPage() {
             <div className="mt-4 rounded-xl border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/50 dark:bg-indigo-950/20 p-3.5 relative z-10">
               <div className="flex items-start gap-2.5">
                 <div className="w-7 h-7 rounded-lg bg-indigo-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wider mb-0.5">First time logging in?</p>
                   <p className="text-xs text-slate-700 dark:text-slate-350 leading-relaxed">
-                    Use your <span className="text-slate-900 dark:text-slate-100 font-semibold">Employee ID</span> with a <span className="text-slate-900 dark:text-slate-100 font-semibold">blank password</span>.
+                    Use your <span className="text-foreground font-semibold">Employee ID</span> with a <span className="text-foreground font-semibold">blank password</span>.
                   </p>
                 </div>
               </div>
@@ -438,7 +438,7 @@ export default function EmployeeLoginPage() {
 
             {/* Reset Submit */}
             <Button
-              className="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all duration-200"
+              className="w-full px-4 py-2.5 rounded-xl bg-primary hover:from-indigo-500 hover:to-violet-500 text-white font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all duration-200"
               type="submit"
               disabled={loading}
             >

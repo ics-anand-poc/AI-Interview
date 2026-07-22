@@ -37,7 +37,7 @@ const AdminResumeDetails = dynamic(() => import("@/components/AdminResumeDetails
   ssr: false,
   loading: () => (
     <div className="fixed inset-0 z-50 bg-indigo-900/60 backdrop-blur-sm flex items-center justify-center">
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl flex items-center gap-3">
+      <div className="bg-card p-6 rounded-3xl flex items-center gap-3">
         <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
         <span className="font-bold text-slate-800 dark:text-slate-200 animate-pulse">Loading analysis details...</span>
       </div>
@@ -2313,14 +2313,14 @@ export default function AdminResumeDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8fafc] via-[#f0f4ff] to-[#e2e8f0] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300">
-      <nav className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-indigo-100 dark:border-slate-800 py-4 px-6 shadow-sm sticky top-0 z-50 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-[#f8fafc] via-[#f0f4ff] to-[#e2e8f0] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 font-sans text-foreground transition-colors duration-300">
+      <nav className="bg-card/80 backdrop-blur-md border-b border-border py-4 px-6 shadow-sm sticky top-0 z-50 transition-colors duration-300">
         <div className="max-w-full mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shadow-indigo-500/30">
+            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-indigo-500/30">
               <FileText className="w-[18px] h-[18px] text-white" />
             </div>
-            <span className="text-lg md:text-xl font-black tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+            <span className="text-lg md:text-xl font-black tracking-tight bg-primary bg-clip-text text-transparent">
               <span className="hidden sm:inline">HR </span>Screening Console
             </span>
           </div>
@@ -2330,40 +2330,40 @@ export default function AdminResumeDashboard() {
               variant="outline" 
               size="sm" 
               onClick={() => handleRefresh("requirements")}
-              className="rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 gap-1.5 md:gap-2 font-bold text-xs"
+              className="rounded-xl border-border text-primary hover:bg-secondary gap-1.5 md:gap-2 font-bold text-xs"
             >
-              <RefreshCcw className="w-3.5 h-3.5 text-indigo-500" />
+              <RefreshCcw className="w-3.5 h-3.5 text-primary" />
               Refresh Requirements
             </Button>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => handleRefresh("candidates")}
-              className="rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 gap-1.5 md:gap-2 font-bold text-xs"
+              className="rounded-xl border-border text-primary hover:bg-secondary gap-1.5 md:gap-2 font-bold text-xs"
             >
-              <RefreshCcw className="w-3.5 h-3.5 text-indigo-500" />
+              <RefreshCcw className="w-3.5 h-3.5 text-primary" />
               Refresh Candidates
             </Button>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => handleRefresh("employees")}
-              className="rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 gap-1.5 md:gap-2 font-bold text-xs"
+              className="rounded-xl border-border text-primary hover:bg-secondary gap-1.5 md:gap-2 font-bold text-xs"
             >
-              <RefreshCcw className="w-3.5 h-3.5 text-indigo-500" />
+              <RefreshCcw className="w-3.5 h-3.5 text-primary" />
               Refresh Employee Data
             </Button>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => handleRefresh("interviews")}
-              className="rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 gap-1.5 md:gap-2 font-bold text-xs"
+              className="rounded-xl border-border text-primary hover:bg-secondary gap-1.5 md:gap-2 font-bold text-xs"
             >
-              <RefreshCcw className="w-3.5 h-3.5 text-indigo-500" />
+              <RefreshCcw className="w-3.5 h-3.5 text-primary" />
               Refresh Interviews
             </Button>
             <Link href="/">
-              <Button variant="outline" size="sm" className="rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 gap-1.5 md:gap-2 font-bold text-xs">
+              <Button variant="outline" size="sm" className="rounded-xl border-border text-primary hover:bg-secondary gap-1.5 md:gap-2 font-bold text-xs">
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Candidate Portal</span>
                 <span className="inline sm:hidden">Portal</span>
@@ -2377,10 +2377,10 @@ export default function AdminResumeDashboard() {
         
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-1">
-              <ClipboardList className="w-6 h-6 text-indigo-500" /> Screening Dashboard
+            <h1 className="text-2xl font-black text-foreground flex items-center gap-2 mb-1">
+              <ClipboardList className="w-6 h-6 text-primary" /> Screening Dashboard
             </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+            <p className="text-sm text-muted-foreground font-semibold leading-relaxed">
               Upload job descriptions, screen candidate CVs in bulk, override suitability categories, and reset test sessions.
             </p>
           </div>
@@ -2402,13 +2402,13 @@ export default function AdminResumeDashboard() {
           
           {/* INGESTION PIPELINE CONTROL CARD */}
           <div className="lg:col-span-3">
-            <Card className="p-6 border-indigo-150 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900 rounded-3xl relative overflow-hidden lg:h-full flex flex-col gap-6">
+            <Card className="p-6 border-indigo-150 dark:border-slate-800 shadow-md bg-card rounded-3xl relative overflow-hidden lg:h-full flex flex-col gap-6">
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
               
               <div className="space-y-6">
-                <div className="flex justify-between items-center pb-2 border-b border-indigo-50 dark:border-slate-800">
+                <div className="flex justify-between items-center pb-2 border-b border-border">
                   <div className="flex items-center gap-2">
-                    <Settings className="w-5 h-5 text-indigo-500 animate-spin-slow" />
+                    <Settings className="w-5 h-5 text-primary animate-spin-slow" />
                     <div>
                       <h3 className="text-sm font-black text-slate-855 dark:text-slate-100 leading-none">Ingestion Pipeline</h3>
                       <p className="text-[10px] text-slate-400 font-semibold mt-1">Folder-driven automation panel</p>
@@ -2424,7 +2424,7 @@ export default function AdminResumeDashboard() {
                 </div>
 
                 {/* Pipeline Status Indicator */}
-                <div className="rounded-2xl border border-indigo-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 p-3.5 flex items-center justify-between gap-3">
+                <div className="rounded-2xl border border-border bg-slate-50/50 dark:bg-slate-950/40 p-3.5 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="relative flex h-2 w-2">
                       <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
@@ -2438,7 +2438,7 @@ export default function AdminResumeDashboard() {
                         "bg-amber-500"
                       }`} />
                     </div>
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{pipelineStatus}</span>
+                    <span className="text-xs font-bold text-muted-foreground truncate">{pipelineStatus}</span>
                   </div>
                   {activityLogs.length > 0 && (
                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider shrink-0">
@@ -2474,7 +2474,7 @@ export default function AdminResumeDashboard() {
                               }
                             }
                           }}
-                          className="w-0 flex-1 min-w-0 rounded-xl border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 p-2 text-[11px] font-bold text-slate-755 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200 truncate"
+                          className="w-0 flex-1 min-w-0 rounded-xl border border-border bg-slate-50/50 dark:bg-slate-950 p-2 text-[11px] font-bold text-slate-755 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200 truncate"
                         >
                           <option value="all">📁 All Job Descriptions (View All Candidates)</option>
                           {(() => {
@@ -2494,7 +2494,7 @@ export default function AdminResumeDashboard() {
                           })()}
                         </select>
                       ) : (
-                        <div className="flex-1 min-w-0 rounded-lg border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 px-2.5 py-2 text-[10px] font-bold text-slate-755 dark:text-slate-200 truncate select-none cursor-default">
+                        <div className="flex-1 min-w-0 rounded-lg border border-border bg-slate-50/50 dark:bg-slate-950 px-2.5 py-2 text-[10px] font-bold text-slate-755 dark:text-slate-200 truncate select-none cursor-default">
                           {adminEmail}
                         </div>
                       )}
@@ -2521,36 +2521,36 @@ export default function AdminResumeDashboard() {
                     <Button
                       variant="outline"
                       onClick={() => handleRefresh("requirements")}
-                      className="flex flex-col items-center justify-center px-1.5 py-2.5 h-auto rounded-2xl border-indigo-50 hover:bg-indigo-50/30 hover:border-indigo-200 dark:border-slate-800 dark:hover:bg-slate-950/40 gap-1 text-center group transition-all duration-300 shadow-sm"
+                      className="flex flex-col items-center justify-center px-1.5 py-2.5 h-auto rounded-2xl border-indigo-50 hover:bg-indigo-50/30 hover:border-border dark:hover:bg-slate-950/40 gap-1 text-center group transition-all duration-300 shadow-sm"
                     >
-                      <ClipboardList className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition duration-200" />
+                      <ClipboardList className="w-4 h-4 text-primary group-hover:scale-110 transition duration-200" />
                       <span className="text-[10px] font-extrabold text-slate-855 dark:text-slate-200 whitespace-nowrap">Scan Requirements</span>
                       <span className="text-[7.5px] text-slate-400 font-semibold uppercase whitespace-nowrap">/docs/BR & /docs/JD</span>
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => handleRefresh("candidates")}
-                      className="flex flex-col items-center justify-center px-1.5 py-2.5 h-auto rounded-2xl border-indigo-50 hover:bg-indigo-50/30 hover:border-indigo-200 dark:border-slate-800 dark:hover:bg-slate-950/40 gap-1 text-center group transition-all duration-300 shadow-sm"
+                      className="flex flex-col items-center justify-center px-1.5 py-2.5 h-auto rounded-2xl border-indigo-50 hover:bg-indigo-50/30 hover:border-border dark:hover:bg-slate-950/40 gap-1 text-center group transition-all duration-300 shadow-sm"
                     >
-                      <FileText className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition duration-200" />
+                      <FileText className="w-4 h-4 text-primary group-hover:scale-110 transition duration-200" />
                       <span className="text-[10px] font-extrabold text-slate-855 dark:text-slate-200 whitespace-nowrap">Scan Candidates</span>
                       <span className="text-[7.5px] text-slate-400 font-semibold uppercase whitespace-nowrap">/docs/Resumes</span>
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => handleRefresh("employees")}
-                      className="flex flex-col items-center justify-center px-1.5 py-2.5 h-auto rounded-2xl border-indigo-50 hover:bg-indigo-50/30 hover:border-indigo-200 dark:border-slate-800 dark:hover:bg-slate-950/40 gap-1 text-center group transition-all duration-300 shadow-sm"
+                      className="flex flex-col items-center justify-center px-1.5 py-2.5 h-auto rounded-2xl border-indigo-50 hover:bg-indigo-50/30 hover:border-border dark:hover:bg-slate-950/40 gap-1 text-center group transition-all duration-300 shadow-sm"
                     >
-                      <Users className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition duration-200" />
+                      <Users className="w-4 h-4 text-primary group-hover:scale-110 transition duration-200" />
                       <span className="text-[10px] font-extrabold text-slate-855 dark:text-slate-200 whitespace-nowrap">Scan Employees</span>
                       <span className="text-[7.5px] text-slate-400 font-semibold uppercase whitespace-nowrap">/docs/Corp Pool</span>
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => handleRefresh("interviews")}
-                      className="flex flex-col items-center justify-center px-1.5 py-2.5 h-auto rounded-2xl border-indigo-50 hover:bg-indigo-50/30 hover:border-indigo-200 dark:border-slate-800 dark:hover:bg-slate-955/40 gap-1 text-center group transition-all duration-300 shadow-sm"
+                      className="flex flex-col items-center justify-center px-1.5 py-2.5 h-auto rounded-2xl border-indigo-50 hover:bg-indigo-50/30 hover:border-border dark:hover:bg-slate-955/40 gap-1 text-center group transition-all duration-300 shadow-sm"
                     >
-                      <Video className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition duration-200" />
+                      <Video className="w-4 h-4 text-primary group-hover:scale-110 transition duration-200" />
                       <span className="text-[10px] font-extrabold text-slate-855 dark:text-slate-200 whitespace-nowrap">Sync Interviews</span>
                       <span className="text-[7.5px] text-slate-400 font-semibold uppercase whitespace-nowrap">Database & CSV</span>
                     </Button>
@@ -2567,7 +2567,7 @@ export default function AdminResumeDashboard() {
                   <select
                     value={uploadCategory}
                     onChange={(e) => setUploadCategory(e.target.value)}
-                    className="w-full rounded-xl border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 p-2 text-[11px] font-bold text-slate-755 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200 truncate"
+                    className="w-full rounded-xl border border-border bg-slate-50/50 dark:bg-slate-950 p-2 text-[11px] font-bold text-slate-755 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200 truncate"
                   >
                     <option value="resume">📄 Candidate Resume</option>
                     <option value="jd">💼 Job Description (JD)</option>
@@ -2579,9 +2579,9 @@ export default function AdminResumeDashboard() {
 
                 <div 
                   onClick={() => unifiedFileInputRef.current?.click()}
-                  className="border-2 border-dashed border-indigo-100 dark:border-slate-800 hover:border-indigo-455 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-950/30 hover:bg-indigo-50/20 dark:hover:bg-slate-900/20 rounded-2xl p-5 text-center cursor-pointer transition-all duration-300 flex flex-col items-center justify-center gap-1.5 group flex-1"
+                  className="border-2 border-dashed border-border hover:border-indigo-455 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-950/30 hover:bg-indigo-50/20 dark:hover:bg-slate-900/20 rounded-2xl p-5 text-center cursor-pointer transition-all duration-300 flex flex-col items-center justify-center gap-1.5 group flex-1"
                 >
-                  <Upload className="w-7 h-7 text-indigo-500 group-hover:scale-110 transition-transform duration-200" />
+                  <Upload className="w-7 h-7 text-primary group-hover:scale-110 transition-transform duration-200" />
                   <span className="text-[11px] font-bold text-slate-750 dark:text-slate-250">
                     Click to select file for upload
                   </span>
@@ -2612,19 +2612,19 @@ export default function AdminResumeDashboard() {
 
           {/* SCREENING RESULTS TAB CONTAINER (9 Columns) */}
           <div className="lg:col-span-9">
-            <Card className="border-indigo-100 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900 rounded-3xl overflow-hidden flex flex-col lg:h-full">
+            <Card className="border-border shadow-md bg-card rounded-3xl overflow-hidden flex flex-col lg:h-full">
               
               {/* Tab Header Navigation */}
-              <div className="flex overflow-x-auto scrollbar-none border-b border-indigo-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 shrink-0">
+              <div className="flex overflow-x-auto scrollbar-none border-b border-border bg-muted/50 shrink-0">
                 <button
                   onClick={() => setActiveTab("requirements")}
                   className={`flex-1 py-4 px-6 font-black text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "requirements"
-                      ? "border-indigo-600 text-indigo-700 bg-white dark:bg-slate-900 dark:text-violet-400"
-                      : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                      ? "border-indigo-600 text-indigo-700 bg-card dark:text-violet-400"
+                      : "border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-white"
                   }`}
                 >
-                  <ClipboardList className="w-4 h-4 text-indigo-500" />
+                  <ClipboardList className="w-4 h-4 text-primary" />
                   Requirements (BR / JD)
                   <Badge className={`border-0 text-[10px] ${activeTab === "requirements" ? "bg-indigo-100 text-indigo-700 dark:bg-slate-800 dark:text-violet-400" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
                     {filteredJds.length}
@@ -2634,8 +2634,8 @@ export default function AdminResumeDashboard() {
                   onClick={() => setActiveTab("employee")}
                   className={`flex-1 py-4 px-6 font-black text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "employee"
-                      ? "border-indigo-600 text-indigo-700 bg-white dark:bg-slate-900 dark:text-violet-400"
-                      : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                      ? "border-indigo-600 text-indigo-700 bg-card dark:text-violet-400"
+                      : "border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-white"
                   }`}
                 >
                   Employee Data
@@ -2647,8 +2647,8 @@ export default function AdminResumeDashboard() {
                   onClick={() => setActiveTab("suitable")}
                   className={`flex-1 py-4 px-6 font-black text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "suitable"
-                      ? "border-indigo-600 text-indigo-700 bg-white dark:bg-slate-900 dark:text-violet-400"
-                      : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                      ? "border-indigo-600 text-indigo-700 bg-card dark:text-violet-400"
+                      : "border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-white"
                   }`}
                 >
                   Suitable Candidates
@@ -2660,8 +2660,8 @@ export default function AdminResumeDashboard() {
                   onClick={() => setActiveTab("unsuitable")}
                   className={`flex-1 py-4 px-6 font-black text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "unsuitable"
-                      ? "border-indigo-600 text-indigo-700 bg-white dark:bg-slate-900 dark:text-violet-400"
-                      : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                      ? "border-indigo-600 text-indigo-700 bg-card dark:text-violet-400"
+                      : "border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-white"
                   }`}
                 >
                   Non-Suitable Candidates
@@ -2673,8 +2673,8 @@ export default function AdminResumeDashboard() {
                   onClick={() => setActiveTab("employee-portal")}
                   className={`flex-1 py-4 px-6 font-black text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "employee-portal"
-                      ? "border-indigo-600 text-indigo-700 bg-white dark:bg-slate-900 dark:text-violet-400"
-                      : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                      ? "border-indigo-600 text-indigo-700 bg-card dark:text-violet-400"
+                      : "border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-white"
                   }`}
                 >
                   Employee Portal
@@ -2686,11 +2686,11 @@ export default function AdminResumeDashboard() {
                   onClick={() => setActiveTab("outbox")}
                   className={`flex-1 py-4 px-6 font-black text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "outbox"
-                      ? "border-indigo-600 text-indigo-700 bg-white dark:bg-slate-900 dark:text-violet-400"
-                      : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                      ? "border-indigo-600 text-indigo-700 bg-card dark:text-violet-400"
+                      : "border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-white"
                   }`}
                 >
-                  <Mail className="w-4 h-4 text-indigo-500" />
+                  <Mail className="w-4 h-4 text-primary" />
                   Email Outbox
                   <Badge className={`border-0 text-[10px] ${activeTab === "outbox" ? "bg-indigo-100 text-indigo-700 dark:bg-slate-800 dark:text-violet-400" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
                     {emails.length}
@@ -2702,7 +2702,7 @@ export default function AdminResumeDashboard() {
               <div className="p-6">
                 {loading ? (
                   <div className="flex-1 flex flex-col items-center justify-center py-24 gap-3">
-                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
                     <p className="text-slate-500 font-bold text-sm">Loading records…</p>
                   </div>
                 ) : activeTab === "requirements" ? (
@@ -2715,17 +2715,17 @@ export default function AdminResumeDashboard() {
                           placeholder="Search requirements..."
                           value={requirementSearch}
                           onChange={(e) => setRequirementSearch(e.target.value)}
-                          className="w-full rounded-xl border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 p-2.5 pl-3 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
+                          className="w-full rounded-xl border border-border bg-slate-50/50 dark:bg-slate-950 p-2.5 pl-3 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
                         />
                       </div>
                     </div>
 
                     {/* Requirements Table */}
-                    <div className="border border-indigo-50 dark:border-slate-800 rounded-2xl overflow-hidden">
+                    <div className="border border-border rounded-2xl overflow-hidden">
                       <div className="overflow-auto max-h-[500px]">
                         <table className="w-full text-left border-collapse text-xs">
                           <thead>
-                            <tr className="bg-slate-100/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-indigo-50 dark:border-slate-800 text-slate-500 font-extrabold uppercase tracking-wider text-[10px] sticky top-0 z-10">
+                            <tr className="bg-slate-100/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-border text-slate-500 font-extrabold uppercase tracking-wider text-[10px] sticky top-0 z-10">
                               <th className="p-3 w-8"></th>
                               <th className="p-3 w-20">BR ID</th>
                               <th className="p-3 w-1/4">Requirement / File</th>
@@ -2951,7 +2951,7 @@ export default function AdminResumeDashboard() {
                                             <div className="flex flex-wrap gap-1 max-w-[200px]">
                                               {skills.length > 0 ? (
                                                 skills.slice(0, 4).map((s) => (
-                                                  <Badge key={s} className="bg-slate-100 dark:bg-slate-800 border-0 text-slate-700 dark:text-slate-300 text-[9px] px-1.5 py-0 font-bold">
+                                                  <Badge key={s} className="bg-secondary border-0 text-muted-foreground text-[9px] px-1.5 py-0 font-bold">
                                                     {s}
                                                   </Badge>
                                                 ))
@@ -3056,7 +3056,7 @@ export default function AdminResumeDashboard() {
                                     </tr>
                                     {isExpanded && (
                                       <tr className="bg-slate-50/40 dark:bg-slate-900/10">
-                                        <td colSpan={7} className="p-4 border-t border-indigo-50/50 dark:border-slate-800/50 animate-fade-in">
+                                        <td colSpan={7} className="p-4 border-t border-border/50 animate-fade-in">
                                           <div className="space-y-3 max-w-4xl mx-auto">
                                             <div>
                                               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Full Job Description</h4>
@@ -3069,7 +3069,7 @@ export default function AdminResumeDashboard() {
                                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">All Detected Technical Skills ({skills.length})</h4>
                                                 <div className="flex flex-wrap gap-1.5">
                                                   {skills.map((s) => (
-                                                    <Badge key={s} className="bg-indigo-50 dark:bg-slate-800 border-0 text-indigo-700 dark:text-indigo-300 text-[10px] px-2.5 py-0.5 font-bold">
+                                                    <Badge key={s} className="bg-secondary border-0 text-indigo-700 dark:text-indigo-300 text-[10px] px-2.5 py-0.5 font-bold">
                                                       {s}
                                                     </Badge>
                                                   ))}
@@ -3099,25 +3099,25 @@ export default function AdminResumeDashboard() {
                 ) : activeTab === "employee" ? (
                   isEmployeesLoading ? (
                     <div className="flex-1 flex flex-col items-center justify-center py-24 gap-3">
-                      <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
                       <p className="text-slate-500 font-bold text-sm">Loading employee pool…</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       {/* Summary Metrics */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
-                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 rounded-2xl shadow-sm text-center">
+                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl shadow-sm text-center">
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Total Employees</span>
-                          <span className="text-xl md:text-2xl font-black text-indigo-600 dark:text-violet-400">{employees.length}</span>
+                          <span className="text-xl md:text-2xl font-black text-primary">{employees.length}</span>
                         </div>
-                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 rounded-2xl shadow-sm text-center flex flex-col items-center justify-center min-h-[70px]">
+                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl shadow-sm text-center flex flex-col items-center justify-center min-h-[70px]">
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Matches &gt;60% (JD)</span>
                           {selectedJdId && selectedJdId !== "all" ? (
                             <div className="w-full">
                               <span className="text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400 block leading-none">
                                 {employees.filter(e => (e.score || 0) > 60).length}
                               </span>
-                              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mt-1.5 leading-none">
+                              <span className="text-[10px] font-bold text-muted-foreground block mt-1.5 leading-none">
                                 Qualified Profiles
                               </span>
                             </div>
@@ -3125,15 +3125,15 @@ export default function AdminResumeDashboard() {
                             <span className="text-xl md:text-2xl font-black text-slate-400 block mt-1 leading-none">N/A</span>
                           )}
                         </div>
-                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 rounded-2xl shadow-sm text-center">
+                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl shadow-sm text-center">
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Shortlisted</span>
                           <span className="text-xl md:text-2xl font-black text-violet-600 dark:text-fuchsia-400">
                             {employees.filter(e => e.shortlisted).length}
                           </span>
                         </div>
-                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 rounded-2xl shadow-sm text-center">
+                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl shadow-sm text-center">
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Avg Match Score</span>
-                          <span className="text-xl md:text-2xl font-black text-indigo-600 dark:text-violet-400">
+                          <span className="text-xl md:text-2xl font-black text-primary">
                             {employees.length > 0 ? Math.round(employees.reduce((acc, curr) => acc + (curr.score || 0), 0) / employees.length) : 0}%
                           </span>
                         </div>
@@ -3147,7 +3147,7 @@ export default function AdminResumeDashboard() {
                             placeholder="Search employees..."
                             value={employeeSearch}
                             onChange={(e) => setEmployeeSearch(e.target.value)}
-                            className="w-full rounded-xl border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 p-2.5 pl-3 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
+                            className="w-full rounded-xl border border-border bg-slate-50/50 dark:bg-slate-950 p-2.5 pl-3 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
                           />
                         </div>
                         <div className="flex gap-2 w-full sm:w-auto">
@@ -3169,7 +3169,7 @@ export default function AdminResumeDashboard() {
                             onClick={handleExportEmployees}
                             variant="outline"
                             size="sm"
-                            className="flex-1 sm:flex-none rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 gap-1.5 font-bold text-xs"
+                            className="flex-1 sm:flex-none rounded-xl border-border text-primary hover:bg-secondary gap-1.5 font-bold text-xs"
                           >
                             <Download className="w-3.5 h-3.5" />
                             Export Pool
@@ -3178,7 +3178,7 @@ export default function AdminResumeDashboard() {
                             onClick={handleExportInterviews}
                             variant="outline"
                             size="sm"
-                            className="flex-1 sm:flex-none rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 gap-1.5 font-bold text-xs"
+                            className="flex-1 sm:flex-none rounded-xl border-border text-primary hover:bg-secondary gap-1.5 font-bold text-xs"
                           >
                             <Download className="w-3.5 h-3.5" />
                             Export Interviews
@@ -3188,7 +3188,7 @@ export default function AdminResumeDashboard() {
 
                       {/* Bulk action banner */}
                       {selectedEmployeeIds.length > 0 && (
-                        <div className="flex items-center justify-between p-3.5 bg-indigo-50/50 dark:bg-slate-900/40 border border-indigo-100 dark:border-slate-800/80 rounded-2xl shadow-sm animate-fade-in shrink-0">
+                        <div className="flex items-center justify-between p-3.5 bg-indigo-50/50 dark:bg-slate-900/40 border border-border/80 rounded-2xl shadow-sm animate-fade-in shrink-0">
                           <span className="text-xs font-bold text-indigo-900 dark:text-indigo-200">
                             {selectedEmployeeIds.length} employee{selectedEmployeeIds.length > 1 ? "s" : ""} selected for bulk actions
                           </span>
@@ -3198,7 +3198,7 @@ export default function AdminResumeDashboard() {
                               size="sm"
                               disabled={isBulkDispatchingMails}
                               onClick={handleBulkDispatchEmployees}
-                              className="h-8 text-xs font-bold rounded-xl flex items-center gap-1.5 px-3 border border-indigo-200 dark:border-slate-700 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 shadow-sm"
+                              className="h-8 text-xs font-bold rounded-xl flex items-center gap-1.5 px-3 border border-indigo-200 dark:border-slate-700 text-primary hover:bg-secondary shadow-sm"
                             >
                               {isBulkDispatchingMails ? (
                                 <>
@@ -3232,11 +3232,11 @@ export default function AdminResumeDashboard() {
                       )}
 
                       {/* Employee Table */}
-                      <div className="border border-indigo-50 dark:border-slate-800 rounded-2xl overflow-hidden">
+                      <div className="border border-border rounded-2xl overflow-hidden">
                         <div className="overflow-auto max-h-[500px]">
                           <table className="w-full text-left border-collapse text-xs">
                             <thead>
-                              <tr className="bg-slate-100/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-indigo-50 dark:border-slate-800 text-slate-500 font-extrabold uppercase tracking-wider text-[10px] sticky top-0 z-10">
+                              <tr className="bg-slate-100/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-border text-slate-500 font-extrabold uppercase tracking-wider text-[10px] sticky top-0 z-10">
                                 <th className="p-3 w-10 text-center">
                                   <input
                                     type="checkbox"
@@ -3271,7 +3271,7 @@ export default function AdminResumeDashboard() {
                                       <div className="text-[10px] text-slate-400 font-medium">{emp.designation}</div>
                                     </td>
                                     <td className="p-3 font-bold text-slate-500">{emp.employee_id}</td>
-                                    <td className="p-3 text-slate-600 dark:text-slate-300 font-semibold">{emp.department}</td>
+                                    <td className="p-3 text-muted-foreground font-semibold">{emp.department}</td>
                                     <td className="p-3">
                                       <div className="flex flex-wrap gap-1 max-w-[180px]">
                                         {emp.matchingSkills && emp.matchingSkills.length > 0 ? (
@@ -3301,7 +3301,7 @@ export default function AdminResumeDashboard() {
                                           variant="ghost"
                                           size="sm"
                                           onClick={() => setActiveEmployee(emp)}
-                                          className="h-7 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100"
+                                          className="h-7 text-[10px] font-bold text-muted-foreground hover:bg-slate-100"
                                         >
                                           View
                                         </Button>
@@ -3345,19 +3345,19 @@ export default function AdminResumeDashboard() {
                   <div className="space-y-4">
                     {/* Summary Metrics */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
-                      <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 rounded-2xl shadow-sm text-center">
+                      <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl shadow-sm text-center">
                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Total Registered Accounts</span>
-                        <span className="text-xl md:text-2xl font-black text-indigo-600 dark:text-violet-400">
+                        <span className="text-xl md:text-2xl font-black text-primary">
                           {Array.from(new Set(allTestResults.map(t => t.employeeId))).length}
                         </span>
                       </div>
-                      <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 rounded-2xl shadow-sm text-center">
+                      <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl shadow-sm text-center">
                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Total Tests Taken</span>
                         <span className="text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400">
                           {allTestResults.length}
                         </span>
                       </div>
-                      <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 rounded-2xl shadow-sm text-center">
+                      <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl shadow-sm text-center">
                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Avg Tests / Account</span>
                         <span className="text-xl md:text-2xl font-black text-amber-500">
                           {Array.from(new Set(allTestResults.map(t => t.employeeId))).length > 0
@@ -3365,9 +3365,9 @@ export default function AdminResumeDashboard() {
                             : 0}
                         </span>
                       </div>
-                      <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 rounded-2xl shadow-sm text-center">
+                      <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl shadow-sm text-center">
                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Global Avg Score</span>
-                        <span className="text-xl md:text-2xl font-black text-indigo-600 dark:text-violet-400">
+                        <span className="text-xl md:text-2xl font-black text-primary">
                           {allTestResults.filter(t => t.status === "completed").length > 0
                             ? Math.round(
                                 allTestResults
@@ -3388,7 +3388,7 @@ export default function AdminResumeDashboard() {
                           placeholder="Search accounts or details..."
                           value={testResultsSearch}
                           onChange={(e) => setTestResultsSearch(e.target.value)}
-                          className="w-full rounded-xl border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 p-2.5 pl-3 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
+                          className="w-full rounded-xl border border-border bg-slate-50/50 dark:bg-slate-950 p-2.5 pl-3 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
                         />
                       </div>
                       <div className="flex gap-2 w-full sm:w-auto">
@@ -3396,7 +3396,7 @@ export default function AdminResumeDashboard() {
                           onClick={handleExportPortalData}
                           variant="outline"
                           size="sm"
-                          className="flex-1 sm:flex-none rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 gap-1.5 font-bold text-xs"
+                          className="flex-1 sm:flex-none rounded-xl border-border text-primary hover:bg-secondary gap-1.5 font-bold text-xs"
                         >
                           <Download className="w-3.5 h-3.5" />
                           Export to Excel
@@ -3405,7 +3405,7 @@ export default function AdminResumeDashboard() {
                           onClick={loadEmployees}
                           variant="outline"
                           size="sm"
-                          className="flex-1 sm:flex-none rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 gap-1.5 font-bold text-xs"
+                          className="flex-1 sm:flex-none rounded-xl border-border text-primary hover:bg-secondary gap-1.5 font-bold text-xs"
                         >
                           <RefreshCcw className="w-3.5 h-3.5" />
                           Refresh Portal Data
@@ -3414,11 +3414,11 @@ export default function AdminResumeDashboard() {
                     </div>
 
                     {/* Accounts Table */}
-                    <div className="border border-indigo-50 dark:border-slate-800 rounded-2xl overflow-hidden">
+                    <div className="border border-border rounded-2xl overflow-hidden">
                       <div className="overflow-auto max-h-[600px]">
                         <table className="w-full text-left border-collapse text-xs">
                           <thead>
-                            <tr className="bg-slate-100/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-indigo-50 dark:border-slate-800 text-slate-500 font-extrabold uppercase tracking-wider text-[10px] sticky top-0 z-10">
+                            <tr className="bg-slate-100/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-border text-slate-500 font-extrabold uppercase tracking-wider text-[10px] sticky top-0 z-10">
                               <th className="p-3 w-10"></th>
                               <th className="p-3">Employee Name</th>
                               <th className="p-3">Employee ID</th>
@@ -3507,7 +3507,7 @@ export default function AdminResumeDashboard() {
                                         </Badge>
                                       </td>
                                       <td className="p-3">
-                                        <Badge className="border-0 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[10px] px-2 py-0.5">
+                                        <Badge className="border-0 bg-secondary text-muted-foreground font-bold text-[10px] px-2 py-0.5">
                                           {account.testsCount} {account.testsCount === 1 ? "Test" : "Tests"}
                                         </Badge>
                                       </td>
@@ -3523,7 +3523,7 @@ export default function AdminResumeDashboard() {
                                     </tr>
                                     {isExpanded && (
                                       <tr className="bg-slate-50/40 dark:bg-slate-900/10">
-                                        <td colSpan={8} className="p-4 border-t border-b border-indigo-50/50 dark:border-slate-800/50">
+                                        <td colSpan={8} className="p-4 border-t border-b border-border/50">
                                           <div className="pl-6 space-y-2">
                                             <h4 className="font-extrabold text-[11px] uppercase tracking-wider text-slate-500">
                                               Test Details for {account.name} ({account.empId})
@@ -3603,7 +3603,7 @@ export default function AdminResumeDashboard() {
                 ) : activeTab === "outbox" ? (
                   isEmailsLoading ? (
                     <div className="flex-1 flex flex-col items-center justify-center py-24 gap-3">
-                      <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
                       <p className="text-slate-500 font-bold text-sm">Loading outbox logs…</p>
                     </div>
                   ) : emails.length === 0 ? (
@@ -3625,11 +3625,11 @@ export default function AdminResumeDashboard() {
                           placeholder="Search outbox logs..."
                           value={outboxSearch}
                           onChange={(e) => setOutboxSearch(e.target.value)}
-                          className="w-full rounded-xl border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 p-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
+                          className="w-full rounded-xl border border-border bg-slate-50/50 dark:bg-slate-950 p-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
                         />
                       </div>
 
-                      <div className="flex items-center justify-between pb-2 border-b border-indigo-50 dark:border-slate-800 shrink-0">
+                      <div className="flex items-center justify-between pb-2 border-b border-border shrink-0">
                         <div className="flex items-center gap-2">
                           <input
                             type="checkbox"
@@ -3645,7 +3645,7 @@ export default function AdminResumeDashboard() {
                             }}
                             className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-700 cursor-pointer"
                           />
-                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                          <span className="text-xs font-bold text-muted-foreground">
                             {selectedEmailIds.length > 0
                               ? `${selectedEmailIds.length} selected`
                               : `Showing ${emailsToRender.length} Simulated Invitation Email${emailsToRender.length !== 1 ? "s" : ""}`
@@ -3686,7 +3686,7 @@ export default function AdminResumeDashboard() {
                             return (
                             <Card
                               key={email.id}
-                              className={`p-4 border-indigo-50 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-indigo-300 dark:hover:border-slate-700 hover:shadow-soft transition-all duration-300 flex items-start gap-3 ${
+                              className={`p-4 border-border bg-card/60 hover:border-indigo-300 dark:hover:border-slate-700 hover:shadow-soft transition-all duration-300 flex items-start gap-3 ${
                                 selectedEmailIds.includes(email.id) ? "border-indigo-400 dark:border-indigo-800 bg-indigo-50/10 dark:bg-indigo-950/10" : ""
                               }`}
                             >
@@ -3699,24 +3699,24 @@ export default function AdminResumeDashboard() {
                             <div className="flex-1 flex flex-col gap-3">
                               <div className="flex items-start justify-between gap-4">
                                 <div className="space-y-1">
-                                  <h4 className="font-black text-slate-900 dark:text-slate-100 text-sm flex items-center gap-1.5">
+                                  <h4 className="font-black text-foreground text-sm flex items-center gap-1.5">
                                     {email.fullName}
-                                    <Badge className="bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-violet-400 border-0 font-bold text-[9px] px-2 py-0.5">
+                                    <Badge className="bg-secondary text-primary border-0 font-bold text-[9px] px-2 py-0.5">
                                       Simulated Dispatch
                                     </Badge>
                                   </h4>
-                                  <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                                    To: <span className="text-indigo-600 dark:text-indigo-400 font-bold">{email.to}</span>
+                                  <div className="text-xs text-muted-foreground font-semibold">
+                                    To: <span className="text-primary font-bold">{email.to}</span>
                                   </div>
-                                  <div className="text-[11px] text-slate-700 dark:text-slate-300 font-medium italic">
+                                  <div className="text-[11px] text-muted-foreground font-medium italic">
                                     Subject: {email.subject}
                                   </div>
                                 </div>
                                 <div className="text-right flex flex-col items-end gap-1.5">
-                                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">
+                                  <span className="text-[10px] text-muted-foreground font-semibold">
                                     {new Date(email.dispatchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                   </span>
-                                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium">
+                                  <span className="text-[9px] text-muted-foreground font-medium">
                                     {new Date(email.dispatchedAt).toLocaleDateString()}
                                   </span>
                                 </div>
@@ -3730,7 +3730,7 @@ export default function AdminResumeDashboard() {
                                     setSelectedEmail(email);
                                     setShowEmailModal(true);
                                   }}
-                                  className="h-8 text-[11px] font-bold border-indigo-100 dark:border-slate-800 text-indigo-600 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-1"
+                                  className="h-8 text-[11px] font-bold border-border text-primary hover:bg-secondary rounded-xl flex items-center gap-1"
                                 >
                                   <Eye className="w-3.5 h-3.5" /> View HTML Invite
                                 </Button>
@@ -3766,18 +3766,18 @@ export default function AdminResumeDashboard() {
                             placeholder={`Search ${activeTab === 'suitable' ? 'suitable' : 'unsuitable'} candidates...`}
                             value={candidateSearch}
                             onChange={(e) => setCandidateSearch(e.target.value)}
-                            className="w-full rounded-xl border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 p-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
+                            className="w-full rounded-xl border border-border bg-slate-50/50 dark:bg-slate-950 p-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
                           />
                         </div>
                       )}
 
                       {candidatesToRender.length === 0 ? (
-                        <div className="flex-1 flex flex-col items-center justify-center py-24 text-center space-y-2 bg-white dark:bg-slate-900/60 border border-indigo-50 dark:border-slate-800 rounded-2xl">
-                          <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-500">
+                        <div className="flex-1 flex flex-col items-center justify-center py-24 text-center space-y-2 bg-card/60 border border-border rounded-2xl">
+                          <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center text-slate-500">
                             <HelpCircle className="w-6 h-6" />
                           </div>
                           <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">No Candidates Found</h3>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
+                          <p className="text-xs text-muted-foreground max-w-sm leading-relaxed">
                             {candidateSearch 
                               ? "No candidates match your search filter."
                               : (activeTab === "suitable"
@@ -3788,7 +3788,7 @@ export default function AdminResumeDashboard() {
                         </div>
                       ) : (
                         <div className="space-y-4">
-                    <div className="flex items-center justify-between pb-2 border-b border-indigo-50 dark:border-slate-800 shrink-0">
+                    <div className="flex items-center justify-between pb-2 border-b border-border shrink-0">
                       <div className="flex items-center gap-2">
                         <input
                           type="checkbox"
@@ -3796,7 +3796,7 @@ export default function AdminResumeDashboard() {
                           onChange={handleToggleAllResumes}
                           className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-700 cursor-pointer"
                         />
-                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                        <span className="text-xs font-bold text-muted-foreground">
                           {selectedResumeIds.length > 0
                             ? `${selectedResumeIds.length} of ${candidatesToRender.length} selected`
                             : `Select All Candidates`
@@ -3831,7 +3831,7 @@ export default function AdminResumeDashboard() {
                       return (
                         <Card 
                           key={row.id} 
-                          className={`p-5 border-indigo-50 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-indigo-300 dark:hover:border-slate-700 hover:shadow-soft transition-all duration-300 flex items-start gap-4 ${
+                          className={`p-5 border-border bg-card/60 hover:border-indigo-300 dark:hover:border-slate-700 hover:shadow-soft transition-all duration-300 flex items-start gap-4 ${
                             selectedResumeIds.includes(row.id) ? "border-indigo-400 dark:border-indigo-800 bg-indigo-50/10 dark:bg-indigo-950/10" : ""
                           }`}
                         >
@@ -3845,7 +3845,7 @@ export default function AdminResumeDashboard() {
                             {/* Top Row: Info & Scores */}
                             <div className="flex items-start justify-between gap-4">
                               <div>
-                                <h3 className="font-black text-slate-900 dark:text-slate-100 text-sm flex flex-wrap items-center gap-1.5">
+                                <h3 className="font-black text-foreground text-sm flex flex-wrap items-center gap-1.5">
                                    {row.parsed?.personal?.fullName || row.filename || "Candidate"}
                                    {row.report?.proctoring?.autoSubmitted && (
                                      <Badge className="bg-red-50 dark:bg-rose-950/20 text-red-650 dark:text-red-400 border border-red-100 dark:border-red-900/50 font-black text-[9px] px-2 py-0">
@@ -3873,7 +3873,7 @@ export default function AdminResumeDashboard() {
                                      </Badge>
                                    )}
                                  </h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold break-all mt-0.5">
+                                <p className="text-xs text-muted-foreground font-semibold break-all mt-0.5">
                                   {row.parsed?.personal?.email || "No email provided"}
                                 </p>
                                 {/* If this candidate was reset, show a subtle note */}
@@ -3882,14 +3882,14 @@ export default function AdminResumeDashboard() {
                                     Test session has been reset.
                                   </p>
                                 )}
-                                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-1 flex items-center flex-wrap gap-1">
+                                <p className="text-[10px] text-muted-foreground font-semibold mt-1 flex items-center flex-wrap gap-1">
                                   <span>File: {row.filename} | Submitted: {new Date(row.createdAt).toLocaleDateString()}</span>
                                   {(() => {
                                     const assoc = jds.find(j => j.id === resolveJdId(row.report?.jdId));
                                     if (assoc && assoc.fileName && assoc.fileName.includes(" | ")) {
                                       const brNo = assoc.fileName.split(" | ")[0];
                                       return (
-                                        <span className="ml-1 bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded font-black text-[9px] uppercase tracking-wider inline-block">
+                                        <span className="ml-1 bg-secondary text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded font-black text-[9px] uppercase tracking-wider inline-block">
                                           Req: {brNo}
                                         </span>
                                       );
@@ -3923,7 +3923,7 @@ export default function AdminResumeDashboard() {
 
                               {/* Match score Badge */}
                               <div className="text-right">
-                                <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-black block mb-1">
+                                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-black block mb-1">
                                   JD Match
                                 </span>
                                 {(() => {
@@ -3942,7 +3942,7 @@ export default function AdminResumeDashboard() {
                             </div>
 
                             {/* Middle Row: Rationale Quote */}
-                            <div className="bg-slate-50/50 dark:bg-slate-950/50 border border-indigo-50/50 dark:border-slate-800/80 rounded-2xl p-4 text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+                            <div className="bg-muted/50 border border-indigo-50/50 dark:border-slate-800/80 rounded-2xl p-4 text-xs text-muted-foreground font-medium leading-relaxed">
                               <strong className="text-slate-800 dark:text-slate-200">Rationale:</strong> {
                                 selectedJdId && selectedJdId !== "all" && jdSavedText
                                   ? `Matches profile requirements. Found ${calculateCandidateMatch(row, jdSavedText).matchingSkills.length} overlapping technical skills.`
@@ -4082,7 +4082,7 @@ export default function AdminResumeDashboard() {
         {/* Reset Actions Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
           {/* RESET CANDIDATE SESSION CARD */}
-          <Card className="p-6 border-indigo-100 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900 rounded-3xl relative overflow-hidden">
+          <Card className="p-6 border-border shadow-md bg-card rounded-3xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-500 to-orange-500" />
             
             <div className="mb-4">
@@ -4104,7 +4104,7 @@ export default function AdminResumeDashboard() {
                   placeholder="e.g. candidate@domain.com"
                   value={resetEmailInput}
                   onChange={(e) => setResetEmailInput(e.target.value)}
-                  className="w-full rounded-xl border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 px-3 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
+                  className="w-full rounded-xl border border-border bg-slate-50/50 dark:bg-slate-950 px-3 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
                 />
               </div>
 
@@ -4125,7 +4125,7 @@ export default function AdminResumeDashboard() {
           </Card>
 
           {/* SESSION RESET ACTIVITY LOG CARD */}
-          <Card className="p-6 border-indigo-100 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900 rounded-3xl relative overflow-hidden">
+          <Card className="p-6 border-border shadow-md bg-card rounded-3xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-500 to-red-500" />
             
             <div className="flex justify-between items-center mb-4">
@@ -4148,7 +4148,7 @@ export default function AdminResumeDashboard() {
                 <Loader2 className="w-5 h-5 animate-spin text-orange-500" />
               </div>
             ) : resetLogs.length === 0 ? (
-              <div className="text-center py-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+              <div className="text-center py-6 border border-dashed border-border rounded-2xl">
                 <p className="text-xs text-slate-500 font-semibold">No reset activity logged yet.</p>
               </div>
             ) : (
@@ -4159,7 +4159,7 @@ export default function AdminResumeDashboard() {
                     className="p-3 border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 rounded-xl space-y-1.5 hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100 break-all select-all">
+                      <span className="text-xs font-bold text-foreground break-all select-all">
                         {log.candidateEmail}
                       </span>
                       <Badge
@@ -4173,9 +4173,9 @@ export default function AdminResumeDashboard() {
                       </Badge>
                     </div>
                     
-                    <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground font-semibold">
                       <span>
-                        By: <span className="text-indigo-600 dark:text-indigo-400">{log.resetBy}</span>
+                        By: <span className="text-primary">{log.resetBy}</span>
                       </span>
                       <span className="text-slate-400 dark:text-slate-550">
                         {new Date(log.createdAt).toLocaleString([], {
@@ -4193,7 +4193,7 @@ export default function AdminResumeDashboard() {
           </Card>
 
           {/* PORTAL TAB CONFIGURATION CARD */}
-          <Card className="p-6 border-indigo-100 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900 rounded-3xl relative overflow-hidden">
+          <Card className="p-6 border-border shadow-md bg-card rounded-3xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-violet-500 to-indigo-500" />
             
             <div className="mb-4">
@@ -4210,7 +4210,7 @@ export default function AdminResumeDashboard() {
               <div className="pt-2">
                 <div className="flex items-center justify-between p-3 border border-slate-100 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-950/30 rounded-2xl">
                   <div className="space-y-0.5">
-                    <div className="text-xs font-bold text-slate-900 dark:text-slate-100">Portal Tabs Visibility</div>
+                    <div className="text-xs font-bold text-foreground">Portal Tabs Visibility</div>
                     <div className="text-[9px] text-slate-400 font-medium">Toggle Effectiveness & Manager Console</div>
                   </div>
                   <Button
@@ -4220,7 +4220,7 @@ export default function AdminResumeDashboard() {
                     className={`h-7 px-3 text-[10px] font-black rounded-xl border ${
                       portalSettings.portalFeaturesEnabled
                         ? "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500"
-                        : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-500 border-slate-200 dark:border-slate-700"
+                        : "bg-secondary hover:bg-slate-200 text-slate-500 border-slate-200 dark:border-slate-700"
                     }`}
                   >
                     {portalSettings.portalFeaturesEnabled ? "ENABLED" : "DISABLED"}
@@ -4232,12 +4232,12 @@ export default function AdminResumeDashboard() {
         </div>
 
         {/* System Logs Section */}
-        <Card className="p-6 border-indigo-150 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900 rounded-3xl relative overflow-hidden mt-8">
+        <Card className="p-6 border-indigo-150 dark:border-slate-800 shadow-md bg-card rounded-3xl relative overflow-hidden mt-8">
           <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
           
           <div className="space-y-4">
             {/* Header/Actions row */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-indigo-50 dark:border-slate-800 shrink-0">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-border shrink-0">
               <div>
                 <h3 className="text-sm font-black text-slate-855 dark:text-slate-100 leading-none">System Logs & Ingestion Pipeline Viewer</h3>
                 <p className="text-[10px] text-slate-400 font-semibold mt-1">Real-time automated logging and folder synchronization audits</p>
@@ -4248,7 +4248,7 @@ export default function AdminResumeDashboard() {
                   onClick={handleDownloadSystemLogs}
                   variant="outline"
                   size="sm"
-                  className="rounded-xl border-indigo-100 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 gap-1.5 font-bold text-[10px] h-8"
+                  className="rounded-xl border-border text-primary hover:bg-secondary gap-1.5 font-bold text-[10px] h-8"
                 >
                   <Download className="w-3.5 h-3.5" />
                   Download Logs
@@ -4273,7 +4273,7 @@ export default function AdminResumeDashboard() {
                   placeholder="Search log activity & details..."
                   value={logsSearch}
                   onChange={(e) => setLogsSearch(e.target.value)}
-                  className="w-full rounded-xl border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 p-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
+                  className="w-full rounded-xl border border-border bg-slate-50/50 dark:bg-slate-950 p-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
                 />
               </div>
               
@@ -4281,7 +4281,7 @@ export default function AdminResumeDashboard() {
                 <select
                   value={logsModuleFilter}
                   onChange={(e) => setLogsModuleFilter(e.target.value)}
-                  className="flex-1 sm:flex-none rounded-xl border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
+                  className="flex-1 sm:flex-none rounded-xl border border-border bg-slate-50/50 dark:bg-slate-950 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
                 >
                   <option value="all">📂 All Modules</option>
                   <option value="candidate-processing">📄 Candidates</option>
@@ -4295,7 +4295,7 @@ export default function AdminResumeDashboard() {
                 <select
                   value={logsStatusFilter}
                   onChange={(e) => setLogsStatusFilter(e.target.value)}
-                  className="flex-1 sm:flex-none rounded-xl border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
+                  className="flex-1 sm:flex-none rounded-xl border border-border bg-slate-50/50 dark:bg-slate-950 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
                 >
                   <option value="all">🔄 All Statuses</option>
                   <option value="success">✅ Success</option>
@@ -4373,7 +4373,7 @@ export default function AdminResumeDashboard() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
           <Card className="w-full max-w-2xl bg-slate-50 border border-indigo-150 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
             {/* Header window control style */}
-            <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-4 flex items-center justify-between">
+            <div className="bg-primary text-white px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Mail className="w-5 h-5 text-white" />
                 <span className="font-bold text-sm tracking-wide truncate max-w-md">
@@ -4394,7 +4394,7 @@ export default function AdminResumeDashboard() {
             </div>
 
             {/* Email Meta Details */}
-            <div className="bg-white dark:bg-slate-900 border-b border-indigo-50 dark:border-slate-800 px-6 py-4 space-y-2">
+            <div className="bg-card border-b border-border px-6 py-4 space-y-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-1">
                 <div>
                   <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px] w-12 inline-block">From:</span>
@@ -4411,7 +4411,7 @@ export default function AdminResumeDashboard() {
               <div>
                 <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px] w-12 inline-block">To:</span>
                 <span className="text-slate-800 dark:text-slate-200 font-bold">{selectedEmail.fullName}</span>
-                <span className="text-indigo-600 dark:text-indigo-400 font-semibold ml-1.5">&lt;{selectedEmail.to}&gt;</span>
+                <span className="text-primary font-semibold ml-1.5">&lt;{selectedEmail.to}&gt;</span>
               </div>
               <div>
                 <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px] w-12 inline-block">Subject:</span>
@@ -4421,16 +4421,16 @@ export default function AdminResumeDashboard() {
 
             {/* Email Body Content */}
             <div className="p-6 bg-slate-100 dark:bg-slate-950 flex flex-col">
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-inner max-h-[50vh] overflow-y-auto">
+              <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-inner max-h-[50vh] overflow-y-auto">
                 <div 
-                  className="p-6 overflow-y-auto text-slate-800 dark:text-slate-100"
+                  className="p-6 overflow-y-auto text-foreground"
                   dangerouslySetInnerHTML={{ __html: selectedEmail.htmlBody }}
                 />
               </div>
             </div>
 
             {/* Modal Actions Footer */}
-            <div className="bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 px-6 py-4 flex justify-end">
+            <div className="bg-card border-t border-slate-100 dark:border-slate-800 px-6 py-4 flex justify-end">
               <Button
                 onClick={() => {
                   setShowEmailModal(false);
@@ -4446,8 +4446,8 @@ export default function AdminResumeDashboard() {
       )}
 
       {deleteTargetId && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-slate-900 dark:text-slate-100">
-          <Card className="w-full max-w-md bg-white dark:bg-slate-900 border border-indigo-150 dark:border-slate-800 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-foreground">
+          <Card className="w-full max-w-md bg-card border border-indigo-150 dark:border-slate-800 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
             <div className="bg-gradient-to-r from-red-600 to-rose-600 text-white px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Trash2 className="w-5 h-5 text-white" />
@@ -4470,7 +4470,7 @@ export default function AdminResumeDashboard() {
             </div>
 
             <div className="p-6 space-y-4">
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              <p className="text-xs text-muted-foreground font-semibold leading-relaxed">
                 {deleteTargetId === "bulk"
                   ? `This action is permanent and will delete the ${selectedResumeIds.length} selected candidate resume analyses, test answers, and active sessions.`
                   : deleteTargetId === "bulk-emails"
@@ -4493,7 +4493,7 @@ export default function AdminResumeDashboard() {
                   value={deletePasswordInput}
                   onChange={(e) => setDeletePasswordInput(e.target.value)}
                   placeholder="Enter supervisor password"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 p-3 text-xs font-bold text-slate-850 dark:text-slate-100 outline-none focus:ring-2 focus:ring-rose-400/50"
+                  className="w-full rounded-xl border border-border bg-slate-50/50 dark:bg-slate-950 p-3 text-xs font-bold text-slate-850 dark:text-slate-100 outline-none focus:ring-2 focus:ring-rose-400/50"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -4529,8 +4529,8 @@ export default function AdminResumeDashboard() {
       )}
 
       {showClearLogsModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-slate-900 dark:text-slate-100">
-          <Card className="w-full max-w-md bg-white dark:bg-slate-900 border border-indigo-150 dark:border-slate-800 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-foreground">
+          <Card className="w-full max-w-md bg-card border border-indigo-150 dark:border-slate-800 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
             <div className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Trash2 className="w-5 h-5 text-white" />
@@ -4571,8 +4571,8 @@ export default function AdminResumeDashboard() {
       )}
 
       {resetTargetResume && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-slate-900 dark:text-slate-100">
-          <Card className="w-full max-w-md bg-white dark:bg-slate-900 border border-indigo-150 dark:border-slate-800 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-foreground">
+          <Card className="w-full max-w-md bg-card border border-indigo-150 dark:border-slate-800 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
             <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <RefreshCcw className="w-5 h-5 text-white" />
@@ -4589,7 +4589,7 @@ export default function AdminResumeDashboard() {
 
             <div className="p-6 space-y-4">
               <p className="text-xs text-slate-605 dark:text-slate-300 leading-relaxed font-semibold">
-                Are you sure you want to reset the assessment session for candidate <span className="text-indigo-600 dark:text-violet-400 font-bold">{resetTargetResume.parsed?.personal?.email || resetTargetResume.filename || "selected candidate"}</span>? 
+                Are you sure you want to reset the assessment session for candidate <span className="text-primary font-bold">{resetTargetResume.parsed?.personal?.email || resetTargetResume.filename || "selected candidate"}</span>? 
                 This will delete all their recorded interview attempts and permit them to log in to re-attempt the test.
               </p>
             </div>
@@ -4614,8 +4614,8 @@ export default function AdminResumeDashboard() {
       )}
 
       {resetEmailTarget && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-slate-900 dark:text-slate-100">
-          <Card className="w-full max-w-md bg-white dark:bg-slate-900 border border-indigo-150 dark:border-slate-800 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-foreground">
+          <Card className="w-full max-w-md bg-card border border-indigo-150 dark:border-slate-800 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
             <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <RefreshCcw className="w-5 h-5 text-white" />
@@ -4657,9 +4657,9 @@ export default function AdminResumeDashboard() {
       )}
 
       {activeEmployee && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-slate-900 dark:text-slate-100">
-          <Card className="w-full max-w-lg bg-white dark:bg-slate-900 border border-indigo-150 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
-            <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-4 flex items-center justify-between">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-foreground">
+          <Card className="w-full max-w-lg bg-card border border-indigo-150 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
+            <div className="bg-primary text-white px-6 py-4 flex items-center justify-between">
               <span className="font-bold text-sm tracking-wide">Employee Details</span>
               <button
                 type="button"
@@ -4671,8 +4671,8 @@ export default function AdminResumeDashboard() {
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="flex items-center gap-3 border-b border-indigo-50 dark:border-slate-800 pb-4">
-                <div className="h-12 w-12 rounded-full bg-indigo-100 dark:bg-slate-800 flex items-center justify-center text-indigo-700 dark:text-violet-400 font-black text-lg">
+              <div className="flex items-center gap-3 border-b border-border pb-4">
+                <div className="h-12 w-12 rounded-full bg-indigo-100 dark:bg-slate-800 flex items-center justify-center text-primary font-black text-lg">
                   {activeEmployee.full_name?.charAt(0) || "E"}
                 </div>
                 <div>
@@ -4721,7 +4721,7 @@ export default function AdminResumeDashboard() {
               <div className="space-y-1.5 pt-2">
                 <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider block">All Skills</span>
                 <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl max-h-[80px] overflow-y-auto">
-                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">{activeEmployee.skills || "None listed"}</p>
+                  <p className="text-xs font-semibold text-muted-foreground leading-relaxed whitespace-pre-line">{activeEmployee.skills || "None listed"}</p>
                 </div>
               </div>
 
@@ -4784,9 +4784,9 @@ export default function AdminResumeDashboard() {
       )}
 
       {showUploadModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-slate-900 dark:text-slate-100 animate-fade-in">
-          <Card className="w-full max-w-lg bg-white dark:bg-slate-900 border border-indigo-150 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
-            <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-4 flex items-center justify-between">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-foreground animate-fade-in">
+          <Card className="w-full max-w-lg bg-card border border-indigo-150 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
+            <div className="bg-primary text-white px-6 py-4 flex items-center justify-between">
               <span className="font-bold text-sm tracking-wide">Upload Job Description</span>
               <button
                 type="button"
@@ -4798,13 +4798,13 @@ export default function AdminResumeDashboard() {
             </div>
 
             <form onSubmit={handleModalUploadSubmit} className="p-6 space-y-4">
-              <div className="flex border-b border-indigo-50 dark:border-slate-800">
+              <div className="flex border-b border-border">
                 <button
                   type="button"
                   onClick={() => setModalTab("file")}
                   className={`flex-1 pb-2 font-bold text-xs ${
                     modalTab === "file"
-                      ? "border-b-2 border-indigo-600 text-indigo-700 dark:text-violet-400"
+                      ? "border-b-2 border-indigo-600 text-primary"
                       : "text-slate-400 hover:text-slate-500"
                   }`}
                 >
@@ -4815,7 +4815,7 @@ export default function AdminResumeDashboard() {
                   onClick={() => setModalTab("paste")}
                   className={`flex-1 pb-2 font-bold text-xs ${
                     modalTab === "paste"
-                      ? "border-b-2 border-indigo-600 text-indigo-700 dark:text-violet-400"
+                      ? "border-b-2 border-indigo-600 text-primary"
                       : "text-slate-400 hover:text-slate-500"
                   }`}
                 >
@@ -4825,7 +4825,7 @@ export default function AdminResumeDashboard() {
 
               {modalTab === "file" ? (
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">JD File</label>
+                  <label className="block text-xs font-bold text-muted-foreground">JD File</label>
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx,.txt"
@@ -4837,11 +4837,11 @@ export default function AdminResumeDashboard() {
                     className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-slate-800 dark:file:text-slate-200"
                     required
                   />
-                  <p className="text-[10px] text-slate-400 dark:text-slate-500">Accepts PDF, Word, or TXT (Max 10MB)</p>
+                  <p className="text-[10px] text-muted-foreground">Accepts PDF, Word, or TXT (Max 10MB)</p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">JD Text Content</label>
+                  <label className="block text-xs font-bold text-muted-foreground">JD Text Content</label>
                   <textarea
                     rows={6}
                     value={modalJdText}
@@ -4854,7 +4854,7 @@ export default function AdminResumeDashboard() {
               )}
 
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                <label className="block text-xs font-bold text-muted-foreground">
                   RM Mail tagged with the JD
                 </label>
                 <input
@@ -4862,7 +4862,7 @@ export default function AdminResumeDashboard() {
                   value={modalRmEmail}
                   onChange={(e) => setModalRmEmail(e.target.value)}
                   placeholder="e.g. rm@infinite.com"
-                  className="w-full rounded-xl border border-indigo-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-xs text-slate-900 dark:text-slate-100 focus:border-indigo-500 outline-none"
+                  className="w-full rounded-xl border border-indigo-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-xs text-foreground focus:border-indigo-500 outline-none"
                   required
                 />
               </div>
@@ -4902,9 +4902,9 @@ export default function AdminResumeDashboard() {
       )}
 
       {inviteTargetResume && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-slate-900 dark:text-slate-100">
-          <Card className="w-full max-w-xl bg-white dark:bg-slate-900 border border-indigo-150 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
-            <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-4 flex items-center justify-between">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-foreground">
+          <Card className="w-full max-w-xl bg-card border border-indigo-150 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
+            <div className="bg-primary text-white px-6 py-4 flex items-center justify-between">
               <span className="font-bold text-sm tracking-wide flex items-center gap-2">
                 <Settings className="w-4 h-4" /> Assessment Settings: {inviteTargetResume?.parsed?.personal?.fullName || "Candidate"}
               </span>
@@ -4930,7 +4930,7 @@ export default function AdminResumeDashboard() {
                     className={`py-3 px-4 rounded-2xl border text-center font-bold text-xs transition-all flex flex-col items-center gap-1.5 ${
                       inviteType === "technical"
                         ? "border-indigo-600 bg-indigo-50/50 text-indigo-700 dark:bg-indigo-950/20 dark:text-violet-400"
-                        : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        : "border-border text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                     }`}
                   >
                     <span className="font-extrabold">Technical Assessment</span>
@@ -4943,7 +4943,7 @@ export default function AdminResumeDashboard() {
                     className={`py-3 px-4 rounded-2xl border text-center font-bold text-xs transition-all flex flex-col items-center gap-1.5 ${
                       inviteType === "non-technical"
                         ? "border-indigo-600 bg-indigo-50/50 text-indigo-700 dark:bg-indigo-950/20 dark:text-violet-400"
-                        : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        : "border-border text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                     }`}
                   >
                     <span className="font-extrabold">Non-Technical Focus</span>
@@ -4970,7 +4970,7 @@ export default function AdminResumeDashboard() {
                         max={30}
                         value={countOverlapping}
                         onChange={(e) => setCountOverlapping(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-full rounded-xl border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
+                        className="w-full rounded-xl border border-border bg-card px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -4983,7 +4983,7 @@ export default function AdminResumeDashboard() {
                         max={30}
                         value={countGap}
                         onChange={(e) => setCountGap(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-full rounded-xl border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
+                        className="w-full rounded-xl border border-border bg-card px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -4996,7 +4996,7 @@ export default function AdminResumeDashboard() {
                         max={30}
                         value={countProjects}
                         onChange={(e) => setCountProjects(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-full rounded-xl border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
+                        className="w-full rounded-xl border border-border bg-card px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -5009,7 +5009,7 @@ export default function AdminResumeDashboard() {
                         max={10}
                         value={countCoding}
                         onChange={(e) => setCountCoding(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-full rounded-xl border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
+                        className="w-full rounded-xl border border-border bg-card px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
                       />
                     </div>
                   </div>
@@ -5025,7 +5025,7 @@ export default function AdminResumeDashboard() {
                         max={30}
                         value={countBehavioral}
                         onChange={(e) => setCountBehavioral(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-[120px] rounded-xl border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
+                        className="w-[120px] rounded-xl border border-border bg-card px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
                       />
                     </div>
                     <div className="flex items-center justify-between gap-4">
@@ -5038,7 +5038,7 @@ export default function AdminResumeDashboard() {
                         max={30}
                         value={countLeadership}
                         onChange={(e) => setCountLeadership(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-[120px] rounded-xl border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
+                        className="w-[120px] rounded-xl border border-border bg-card px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
                       />
                     </div>
                     <div className="flex items-center justify-between gap-4">
@@ -5051,7 +5051,7 @@ export default function AdminResumeDashboard() {
                         max={30}
                         value={countSoftSkills}
                         onChange={(e) => setCountSoftSkills(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-[120px] rounded-xl border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
+                        className="w-[120px] rounded-xl border border-border bg-card px-3 py-2 text-xs text-slate-905 dark:text-slate-100 focus:border-indigo-500 outline-none font-bold"
                       />
                     </div>
                   </div>
@@ -5082,9 +5082,9 @@ export default function AdminResumeDashboard() {
       )}
 
       {showDuplicateModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-slate-900 dark:text-slate-100">
-          <Card className="w-full max-w-lg bg-white dark:bg-slate-900 border border-indigo-150 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
-            <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-4 flex items-center justify-between">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-foreground">
+          <Card className="w-full max-w-lg bg-card border border-indigo-150 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
+            <div className="bg-primary text-white px-6 py-4 flex items-center justify-between">
               <span className="font-bold text-sm tracking-wide">Duplicate Candidates Detected</span>
               <button
                 type="button"
@@ -5097,15 +5097,15 @@ export default function AdminResumeDashboard() {
 
             <div className="p-6 space-y-4">
               <div className="space-y-2">
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 leading-relaxed">
+                <p className="text-xs font-semibold text-muted-foreground leading-relaxed">
                   The following candidate CVs have already been processed and screened. Choose whether you want to re-screen and replace them or keep the existing screening version:
                 </p>
               </div>
 
               <div className="max-h-[200px] overflow-y-auto border border-slate-100 dark:border-slate-800 rounded-2xl p-2 bg-slate-50/50 dark:bg-slate-800/30 space-y-2 pr-1">
                 {duplicateFiles.map((dup, idx) => (
-                  <div key={dup.file.name} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border border-indigo-50/50 dark:border-slate-800/50 rounded-xl hover:border-indigo-100 transition-colors">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate max-w-[280px]" title={dup.file.name}>
+                  <div key={dup.file.name} className="flex items-center justify-between p-3 bg-card border border-border/50 rounded-xl hover:border-indigo-100 transition-colors">
+                    <span className="text-xs font-bold text-muted-foreground truncate max-w-[280px]" title={dup.file.name}>
                       {dup.file.name}
                     </span>
                     <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -5121,7 +5121,7 @@ export default function AdminResumeDashboard() {
                         }}
                         className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-700"
                       />
-                      <span className="text-[11px] font-bold text-indigo-600 dark:text-violet-400">Replace</span>
+                      <span className="text-[11px] font-bold text-primary">Replace</span>
                     </label>
                   </div>
                 ))}
@@ -5150,11 +5150,11 @@ export default function AdminResumeDashboard() {
       )}
 
       {showJdToBrModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-slate-900 dark:text-slate-100">
-          <Card className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-indigo-150 dark:border-slate-800 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-foreground">
+          <Card className="w-full max-w-2xl bg-card border border-indigo-150 dark:border-slate-800 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
             
             {/* Header */}
-            <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-4 flex items-center justify-between">
+            <div className="bg-primary text-white px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-white" />
                 <span className="font-bold text-sm tracking-wide">Convert JD to BR</span>
@@ -5191,7 +5191,7 @@ export default function AdminResumeDashboard() {
               
               {/* SECTION 1: UPLOAD JOB DESCRIPTIONS */}
               <section className="space-y-3">
-                <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                   <span className="h-4 w-1 bg-indigo-500 rounded-full" />
                   Upload Job Descriptions
                 </h2>
@@ -5201,7 +5201,7 @@ export default function AdminResumeDashboard() {
                   onDragOver={handleJdToBrDrag}
                   onDrop={handleJdToBrDrop}
                   onClick={() => document.getElementById('jd-to-br-selector')?.click()}
-                  className="border-2 border-dashed border-indigo-200 dark:border-slate-800 hover:border-indigo-500/60 dark:hover:border-violet-500/60 bg-slate-50/50 dark:bg-slate-950/40 hover:bg-indigo-50/10 dark:hover:bg-slate-900/10 rounded-2xl p-6 text-center cursor-pointer transition duration-300 relative group flex flex-col items-center justify-center gap-2"
+                  className="border-2 border-dashed border-border hover:border-indigo-500/60 dark:hover:border-violet-500/60 bg-slate-50/50 dark:bg-slate-950/40 hover:bg-indigo-50/10 dark:hover:bg-slate-900/10 rounded-2xl p-6 text-center cursor-pointer transition duration-300 relative group flex flex-col items-center justify-center gap-2"
                 >
                   <input 
                     type="file" 
@@ -5212,10 +5212,10 @@ export default function AdminResumeDashboard() {
                     onChange={handleJdToBrSelect}
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <Upload className="h-8 w-8 text-indigo-500 group-hover:text-indigo-400 transition" />
+                  <Upload className="h-8 w-8 text-primary group-hover:text-indigo-400 transition" />
                   <div>
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">Drag & Drop JDs or click to select</span>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 block">Accepts Word (.docx) and PDF (.pdf) files</span>
+                    <span className="text-xs font-bold text-muted-foreground block">Drag & Drop JDs or click to select</span>
+                    <span className="text-[10px] text-muted-foreground mt-1 block">Accepts Word (.docx) and PDF (.pdf) files</span>
                   </div>
                 </div>
 
@@ -5224,14 +5224,14 @@ export default function AdminResumeDashboard() {
                   <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
                     {jdToBrFiles.map((file, idx) => (
                       <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-900/60 p-3 rounded-xl">
-                        <div className="flex items-center gap-2 truncate text-slate-700 dark:text-slate-300 font-medium flex-1">
-                          <FileText className="h-4 w-4 text-indigo-500 shrink-0" />
+                        <div className="flex items-center gap-2 truncate text-muted-foreground font-medium flex-1">
+                          <FileText className="h-4 w-4 text-primary shrink-0" />
                           <span className="truncate max-w-[220px]">{file.name}</span>
                           <span className="text-[10px] text-slate-500 font-mono">({(file.size / 1024).toFixed(0)} KB)</span>
                         </div>
                         
                         <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                          <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 focus-within:border-indigo-500 bg-white dark:bg-slate-900/40 flex items-center w-[140px]">
+                          <div className="relative rounded-xl overflow-hidden border border-border focus-within:border-indigo-500 bg-card/40 flex items-center w-[140px]">
                             <input
                               type="text"
                               placeholder="Auto Req ID"
@@ -5256,7 +5256,7 @@ export default function AdminResumeDashboard() {
 
               {/* SECTION 2: UPLOAD EXCEL TEMPLATE */}
               <section className="space-y-3">
-                <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                   <span className="h-4 w-1 bg-indigo-500 rounded-full" />
                   Upload Excel Template
                 </h2>
@@ -5272,16 +5272,16 @@ export default function AdminResumeDashboard() {
                     />
                     <label 
                       htmlFor="jd-to-br-excel-selector"
-                      className="flex items-center gap-3 border border-indigo-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 hover:bg-indigo-50/20 dark:hover:bg-slate-900/10 px-4 py-4 rounded-2xl cursor-pointer text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 transition group"
+                      className="flex items-center gap-3 border border-border bg-slate-50/50 dark:bg-slate-950/40 hover:bg-indigo-50/20 dark:hover:bg-slate-900/10 px-4 py-4 rounded-2xl cursor-pointer text-xs font-medium text-muted-foreground hover:border-emerald-500/40 dark:hover:border-emerald-500/40 transition group"
                     >
-                      <div className="h-9 w-9 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 group-hover:border-emerald-500/20 group-hover:bg-emerald-600/10 rounded-xl flex items-center justify-center transition">
+                      <div className="h-9 w-9 bg-card border border-border group-hover:border-emerald-500/20 group-hover:bg-emerald-600/10 rounded-xl flex items-center justify-center transition">
                         <FileText className={`h-4.5 w-4.5 ${excelTemplate ? 'text-emerald-500' : 'text-slate-400'}`} />
                       </div>
                       <div className="min-w-0 flex-1">
                         <span className="block font-bold truncate">
                           {excelTemplate ? 'Replace Excel Template' : 'Choose Excel Template File'}
                         </span>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block truncate">
+                        <span className="text-[10px] text-muted-foreground mt-0.5 block truncate">
                           {excelTemplate ? excelTemplate.name : 'Select demand sheet template (.xlsx)'}
                         </span>
                       </div>
@@ -5290,7 +5290,7 @@ export default function AdminResumeDashboard() {
 
                   {/* Template Status Indicator */}
                   <div className="bg-slate-50 dark:bg-slate-950/80 border border-slate-100 dark:border-slate-900 rounded-2xl p-4 flex flex-col justify-center text-xs space-y-1">
-                    <span className="text-slate-500 dark:text-slate-400 font-semibold block uppercase text-[9px] tracking-wider">Template Status</span>
+                    <span className="text-muted-foreground font-semibold block uppercase text-[9px] tracking-wider">Template Status</span>
                     <span className={`font-bold text-xs ${excelTemplate ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-500'}`}>
                       {excelTemplate ? 'Ready to Append' : 'Missing File'}
                     </span>
@@ -5305,7 +5305,7 @@ export default function AdminResumeDashboard() {
                   <Button 
                     onClick={handleGenerateClick}
                     disabled={isProcessing || jdToBrFiles.length === 0 || !excelTemplate}
-                    className="w-full h-12 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 disabled:from-slate-200 disabled:to-slate-200 disabled:dark:from-slate-800 disabled:dark:to-slate-800 text-white disabled:text-slate-400 disabled:dark:text-slate-500 font-bold rounded-2xl text-xs transition shadow-md shadow-indigo-500/10 flex items-center justify-center gap-2"
+                    className="w-full h-12 bg-primary hover:from-indigo-700 hover:to-violet-700 disabled:from-slate-200 disabled:to-slate-200 disabled:dark:from-slate-800 disabled:dark:to-slate-800 text-white disabled:text-slate-400 disabled:dark:text-slate-500 font-bold rounded-2xl text-xs transition shadow-md shadow-indigo-500/10 flex items-center justify-center gap-2"
                   >
                     {isProcessing ? (
                       <>
@@ -5344,7 +5344,7 @@ export default function AdminResumeDashboard() {
                       <Button 
                         onClick={resetJdToBrStatus}
                         variant="ghost"
-                        className="h-12 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-semibold px-6 rounded-2xl text-xs active:scale-95"
+                        className="h-12 border border-border text-muted-foreground font-semibold px-6 rounded-2xl text-xs active:scale-95"
                       >
                         Start Over
                       </Button>
@@ -5354,7 +5354,7 @@ export default function AdminResumeDashboard() {
 
                 {/* Loading Progress Text indicator */}
                 {isProcessing && progressText && (
-                  <div className="flex items-center justify-center gap-2 text-xs text-indigo-600 dark:text-violet-400 animate-pulse font-medium">
+                  <div className="flex items-center justify-center gap-2 text-xs text-primary animate-pulse font-medium">
                     <span>{progressText}</span>
                   </div>
                 )}
@@ -5367,8 +5367,8 @@ export default function AdminResumeDashboard() {
 
       {/* Interactive Step-by-Step Auto Req ID Wizard Modal */}
       {isWizardOpen && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all duration-300 text-slate-900 dark:text-slate-100">
-          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 animate-scale-up">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all duration-300 text-foreground">
+          <div className="relative w-full max-w-lg bg-card border border-border rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 animate-scale-up">
             
             {/* Close button */}
             <button 
@@ -5380,10 +5380,10 @@ export default function AdminResumeDashboard() {
 
             {/* Header & Step progress */}
             <div className="space-y-2 relative">
-              <span className="text-[10px] font-bold text-indigo-500 dark:text-violet-400 uppercase tracking-widest block font-black">
+              <span className="text-[10px] font-bold text-primary dark:text-violet-400 uppercase tracking-widest block font-black">
                 Auto Req ID Wizard
               </span>
-              <h3 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 tracking-tight">
+              <h3 className="text-base font-black text-foreground flex items-center gap-2 tracking-tight">
                 <span>Set ID for JD {wizardIndex + 1} of {jdToBrFiles.length}</span>
               </h3>
               
@@ -5407,10 +5407,10 @@ export default function AdminResumeDashboard() {
             {/* JD File details */}
             <div className="bg-slate-50 dark:bg-slate-950/60 border border-slate-150 dark:border-slate-900/60 rounded-2xl p-4 flex items-center gap-3">
               <div className="h-10 w-10 bg-indigo-50 dark:bg-violet-500/10 border border-indigo-100 dark:border-violet-500/20 rounded-xl flex items-center justify-center shrink-0">
-                <FileText className="h-5 w-5 text-indigo-600 dark:text-violet-400" />
+                <FileText className="h-5 w-5 text-primary" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold block uppercase tracking-wider">Current File</span>
+                <span className="text-[10px] text-muted-foreground font-bold block uppercase tracking-wider">Current File</span>
                 <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block truncate">
                   {jdToBrFiles[wizardIndex]?.name}
                 </span>
@@ -5422,11 +5422,11 @@ export default function AdminResumeDashboard() {
 
             {/* Input box */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 dark:text-slate-400 block">
+              <label className="text-xs font-bold text-muted-foreground block">
                 Enter Auto Req ID:
               </label>
               
-              <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 focus-within:border-indigo-500 bg-white dark:bg-slate-950 flex items-center pr-4 shadow-sm">
+              <div className="relative rounded-2xl overflow-hidden border border-border focus-within:border-indigo-500 bg-white dark:bg-slate-950 flex items-center pr-4 shadow-sm">
                 <input
                   key={wizardIndex}
                   type="text"
@@ -5440,10 +5440,10 @@ export default function AdminResumeDashboard() {
                     }));
                   }}
                   autoFocus
-                  className="w-full bg-transparent px-4 py-3 text-sm font-mono font-bold text-slate-800 dark:text-slate-100 focus:outline-none placeholder-slate-300 dark:placeholder-slate-700 tracking-wider"
+                  className="w-full bg-transparent px-4 py-3 text-sm font-mono font-bold text-foreground focus:outline-none placeholder-slate-300 dark:placeholder-slate-700 tracking-wider"
                 />
               </div>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-normal">
+              <p className="text-[10px] text-muted-foreground leading-normal">
                 Provide an Auto Req ID. Leave empty/skip to auto-generate sequentially from the Excel sheet's last value.
               </p>
             </div>
@@ -5455,7 +5455,7 @@ export default function AdminResumeDashboard() {
                   type="button"
                   onClick={() => setWizardIndex(prev => prev - 1)}
                   variant="ghost"
-                  className="flex-1 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-semibold py-3 rounded-xl text-xs"
+                  className="flex-1 border border-border text-muted-foreground font-semibold py-3 rounded-xl text-xs"
                 >
                   Back
                 </Button>
@@ -5472,7 +5472,7 @@ export default function AdminResumeDashboard() {
                   handleWizardNext();
                 }}
                 variant="ghost"
-                className="flex-1 text-slate-500 dark:text-slate-400 font-semibold py-3 rounded-xl text-xs"
+                className="flex-1 text-muted-foreground font-semibold py-3 rounded-xl text-xs"
               >
                 Skip / Auto-gen
               </Button>
@@ -5480,7 +5480,7 @@ export default function AdminResumeDashboard() {
               <Button
                 type="button"
                 onClick={handleWizardNext}
-                className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold py-3 rounded-xl text-xs shadow-md shadow-indigo-500/10"
+                className="flex-1 bg-primary hover:from-indigo-700 hover:to-violet-700 text-white font-bold py-3 rounded-xl text-xs shadow-md shadow-indigo-500/10"
               >
                 {wizardIndex === jdToBrFiles.length - 1 ? 'Finish & Generate' : 'Next File'}
               </Button>

@@ -177,7 +177,7 @@ export default function SubjectDetailPage() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-3xl border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-soft p-8 mb-8"
+        className="rounded-3xl border border-border bg-card shadow-soft p-8 mb-8"
       >
         <div className="flex items-start gap-4">
           <div
@@ -187,9 +187,9 @@ export default function SubjectDetailPage() {
             <BookOpen className="h-7 w-7" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 leading-tight">{detail.title}</h1>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{detail.description}</p>
-            <p className="mt-2 text-xs text-indigo-500 dark:text-violet-400 font-semibold">{detail.modules.length} module{detail.modules.length !== 1 ? "s" : ""} · {totalTopics} topics</p>
+            <h1 className="text-2xl font-extrabold text-foreground leading-tight">{detail.title}</h1>
+            <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{detail.description}</p>
+            <p className="mt-2 text-xs text-primary dark:text-violet-400 font-semibold">{detail.modules.length} module{detail.modules.length !== 1 ? "s" : ""} · {totalTopics} topics</p>
           </div>
         </div>
       </motion.div>
@@ -203,9 +203,9 @@ export default function SubjectDetailPage() {
           transition={{ delay: mIdx * 0.1 }}
           className="mb-8"
         >
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-3 pb-2 border-b border-indigo-100 dark:border-slate-800">
+          <h2 className="text-base font-bold text-foreground mb-3 pb-2 border-b border-border">
             {mod.title}
-            <span className="ml-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <span className="ml-2 text-xs font-semibold text-muted-foreground">
               {mod.topics.length} topic{mod.topics.length !== 1 ? "s" : ""}
             </span>
           </h2>
@@ -219,23 +219,23 @@ export default function SubjectDetailPage() {
                 transition={{ delay: mIdx * 0.1 + tIdx * 0.05 }}
               >
                 <Card
-                  className="group flex flex-col gap-3 rounded-2xl border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card"
+                  className="group flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-snug">{topic.title}</h3>
+                      <h3 className="text-sm font-semibold text-foreground leading-snug">{topic.title}</h3>
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         <Badge variant="outline" className={`text-[10px] border font-semibold ${diffColors[topic.difficulty]}`}>
                           {topic.difficulty}
                         </Badge>
-                        <Badge variant="outline" className="text-[10px] gap-1 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 font-medium">
+                        <Badge variant="outline" className="text-[10px] gap-1 text-muted-foreground border border-border font-medium">
                           <Clock className="w-2.5 h-2.5" /> {topic.estimated_minutes} min
                         </Badge>
-                        <Badge variant="outline" className="text-[10px] gap-1 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 font-medium">
+                        <Badge variant="outline" className="text-[10px] gap-1 text-muted-foreground border border-border font-medium">
                           <BookOpen className="w-2.5 h-2.5" /> 10 MCQs
                         </Badge>
                         {topic.attempts != null && topic.attempts > 0 && (
-                          <Badge variant="outline" className="text-[10px] gap-1 text-indigo-600 dark:text-violet-400 border-indigo-200 dark:border-slate-800 font-semibold bg-indigo-50 dark:bg-slate-950/20">
+                          <Badge variant="outline" className="text-[10px] gap-1 text-primary border-border font-semibold bg-indigo-50 dark:bg-slate-950/20">
                             <Zap className="w-2.5 h-2.5" /> Best {topic.best_pct ?? 0}%
                           </Badge>
                         )}
@@ -246,7 +246,7 @@ export default function SubjectDetailPage() {
                   <div className="mt-auto pt-1">
                     <Button
                       size="sm"
-                      className="w-full gap-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all"
+                      className="w-full gap-1 bg-primary hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all"
                       onClick={handleTakeTest(topic.id)}
                     >
                       <Sparkles className="w-3 h-3" /> Take test →

@@ -221,8 +221,8 @@ export default function AdminAuthGate({ children }: { children: React.ReactNode 
 
   if (!initialized) {
     return (
-      <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 flex items-center justify-center text-slate-900 dark:text-slate-100 transition-colors duration-300">
-        <div className="text-slate-500 dark:text-slate-400 font-medium">Loading admin gateway…</div>
+      <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 flex items-center justify-center text-foreground transition-colors duration-300">
+        <div className="text-muted-foreground font-medium">Loading admin gateway…</div>
       </div>
     );
   }
@@ -230,14 +230,14 @@ export default function AdminAuthGate({ children }: { children: React.ReactNode 
   if (showStayLoggedInPrompt) {
     return (
       <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 flex items-center justify-center px-4 py-12 transition-colors duration-300">
-        <Card className="w-full max-w-md p-8 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-card rounded-3xl">
+        <Card className="w-full max-w-md p-8 bg-card border border-border shadow-card rounded-3xl">
           <div className="flex flex-col items-center gap-4 text-center mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shadow-indigo-500/30">
+            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-md shadow-indigo-500/30">
               <Lock className="w-6 h-6 text-white animate-pulse" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Stay Logged In?</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-              We detected an active session for <span className="font-bold text-indigo-600 dark:text-indigo-400">{promptEmail}</span>.<br />
+            <h1 className="text-2xl font-bold text-foreground">Stay Logged In?</h1>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              We detected an active session for <span className="font-bold text-primary">{promptEmail}</span>.<br />
               Do you want to stay logged in?
             </p>
           </div>
@@ -253,7 +253,7 @@ export default function AdminAuthGate({ children }: { children: React.ReactNode 
               <Button
                 variant="outline"
                 onClick={() => handleLogout()}
-                className="w-full rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 font-bold"
+                className="w-full rounded-xl border-border text-primary hover:bg-secondary font-bold"
               >
                 No (Sign out)
               </Button>
@@ -261,13 +261,13 @@ export default function AdminAuthGate({ children }: { children: React.ReactNode 
           ) : (
             <form onSubmit={handlePromptPasswordSubmit} className="space-y-4">
               <div className="space-y-1">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Password</label>
+                <label className="block text-sm font-semibold text-muted-foreground">Password</label>
                 <input
                   type="password"
                   value={promptPassword}
                   autoFocus
                   onChange={(event) => setPromptPassword(event.target.value)}
-                  className="w-full rounded-xl border border-indigo-250 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                  className="w-full rounded-xl border border-indigo-250 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
                   required
                 />
               </div>
@@ -289,7 +289,7 @@ export default function AdminAuthGate({ children }: { children: React.ReactNode 
                   type="button"
                   variant="outline"
                   onClick={() => handleLogout()}
-                  className="w-full rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 font-bold"
+                  className="w-full rounded-xl border-border text-primary hover:bg-secondary font-bold"
                 >
                   Sign out
                 </Button>
@@ -304,35 +304,35 @@ export default function AdminAuthGate({ children }: { children: React.ReactNode 
   if (!authenticated) {
     return (
       <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 flex items-center justify-center px-4 py-12 transition-colors duration-300">
-        <Card className="w-full max-w-md p-8 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-card rounded-3xl">
+        <Card className="w-full max-w-md p-8 bg-card border border-border shadow-card rounded-3xl">
           <div className="flex flex-col items-center gap-4 text-center mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shadow-indigo-500/30">
+            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-md shadow-indigo-500/30">
               <FileText className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Admin Screening Console</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Enter your credentials to access the screening dashboard.</p>
+            <h1 className="text-2xl font-bold text-foreground">Admin Screening Console</h1>
+            <p className="text-sm text-muted-foreground leading-relaxed">Enter your credentials to access the screening dashboard.</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Email Address</label>
+              <label className="block text-sm font-semibold text-muted-foreground">Email Address</label>
               <input
                 type="email"
                 placeholder="e.g. user@infinite.com"
                 value={email}
                 autoFocus
                 onChange={(event) => setEmail(event.target.value)}
-                className="w-full rounded-xl border border-indigo-250 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                className="w-full rounded-xl border border-indigo-250 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
                 required
               />
             </div>
             
             <div className="space-y-1">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Password</label>
+              <label className="block text-sm font-semibold text-muted-foreground">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="w-full rounded-xl border border-indigo-250 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                className="w-full rounded-xl border border-indigo-250 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
                 required
               />
             </div>
@@ -348,7 +348,7 @@ export default function AdminAuthGate({ children }: { children: React.ReactNode 
                 Access
               </Button>
               <Link href="/">
-                <Button variant="outline" className="w-full rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 font-bold">Return Home</Button>
+                <Button variant="outline" className="w-full rounded-xl border-border text-primary hover:bg-secondary font-bold">Return Home</Button>
               </Link>
             </div>
           </form>
@@ -359,9 +359,9 @@ export default function AdminAuthGate({ children }: { children: React.ReactNode 
 
   return (
     <div className="relative">
-      <div className="absolute top-4 right-4 z-50 flex items-center gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-xl shadow-soft border border-indigo-100 dark:border-slate-800 px-3 py-2">
-        <span className="text-xs font-semibold text-indigo-700 dark:text-violet-400 truncate max-w-[120px]">{email}</span>
-        <Button variant="outline" size="sm" onClick={() => handleLogout()} className="gap-2 rounded-lg border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800">
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-xl shadow-soft border border-border px-3 py-2">
+        <span className="text-xs font-semibold text-primary truncate max-w-[120px]">{email}</span>
+        <Button variant="outline" size="sm" onClick={() => handleLogout()} className="gap-2 rounded-lg border-border text-primary hover:bg-secondary">
           <Lock className="w-3.5 h-3.5" /> Sign out
         </Button>
       </div>
@@ -369,13 +369,13 @@ export default function AdminAuthGate({ children }: { children: React.ReactNode 
 
       {isIdle && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/65 backdrop-blur-sm animate-fade-in">
-          <Card className="w-full max-w-sm p-6 bg-white dark:bg-slate-900 border border-amber-250 dark:border-amber-900/50 shadow-2xl rounded-3xl text-center transform scale-100 transition-all duration-300">
+          <Card className="w-full max-w-sm p-6 bg-card border border-amber-250 dark:border-amber-900/50 shadow-2xl rounded-3xl text-center transform scale-100 transition-all duration-300">
             <div className="flex flex-col items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
                 <ShieldAlert className="w-6 h-6 text-white animate-bounce" />
               </div>
-              <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">Inactivity Warning</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              <h2 className="text-xl font-black text-foreground">Inactivity Warning</h2>
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 You have been inactive for a while. For security, you will be logged out in:
               </p>
               <span className="text-4xl font-extrabold text-amber-500 dark:text-amber-400 my-2 block">

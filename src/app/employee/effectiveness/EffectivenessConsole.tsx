@@ -219,7 +219,7 @@ export function EffectivenessConsole() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 pb-12">
+    <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 text-foreground transition-colors duration-300 pb-12">
       {/* Page Header */}
       <div className="bg-gradient-to-br from-indigo-700 via-indigo-850 to-violet-850 text-white px-6 pt-10 pb-16 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
@@ -246,7 +246,7 @@ export function EffectivenessConsole() {
         
         {/* Metric Summaries Grid */}
         <section className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <Card className="p-5 flex flex-col justify-between bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft">
+          <Card className="p-5 flex flex-col justify-between bg-card border border-border shadow-soft">
             <div className="flex justify-between items-start">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Level 1: Reaction</span>
               <Badge className="bg-indigo-50 text-indigo-600 dark:bg-slate-850 dark:text-indigo-400">Satisfaction</Badge>
@@ -257,7 +257,7 @@ export function EffectivenessConsole() {
             </div>
           </Card>
           
-          <Card className="p-5 flex flex-col justify-between bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft">
+          <Card className="p-5 flex flex-col justify-between bg-card border border-border shadow-soft">
             <div className="flex justify-between items-start">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Level 2: Learning</span>
               <Badge className="bg-blue-50 text-blue-600 dark:bg-slate-850 dark:text-blue-400">Knowledge Gain</Badge>
@@ -270,7 +270,7 @@ export function EffectivenessConsole() {
             </div>
           </Card>
 
-          <Card className="p-5 flex flex-col justify-between bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft">
+          <Card className="p-5 flex flex-col justify-between bg-card border border-border shadow-soft">
             <div className="flex justify-between items-start">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Level 3: Behavior</span>
               <Badge className="bg-purple-50 text-purple-600 dark:bg-slate-850 dark:text-purple-400">Application</Badge>
@@ -281,7 +281,7 @@ export function EffectivenessConsole() {
             </div>
           </Card>
 
-          <Card className="p-5 flex flex-col justify-between bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft">
+          <Card className="p-5 flex flex-col justify-between bg-card border border-border shadow-soft">
             <div className="flex justify-between items-start">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Level 4: Results</span>
               <Badge className="bg-emerald-50 text-emerald-600 dark:bg-slate-850 dark:text-emerald-400">Business Impact</Badge>
@@ -296,7 +296,7 @@ export function EffectivenessConsole() {
         {/* Competency Analysis */}
         <section className="grid gap-6 lg:grid-cols-3">
           {/* recharts Radar */}
-          <Card className="p-6 lg:col-span-2 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft">
+          <Card className="p-6 lg:col-span-2 bg-card border border-border shadow-soft">
             <div className="mb-4">
               <h2 className="text-lg font-bold">Bloom's Taxonomy Competency Profile</h2>
               <p className="text-xs text-slate-400">Weighted competency score across cognitive complexity levels.</p>
@@ -318,7 +318,7 @@ export function EffectivenessConsole() {
           </Card>
 
           {/* Scores Breakdown */}
-          <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft flex flex-col justify-between">
+          <Card className="p-6 bg-card border border-border shadow-soft flex flex-col justify-between">
             <div>
               <h2 className="text-base font-bold mb-4">Competency Index</h2>
               <div className="space-y-6">
@@ -327,7 +327,7 @@ export function EffectivenessConsole() {
                     <span>Learning Maturity</span>
                     <span className="text-indigo-600">{analytics.learning_maturity_score}%</span>
                   </div>
-                  <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
                     <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${analytics.learning_maturity_score}%` }} />
                   </div>
                   <p className="text-[10px] text-slate-400 mt-1">Weighted integration of all cognitive complexity stages.</p>
@@ -338,7 +338,7 @@ export function EffectivenessConsole() {
                     <span>Competency Development</span>
                     <span className="text-blue-600">+{analytics.competency_development_score}%</span>
                   </div>
-                  <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min(100, analytics.competency_development_score)}%` }} />
                   </div>
                   <p className="text-[10px] text-slate-400 mt-1">Calculated knowledge baseline-to-post-training increase.</p>
@@ -349,7 +349,7 @@ export function EffectivenessConsole() {
                     <span>Knowledge Retention</span>
                     <span className="text-purple-600">{analytics.knowledge_retention_score}%</span>
                   </div>
-                  <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
                     <div className="h-full bg-purple-500 rounded-full" style={{ width: `${analytics.knowledge_retention_score}%` }} />
                   </div>
                   <p className="text-[10px] text-slate-400 mt-1">Measures long-term recall against 30/60/90 day active application.</p>
@@ -358,7 +358,7 @@ export function EffectivenessConsole() {
             </div>
             <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Training Effectiveness Index</span>
-              <span className="text-3xl font-black text-indigo-600 dark:text-violet-400 mt-1 block">{analytics.training_effectiveness_score}%</span>
+              <span className="text-3xl font-black text-primary mt-1 block">{analytics.training_effectiveness_score}%</span>
             </div>
           </Card>
         </section>
@@ -368,10 +368,10 @@ export function EffectivenessConsole() {
           <h2 className="text-lg font-bold">Your Training Programs &amp; Timeline Trackers</h2>
           <div className="space-y-6">
             {analytics.milestones.map((prog: any) => (
-              <Card key={prog.subject_id} className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-850 shadow-soft">
+              <Card key={prog.subject_id} className="p-6 bg-card border border-indigo-100 dark:border-slate-850 shadow-soft">
                 <div className="flex justify-between items-center flex-wrap gap-2 border-b border-indigo-50 dark:border-slate-855 pb-4 mb-6">
                   <div>
-                    <h3 className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{prog.subject_title}</h3>
+                    <h3 className="font-extrabold text-sm text-foreground">{prog.subject_title}</h3>
                     <p className="text-xs text-slate-400 mt-1">Completed: {new Date(prog.completion_date).toLocaleDateString()} · Elapsed: {prog.elapsed_days} Days</p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -395,7 +395,7 @@ export function EffectivenessConsole() {
 
                 {/* Timeline node track */}
                 <div className="relative flex justify-between items-start w-full px-2">
-                  <div className="absolute top-4 left-4 right-4 h-1 bg-slate-100 dark:bg-slate-800 -z-10" />
+                  <div className="absolute top-4 left-4 right-4 h-1 bg-secondary -z-10" />
                   
                   {/* Step 1 */}
                   <TimelineNode label="Pre-Assessment" status={true} desc="Baseline competency" />
@@ -427,7 +427,7 @@ export function EffectivenessConsole() {
       {/* ── Level 1 Reaction Survey Modal ────────────────────────────── */}
       {activeModal === "survey" && selectedSubject && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-          <Card className="w-full max-w-lg p-6 bg-white dark:bg-slate-900 border-indigo-100 shadow-2xl relative">
+          <Card className="w-full max-w-lg p-6 bg-card border-indigo-100 shadow-2xl relative">
             <button onClick={() => setActiveModal("none")} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
             <h3 className="text-lg font-black mb-1">Kirkpatrick Level 1: Reaction Survey</h3>
             <p className="text-xs text-slate-400 mb-6">{selectedSubject.subject_title}</p>
@@ -482,7 +482,7 @@ export function EffectivenessConsole() {
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Feedback &amp; Suggestions</label>
                 <textarea
-                  className="w-full text-sm p-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 rounded-xl outline-none focus:border-indigo-500 transition h-20"
+                  className="w-full text-sm p-3 border border-border bg-slate-50 dark:bg-slate-900 rounded-xl outline-none focus:border-indigo-500 transition h-20"
                   placeholder="Tell us what you liked or how we can improve..."
                   value={surveyComments}
                   onChange={(e) => setSurveyComments(e.target.value)}
@@ -500,7 +500,7 @@ export function EffectivenessConsole() {
       {/* ── Bloom Taxonomy quiz Modal ────────────────────────────── */}
       {activeModal === "bloom" && selectedSubject && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm overflow-y-auto">
-          <Card className="w-full max-w-2xl p-6 bg-white dark:bg-slate-900 border-indigo-100 shadow-2xl relative my-8">
+          <Card className="w-full max-w-2xl p-6 bg-card border-indigo-100 shadow-2xl relative my-8">
             <button onClick={() => setActiveModal("none")} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
             <h3 className="text-lg font-black mb-1">Bloom's Taxonomy Competency Quiz</h3>
             <p className="text-xs text-slate-400 mb-6">{selectedSubject.subject_title}</p>
@@ -548,7 +548,7 @@ export function EffectivenessConsole() {
                     ) : (
                       /* Text Inputs for levels 3, 4, 5, 6 */
                       <textarea
-                        className="w-full text-sm p-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 rounded-xl outline-none focus:border-indigo-500 transition h-24"
+                        className="w-full text-sm p-3 border border-border bg-slate-50 dark:bg-slate-900 rounded-xl outline-none focus:border-indigo-500 transition h-24"
                         placeholder={q.placeholder}
                         value={bloomAnswers[q.level] || ""}
                         onChange={(e) => setBloomAnswers({ ...bloomAnswers, [q.level]: e.target.value })}

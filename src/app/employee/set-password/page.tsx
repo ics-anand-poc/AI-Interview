@@ -116,7 +116,7 @@ function InnerPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="group flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-indigo-50/50 dark:hover:bg-white/10 rounded-xl px-3.5 py-2 transition-all duration-200"
+            className="group flex items-center gap-2 text-muted-foreground hover:text-slate-700 dark:hover:text-white hover:bg-indigo-50/50 dark:hover:bg-white/10 rounded-xl px-3.5 py-2 transition-all duration-200"
           >
             <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
             <span className="font-semibold text-xs">Back to Login</span>
@@ -134,14 +134,14 @@ function InnerPage() {
 
         <div className="mb-4 text-center relative z-10">
           {/* Logo mark */}
-          <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/40 ring-2 ring-white/[0.08]">
+          <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-lg shadow-indigo-500/40 ring-2 ring-white/[0.08]">
             <ShieldCheck className="h-6 w-6 text-white" />
           </div>
 
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
             {org ? `${org} Portal Password` : "Set Your Password"}
           </h1>
-          <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
+          <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed max-w-sm mx-auto">
             Create a secure password for your {org ? `${org} Portal` : "Employee Portal"} access.
           </p>
         </div>
@@ -207,7 +207,7 @@ function InnerPage() {
           <div className="rounded-xl border border-indigo-100 dark:border-slate-700/50 bg-indigo-50/30 dark:bg-slate-900/40 p-3.5 text-xs">
             <div className="mb-2.5 flex items-center justify-between gap-3">
               <span className="font-bold text-indigo-700 dark:text-indigo-400">Strength:</span>
-              <Badge className={strength === "Strong" ? "bg-emerald-500 text-white" : strength === "Medium" ? "bg-amber-500 text-white" : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"}>{strength}</Badge>
+              <Badge className={strength === "Strong" ? "bg-emerald-500 text-white" : strength === "Medium" ? "bg-amber-500 text-white" : "bg-slate-200 dark:bg-slate-700 text-muted-foreground"}>{strength}</Badge>
             </div>
             <div className="space-y-1.5">
               {rules.map((rule) => (
@@ -217,14 +217,14 @@ function InnerPage() {
                   ) : (
                     <AlertCircle className="h-3.5 w-3.5 text-slate-300 dark:text-slate-600" />
                   )}
-                  <span className={rule.test(password) ? "text-slate-800 dark:text-slate-200 font-medium" : "text-slate-400 dark:text-slate-500"}>{rule.label}</span>
+                  <span className={rule.test(password) ? "text-slate-800 dark:text-slate-200 font-medium" : "text-muted-foreground"}>{rule.label}</span>
                 </div>
               ))}
             </div>
           </div>
 
           <Button 
-            className="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all duration-200" 
+            className="w-full px-4 py-2.5 rounded-xl bg-primary hover:from-indigo-500 hover:to-violet-500 text-white font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all duration-200" 
             type="submit" 
             disabled={loading}
           >
@@ -239,8 +239,8 @@ function InnerPage() {
           </Button>
         </form>
 
-        <div className="mt-4 flex items-center gap-2 text-center text-[11px] text-slate-500 dark:text-slate-400 justify-center">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+        <div className="mt-4 flex items-center gap-2 text-center text-[11px] text-muted-foreground justify-center">
+          <Sparkles className="w-3.5 h-3.5 text-primary" />
           <p>After setup, you will be redirected to your dashboard.</p>
         </div>
       </Card>
@@ -252,7 +252,7 @@ export default function SetPasswordPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-[#f8fafc] via-[#f0f4ff] to-[#e0e7ff] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center">
-        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+        <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-indigo-500/30">
           <Loader2 className="w-5 h-5 text-white animate-spin" />
         </div>
       </div>

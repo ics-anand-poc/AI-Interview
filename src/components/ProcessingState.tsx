@@ -18,7 +18,7 @@ export function ProcessingState({ message }: { message?: string }) {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, type: "spring", stiffness: 200, damping: 15 }}
-          className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30"
+          className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-indigo-500/30"
         >
           <Sparkles className="w-10 h-10 text-white animate-pulse" />
         </motion.div>
@@ -66,7 +66,7 @@ export function ProcessingState({ message }: { message?: string }) {
       <div className="mt-12 max-w-md mx-auto">
         <div className="h-2 bg-indigo-100 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full"
+            className="h-full bg-primary rounded-full"
             animate={{ width: ["0%", "100%"] }}
             transition={{ duration: 3.2, ease: "easeInOut" }}
           />

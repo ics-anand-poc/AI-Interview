@@ -7,9 +7,9 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 
-const DashboardRadarChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardRadarChart), { ssr: false, loading: () => <div className="animate-pulse bg-slate-100 dark:bg-slate-800 rounded-full w-full h-full" /> });
-const DashboardTrendChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardTrendChart), { ssr: false, loading: () => <div className="animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg w-full h-full" /> });
-const DashboardWeeklyChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardWeeklyChart), { ssr: false, loading: () => <div className="animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg w-full h-full" /> });
+const DashboardRadarChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardRadarChart), { ssr: false, loading: () => <div className="animate-pulse bg-secondary rounded-full w-full h-full" /> });
+const DashboardTrendChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardTrendChart), { ssr: false, loading: () => <div className="animate-pulse bg-secondary rounded-lg w-full h-full" /> });
+const DashboardWeeklyChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardWeeklyChart), { ssr: false, loading: () => <div className="animate-pulse bg-secondary rounded-lg w-full h-full" /> });
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -170,7 +170,7 @@ export function DashboardInner() {
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 mx-auto"
+            className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-indigo-500/30 mx-auto"
           >
             <Loader2 className="w-6 h-6 text-white animate-spin" />
           </motion.div>
@@ -199,7 +199,7 @@ export function DashboardInner() {
 
   // ── Render — main
   return (
-    <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 text-foreground transition-colors duration-300">
 
       {/* ── Page header ─────────────────────────────────────────────────── */}
       <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 text-white px-6 pt-10 pb-16 relative overflow-hidden">
@@ -229,7 +229,7 @@ export function DashboardInner() {
       <main className="max-w-full mx-auto px-6 md:px-12 -mt-6 pb-14 space-y-6 relative z-10">
 
         {/* ── Tab bar ───────────────────────────────────────────────────── */}
-        <div className="flex gap-1 rounded-xl bg-white dark:bg-slate-900 p-1 w-fit shadow-soft border border-indigo-100 dark:border-slate-800 transition-colors duration-300">
+        <div className="flex gap-1 rounded-xl bg-card p-1 w-fit shadow-soft border border-border transition-colors duration-300">
           {([
             ["analytics", "Analytics", <BarChart3  className="w-4 h-4" />],
             ["tests",     "My Tests",  <ClipboardList className="w-4 h-4" />],
@@ -239,8 +239,8 @@ export function DashboardInner() {
               onClick={() => setTab(id)}
               className={`inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
                 tab === id
-                  ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/30"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-indigo-50 dark:hover:bg-slate-800"
+                  ? "bg-primary text-white shadow-md shadow-indigo-500/30"
+                  : "text-muted-foreground hover:text-slate-900 dark:hover:text-slate-100 hover:bg-secondary"
               }`}
             >
               {icon} {label}
@@ -267,15 +267,15 @@ export function DashboardInner() {
           {/* ── Charts row ────────────────────────────────────────────────── */}
           <section aria-label="Analytics charts" className="grid gap-6 lg:grid-cols-2">
 
-            <Card className="p-6 shadow-soft border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors duration-300">
-              <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Subject Mastery</h2>
+            <Card className="p-6 shadow-soft border border-border bg-card transition-colors duration-300">
+              <h2 className="text-lg font-semibold mb-4 text-foreground">Subject Mastery</h2>
               <div className="h-72">
                 <DashboardRadarChart data={radarData} />
               </div>
             </Card>
 
-            <Card className="p-6 shadow-soft border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors duration-300">
-              <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Score History</h2>
+            <Card className="p-6 shadow-soft border border-border bg-card transition-colors duration-300">
+              <h2 className="text-lg font-semibold mb-4 text-foreground">Score History</h2>
               {trendData.length === 0 ? (
                 <EmptyChart msg="Complete a test to see your score history." />
               ) : (
@@ -285,8 +285,8 @@ export function DashboardInner() {
               )}
             </Card>
 
-            <Card className="p-6 shadow-soft border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors duration-300">
-              <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Weekly Activity</h2>
+            <Card className="p-6 shadow-soft border border-border bg-card transition-colors duration-300">
+              <h2 className="text-lg font-semibold mb-4 text-foreground">Weekly Activity</h2>
               {weekData.length === 0 ? (
                 <EmptyChart msg="We have no activity data yet. Take your first test!" />
               ) : (
@@ -296,24 +296,24 @@ export function DashboardInner() {
               )}
             </Card>
 
-            <Card className="p-6 shadow-soft border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors duration-300">
-              <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Subject Breakdown</h2>
+            <Card className="p-6 shadow-soft border border-border bg-card transition-colors duration-300">
+              <h2 className="text-lg font-semibold mb-4 text-foreground">Subject Breakdown</h2>
               <div className="space-y-3">
                 {(displayAnalytics.subject_breakdown ?? []).map((s:any) => (
                   <div key={s.subject_id}>
                     <div className="flex items-center justify-between text-sm mb-1">
                       <span className="font-medium text-slate-800 dark:text-slate-200">{s.subject_title}</span>
-                      <span className="text-slate-400 dark:text-slate-500">{Math.round(s.average_pct)}% · {s.topic_count} topics</span>
+                      <span className="text-muted-foreground">{Math.round(s.average_pct)}% · {s.topic_count} topics</span>
                     </div>
                     <div className="h-2 bg-indigo-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500"
+                      <div className="h-full bg-primary rounded-full transition-all duration-500"
                         style={{ width: `${Math.max(4, s.average_pct)}%` }} />
                     </div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{Math.round(s.mastery_pct)} topics mastered (≥ 80%)</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{Math.round(s.mastery_pct)} topics mastered (≥ 80%)</p>
                   </div>
                 ))}
                 {(displayAnalytics.subject_breakdown ?? []).length === 0 && (
-                  <p className="text-sm text-slate-400 dark:text-slate-500">No subjects started yet.</p>
+                  <p className="text-sm text-muted-foreground">No subjects started yet.</p>
                 )}
               </div>
             </Card>
@@ -329,27 +329,27 @@ export function DashboardInner() {
         <div key="tests" className="space-y-4">
 
           {recentResults.length === 0 ? (
-            <Card className="p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 shadow-soft border border-indigo-100 dark:border-slate-800 transition-colors">
-              <p className="text-lg font-medium text-slate-700 dark:text-slate-300">No tests taken yet</p>
+            <Card className="p-8 text-center text-muted-foreground bg-card shadow-soft border border-border transition-colors">
+              <p className="text-lg font-medium text-muted-foreground">No tests taken yet</p>
               <p className="text-sm mt-1">
-                <Link href="/employee/learn" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">Browse subjects</Link> and take your first test.
+                <Link href="/employee/learn" className="text-primary hover:underline font-medium">Browse subjects</Link> and take your first test.
               </p>
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {recentResults.map((r: any) => (
-                <Card key={r.id} className="p-5 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-850 hover:border-indigo-400 dark:hover:border-indigo-800 hover:shadow-card transition-all duration-200 space-y-3">
+                <Card key={r.id} className="p-5 bg-card border border-indigo-100 dark:border-slate-850 hover:border-indigo-400 dark:hover:border-indigo-800 hover:shadow-card transition-all duration-200 space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100">{r.topic_title}</h3>
-                      <p className="text-xs text-slate-400 dark:text-slate-500">{r.subject_title}</p>
+                      <h3 className="font-semibold text-sm text-foreground">{r.topic_title}</h3>
+                      <p className="text-xs text-muted-foreground">{r.subject_title}</p>
                     </div>
                     <ScorePill pct={r.accuracy_pct} />
                   </div>
                   {r.ai_analysis && typeof r.ai_analysis === 'string' && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">{r.ai_analysis}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{r.ai_analysis}</p>
                   )}
-                  <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Badge variant="outline" className="text-[10px] uppercase tracking-wider dark:border-slate-800 dark:text-slate-300">{r.difficulty}</Badge>
                     <span>·</span>
                     <span>{toDateStr(r.completed_at)}</span>
@@ -409,18 +409,18 @@ function toDateStr(iso: string | undefined): string {
 
 function StatCard({ label, value, icon: Icon }: { label: string; value: string | number; icon: any }) {
   return (
-    <Card className="p-4 flex flex-col items-start gap-2 bg-white dark:bg-slate-900 shadow-soft border border-indigo-100 dark:border-slate-800 hover:shadow-card transition-all duration-300">
+    <Card className="p-4 flex flex-col items-start gap-2 bg-card shadow-soft border border-border hover:shadow-card transition-all duration-300">
       <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/20 dark:to-violet-950/20 flex items-center justify-center ring-2 ring-indigo-100 dark:ring-slate-800">
-        <Icon className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+        <Icon className="w-4 h-4 text-primary" />
       </div>
-      <span className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{value}</span>
-      <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">{label}</span>
+      <span className="text-2xl font-extrabold text-foreground">{value}</span>
+      <span className="text-xs text-muted-foreground font-medium">{label}</span>
     </Card>
   );
 }
 
 function EmptyChart({ msg }: { msg: string }) {
-  return <div className="h-72 flex items-center justify-center text-sm text-slate-400 dark:text-slate-500">{msg}</div>;
+  return <div className="h-72 flex items-center justify-center text-sm text-muted-foreground">{msg}</div>;
 }
 
 function SubjectCard({ label, sub, highlight }: { label: string; sub: string; highlight?: boolean }) {
@@ -428,8 +428,8 @@ function SubjectCard({ label, sub, highlight }: { label: string; sub: string; hi
     ? "bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 ring-rose-100 dark:ring-rose-900/50"
     : "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 ring-emerald-100 dark:ring-emerald-900/50";
   return (
-    <Card className="p-4 flex flex-col items-start gap-2 ring-2 shadow-soft border border-indigo-100 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300">
-      <span className="text-[10px] text-indigo-500 dark:text-violet-400 uppercase tracking-wider font-bold">{label}</span>
+    <Card className="p-4 flex flex-col items-start gap-2 ring-2 shadow-soft border border-border bg-card transition-all duration-300">
+      <span className="text-[10px] text-primary dark:text-violet-400 uppercase tracking-wider font-bold">{label}</span>
       <span className={`text-sm font-semibold px-2 py-0.5 rounded-full ${cls}`}>{sub}</span>
     </Card>
   );

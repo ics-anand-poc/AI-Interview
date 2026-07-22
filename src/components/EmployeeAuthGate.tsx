@@ -150,48 +150,48 @@ export default function EmployeeAuthGate({ children }: { children: React.ReactNo
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="rounded-3xl border border-indigo-100 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-8 py-10 text-center shadow-card"
+          className="rounded-3xl border border-border bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-8 py-10 text-center shadow-card"
         >
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-500/30">
+          <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-500/30">
             <Loader2 className="h-6 w-6 animate-spin text-white" />
           </div>
-          <p className="text-indigo-700 dark:text-violet-400 font-semibold">Verifying your portal access…</p>
+          <p className="text-primary font-semibold">Verifying your portal access…</p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
-      <header className="sticky top-0 z-50 border-b border-indigo-100 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg shadow-nav transition-colors duration-300">
+    <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 text-foreground transition-colors duration-300">
+      <header className="sticky top-0 z-50 border-b border-border bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg shadow-nav transition-colors duration-300">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-md shadow-indigo-500/25">
+            <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary shadow-md shadow-indigo-500/25">
               <LayoutDashboard className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Employee Learning Portal</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Secure access for assessments, analytics, and growth.</p>
+              <p className="text-sm font-bold text-foreground">Employee Learning Portal</p>
+              <p className="text-xs text-muted-foreground">Secure access for assessments, analytics, and growth.</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Link href="/employee/learn" className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-indigo-700 dark:text-violet-400 shadow-soft transition hover:bg-indigo-50 dark:hover:bg-slate-800">
+            <Link href="/employee/learn" className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-primary shadow-soft transition hover:bg-secondary">
               <BookOpen className="h-4 w-4" /> Learning Topics
             </Link>
-            <Link href="/employee/dashboard" className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-indigo-700 dark:text-violet-400 shadow-soft transition hover:bg-indigo-50 dark:hover:bg-slate-800">
+            <Link href="/employee/dashboard" className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-primary shadow-soft transition hover:bg-secondary">
               Analytics
             </Link>
             {settings.portalFeaturesEnabled && settings.showEffectivenessTab && (
-              <Link href="/employee/effectiveness" className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-indigo-700 dark:text-violet-400 shadow-soft transition hover:bg-indigo-50 dark:hover:bg-slate-800">
+              <Link href="/employee/effectiveness" className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-primary shadow-soft transition hover:bg-secondary">
                 Effectiveness
               </Link>
             )}
             {settings.portalFeaturesEnabled && settings.showManagerConsoleTab && (
-              <Link href="/employee/manager" className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-indigo-700 dark:text-violet-400 shadow-soft transition hover:bg-indigo-50 dark:hover:bg-slate-800">
+              <Link href="/employee/manager" className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-primary shadow-soft transition hover:bg-secondary">
                 Manager Console
               </Link>
             )}
-            <Button variant="outline" size="sm" className="gap-2 rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800" onClick={() => handleLogout()}>
+            <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border text-primary hover:bg-secondary" onClick={() => handleLogout()}>
               <LogOut className="h-4 w-4" /> Logout
             </Button>
           </div>
@@ -201,13 +201,13 @@ export default function EmployeeAuthGate({ children }: { children: React.ReactNo
 
       {isIdle && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/65 backdrop-blur-sm animate-fade-in">
-          <Card className="w-full max-w-sm p-6 bg-white dark:bg-slate-900 border border-amber-250 dark:border-amber-900/50 shadow-2xl rounded-3xl text-center transform scale-100 transition-all duration-300">
+          <Card className="w-full max-w-sm p-6 bg-card border border-amber-250 dark:border-amber-900/50 shadow-2xl rounded-3xl text-center transform scale-100 transition-all duration-300">
             <div className="flex flex-col items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
                 <ShieldAlert className="w-6 h-6 text-white animate-bounce" />
               </div>
-              <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">Inactivity Warning</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              <h2 className="text-xl font-black text-foreground">Inactivity Warning</h2>
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 You have been inactive for a while. For security, you will be logged out in:
               </p>
               <span className="text-4xl font-extrabold text-amber-500 dark:text-amber-400 my-2 block">

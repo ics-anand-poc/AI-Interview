@@ -359,7 +359,7 @@ export function ManagerConsole() {
   }, [managerData]);
 
   return (
-    <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-12 transition-colors duration-300">
+    <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 text-foreground pb-12 transition-colors duration-300">
       
       {/* Page Header */}
       <div className="bg-gradient-to-br from-indigo-850 via-slate-900 to-indigo-950 text-white px-6 pt-10 pb-16 relative overflow-hidden">
@@ -405,11 +405,11 @@ export function ManagerConsole() {
         <section className="grid gap-6 lg:grid-cols-3">
           
           {/* Time Travel Simulator */}
-          <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft flex flex-col justify-between relative overflow-hidden">
+          <Card className="p-6 bg-card border border-border shadow-soft flex flex-col justify-between relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none" />
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Sliders className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+                <Sliders className="w-4 h-4 text-primary" />
                 <h2 className="text-base font-bold">Evaluation Timeline Simulator</h2>
               </div>
               <p className="text-xs text-slate-400 mb-4">Fast-forward training completion dates to immediately trigger 30, 60, or 90 day manager reviews and Level 4 results alerts.</p>
@@ -470,7 +470,7 @@ export function ManagerConsole() {
           </Card>
 
           {/* Behavior trends chart */}
-          <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft">
+          <Card className="p-6 bg-card border border-border shadow-soft">
             <h2 className="text-sm font-extrabold mb-3">Behavioral Change Trends</h2>
             <div className="h-56">
               {analytics?.behavioral_change_trends ? (
@@ -489,7 +489,7 @@ export function ManagerConsole() {
           </Card>
 
           {/* Application scores */}
-          <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft overflow-y-auto max-h-[300px]">
+          <Card className="p-6 bg-card border border-border shadow-soft overflow-y-auto max-h-[300px]">
             <h2 className="text-sm font-extrabold mb-3">Active Employee Application Scores</h2>
             <div className="space-y-3">
               {analytics?.employee_application_scores.map((item: any, idx: number) => (
@@ -510,7 +510,7 @@ export function ManagerConsole() {
 
         {/* Task lists segments navigation */}
         <section className="space-y-6">
-          <div className="flex gap-2 rounded-xl bg-white dark:bg-slate-900 p-1 w-fit border border-indigo-100 dark:border-slate-800">
+          <div className="flex gap-2 rounded-xl bg-card p-1 w-fit border border-border">
             {([
               ["bloom", "Bloom Open Grading Queue", pendingBloomReviews.length],
               ["behavior", "Kirkpatrick Level 3 (Behavior)", teamTimelineStatuses.filter((s:any)=>s.due30 || s.due60 || s.due90).length],
@@ -533,7 +533,7 @@ export function ManagerConsole() {
           {/* Tab 1: Bloom open response grading */}
           {activeTab === "bloom" && (
             <div className="grid gap-6 lg:grid-cols-2">
-              <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft">
+              <Card className="p-6 bg-card border border-border shadow-soft">
                 <h3 className="font-extrabold text-sm mb-4">Pending Bloom Submissions</h3>
                 <div className="space-y-3">
                   {pendingBloomReviews.map((record: any) => (
@@ -555,7 +555,7 @@ export function ManagerConsole() {
 
               {/* Grading Form Panel */}
               {selectedEval && activeTab === "bloom" && (
-                <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft space-y-4">
+                <Card className="p-6 bg-card border border-border shadow-soft space-y-4">
                   <div>
                     <h3 className="font-extrabold text-sm text-indigo-700">Grading Bloom Answers</h3>
                     <p className="text-xs text-slate-400 mt-0.5">{selectedEval.employee_name} · {selectedEval.subject_title}</p>
@@ -579,7 +579,7 @@ export function ManagerConsole() {
           {/* Tab 2: Kirkpatrick Level 3 (Behavioral Evaluations 30/60/90 days) */}
           {activeTab === "behavior" && (
             <div className="grid gap-6 lg:grid-cols-2">
-              <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft">
+              <Card className="p-6 bg-card border border-border shadow-soft">
                 <h3 className="font-extrabold text-sm mb-4">Team Behavioral Milestones</h3>
                 <div className="space-y-4">
                   {teamTimelineStatuses.map((record: any) => {
@@ -619,7 +619,7 @@ export function ManagerConsole() {
 
               {/* Behavior Review Form */}
               {selectedEval && activeTab === "behavior" && (
-                <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft space-y-4">
+                <Card className="p-6 bg-card border border-border shadow-soft space-y-4">
                   <div>
                     <h3 className="font-extrabold text-sm text-indigo-700">Submit Behavioral Evaluation</h3>
                     <p className="text-xs text-slate-400 mt-0.5">{selectedEval.employee_name} · {selectedEval.subject_title}</p>
@@ -683,7 +683,7 @@ export function ManagerConsole() {
           {/* Tab 3: Kirkpatrick Level 4 (Business Outcomes) */}
           {activeTab === "results" && (
             <div className="grid gap-6 lg:grid-cols-2">
-              <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft">
+              <Card className="p-6 bg-card border border-border shadow-soft">
                 <h3 className="font-extrabold text-sm mb-4">Pending Business Outcomes Logs</h3>
                 <p className="text-xs text-slate-400 mb-4">Required 90 days after training completion to measure KPI improvements and ROI.</p>
                 <div className="space-y-3">
@@ -714,14 +714,14 @@ export function ManagerConsole() {
 
               {/* Results Outcomes Form */}
               {selectedEval && activeTab === "results" && (
-                <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft space-y-4">
+                <Card className="p-6 bg-card border border-border shadow-soft space-y-4">
                   <div>
                     <h3 className="font-extrabold text-sm text-indigo-700">Log Training Outcomes &amp; KPI Shift</h3>
                     <p className="text-xs text-slate-400 mt-0.5">{selectedEval.employee_name} · {selectedEval.subject_title}</p>
                   </div>
 
                   <form onSubmit={handleSubmitResults} className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
-                    <div className="border border-indigo-50 dark:border-slate-800 p-3 rounded-2xl space-y-3 bg-slate-50/30">
+                    <div className="border border-border p-3 rounded-2xl space-y-3 bg-slate-50/30">
                       <p className="text-[10px] font-black uppercase text-indigo-600">Productivity KPI</p>
                       <div className="grid grid-cols-3 gap-3">
                         <div className="col-span-2">
@@ -740,7 +740,7 @@ export function ManagerConsole() {
                       </div>
                     </div>
 
-                    <div className="border border-indigo-50 dark:border-slate-800 p-3 rounded-2xl space-y-3 bg-slate-50/30">
+                    <div className="border border-border p-3 rounded-2xl space-y-3 bg-slate-50/30">
                       <p className="text-[10px] font-black uppercase text-indigo-600">Quality KPI</p>
                       <div className="grid grid-cols-3 gap-3">
                         <div className="col-span-2">
@@ -759,7 +759,7 @@ export function ManagerConsole() {
                       </div>
                     </div>
 
-                    <div className="border border-indigo-50 dark:border-slate-800 p-3 rounded-2xl space-y-3 bg-slate-50/30">
+                    <div className="border border-border p-3 rounded-2xl space-y-3 bg-slate-50/30">
                       <p className="text-[10px] font-black uppercase text-indigo-600">Customer CSAT KPI</p>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -773,7 +773,7 @@ export function ManagerConsole() {
                       </div>
                     </div>
 
-                    <div className="border border-indigo-50 dark:border-slate-800 p-3 rounded-2xl space-y-3 bg-slate-50/30">
+                    <div className="border border-border p-3 rounded-2xl space-y-3 bg-slate-50/30">
                       <p className="text-[10px] font-black uppercase text-indigo-600">Financial &amp; Operational Impact</p>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -829,7 +829,7 @@ function GradingRow({ level, submission, score, setScore }: { level: string; sub
 function RatingScale({ label, rating, setRating }: { label: string; rating: number; setRating: (n: number) => void }) {
   return (
     <div className="space-y-1">
-      <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-tight">{label}</p>
+      <p className="text-[11px] font-bold text-muted-foreground leading-tight">{label}</p>
       <div className="flex gap-2.5">
         {[1, 2, 3, 4, 5].map((idx) => (
           <button

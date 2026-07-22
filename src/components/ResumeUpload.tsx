@@ -145,7 +145,7 @@ export function ResumeUpload({ onUpload, sessionCode, onSessionCodeChange }: Res
                 }}
                 className="p-2.5 hover:bg-indigo-100 rounded-xl transition"
               >
-                <X className="w-4 h-4 text-indigo-500" />
+                <X className="w-4 h-4 text-primary" />
               </button>
             </motion.div>
           )}
@@ -174,7 +174,7 @@ export function ResumeUpload({ onUpload, sessionCode, onSessionCodeChange }: Res
             <Button
               onClick={handleUpload}
               disabled={status === "uploading"}
-              className="w-full py-4 text-base rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transition-all"
+              className="w-full py-4 text-base rounded-xl bg-primary hover:from-indigo-700 hover:to-violet-700 text-white shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transition-all"
             >
               {status === "uploading" ? (
                 <>

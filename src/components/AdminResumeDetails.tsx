@@ -72,11 +72,11 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
     >
       <div className="min-h-screen p-4">
         <div className="max-w-6xl mx-auto">
-           <Card className="bg-white dark:bg-slate-900 shadow-card border border-indigo-100 dark:border-slate-800 overflow-hidden">
+           <Card className="bg-card shadow-card border border-border overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-indigo-100 dark:border-slate-800 bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-slate-950 dark:to-slate-900">
+            <div className="flex items-center justify-between p-6 border-b border-border bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-slate-950 dark:to-slate-900">
               <div>
-                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">Resume Analysis Details</h2>
+                <h2 className="text-2xl font-extrabold text-foreground">Resume Analysis Details</h2>
                 <p className="text-slate-600 dark:text-slate-400 mt-1">Evaluating {data.filename}</p>
               </div>
               <div className="flex flex-wrap gap-3 items-center">
@@ -86,7 +86,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                     View Response Review
                   </Button>
                 </Link>
-                <Button onClick={onClose} variant="outline" size="sm" className="rounded-xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800">
+                <Button onClick={onClose} variant="outline" size="sm" className="rounded-xl border-border text-primary hover:bg-secondary">
                   <X className="w-4 h-4" />
                   Close
                 </Button>
@@ -94,13 +94,13 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex overflow-x-auto scrollbar-none border-b border-indigo-100 dark:border-slate-800 bg-gradient-to-r from-indigo-50/10 to-violet-50/10 dark:from-slate-950 dark:to-slate-900/10 px-6">
+            <div className="flex overflow-x-auto scrollbar-none border-b border-border bg-gradient-to-r from-indigo-50/10 to-violet-50/10 dark:from-slate-950 dark:to-slate-900/10 px-6">
               <button
                 onClick={() => setActiveTab("analysis")}
                 className={cn(
                   "px-5 py-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 -mb-[1px] flex-shrink-0 whitespace-nowrap",
                   activeTab === "analysis"
-                    ? "border-indigo-600 dark:border-violet-500 text-indigo-600 dark:text-violet-400 font-extrabold"
+                    ? "border-indigo-600 dark:border-violet-500 text-primary font-extrabold"
                     : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"
                 )}
               >
@@ -112,11 +112,11 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                 className={cn(
                   "px-5 py-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 -mb-[1px] flex-shrink-0 whitespace-nowrap",
                   activeTab === "parsed"
-                    ? "border-indigo-600 dark:border-violet-500 text-indigo-600 dark:text-violet-400 font-extrabold"
+                    ? "border-indigo-600 dark:border-violet-500 text-primary font-extrabold"
                     : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"
                 )}
               >
-                <ClipboardList className="w-4 h-4 text-indigo-500" />
+                <ClipboardList className="w-4 h-4 text-primary" />
                 Parsed CV Structure
               </button>
               <button
@@ -124,7 +124,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                 className={cn(
                   "px-5 py-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 -mb-[1px] flex-shrink-0 whitespace-nowrap",
                   activeTab === "proctoring"
-                    ? "border-indigo-600 dark:border-violet-500 text-indigo-600 dark:text-violet-400 font-extrabold"
+                    ? "border-indigo-600 dark:border-violet-500 text-primary font-extrabold"
                     : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"
                 )}
               >
@@ -170,7 +170,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                           </Badge>
                         </div>
                       </div>
-                      <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm font-medium">
+                      <p className="text-muted-foreground leading-relaxed text-sm font-medium">
                         <strong>Recommendation Rationale:</strong> {report.jdMatchRationale || "Matches profile requirements."}
                       </p>
                     </Card>
@@ -178,7 +178,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
 
                   {/* Executive Summary */}
                   {report.executiveSummary && (
-                    <Card className="p-6 bg-indigo-50/50 dark:bg-slate-950/30 border-indigo-100 dark:border-slate-800 shadow-soft">
+                    <Card className="p-6 bg-indigo-50/50 dark:bg-slate-950/30 border-border shadow-soft">
                       <h4 className="text-sm font-bold mb-3 flex items-center gap-2 text-indigo-800 dark:text-violet-400 uppercase tracking-wider">
                         <Lightbulb className="w-4 h-4 text-amber-500" />
                         Candidate Summary
@@ -201,12 +201,12 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
                       >
-                        <Card className="p-5 bg-white dark:bg-slate-900 border-indigo-100 dark:border-slate-800 shadow-soft text-center hover:shadow-card hover:border-indigo-300 dark:hover:border-slate-700 transition-all">
-                          <metric.icon className="w-6 h-6 mx-auto mb-3 text-indigo-600 dark:text-violet-400" />
+                        <Card className="p-5 bg-card border-border shadow-soft text-center hover:shadow-card hover:border-indigo-300 dark:hover:border-slate-700 transition-all">
+                          <metric.icon className="w-6 h-6 mx-auto mb-3 text-primary" />
                           <div className={cn("text-2xl font-extrabold mb-1", getScoreColor(metric.value))}>
                             {metric.value}
                           </div>
-                          <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mt-1">{metric.label}</div>
+                          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1">{metric.label}</div>
                         </Card>
                       </motion.div>
                     ))}
@@ -214,8 +214,8 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
 
                   {/* Radar Chart */}
                   {analysis.scores && (
-                    <Card className="p-6 bg-white dark:bg-slate-900 border-indigo-100 dark:border-slate-800 shadow-soft">
-                      <h4 className="text-sm font-bold mb-6 text-slate-900 dark:text-slate-100 uppercase tracking-wider">Resume Quality Radar</h4>
+                    <Card className="p-6 bg-card border-border shadow-soft">
+                      <h4 className="text-sm font-bold mb-6 text-foreground uppercase tracking-wider">Resume Quality Radar</h4>
                       <div className="w-full h-[300px] min-w-0">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                           <RadarChart data={Object.entries(analysis.scores).map(([key, value]) => ({
@@ -244,7 +244,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                   <div className="grid md:grid-cols-2 gap-6">
                     {/* Strengths */}
                     {analysis.strengths && analysis.strengths.length > 0 && (
-                      <Card className="p-6 bg-white dark:bg-slate-900 border-indigo-100 dark:border-slate-800 shadow-soft">
+                      <Card className="p-6 bg-card border-border shadow-soft">
                         <h4 className="text-sm font-bold mb-4 flex items-center gap-2 text-indigo-800 dark:text-violet-400 uppercase tracking-wider">
                           <CheckCircle className="w-4 h-4 text-emerald-500" />
                           Identified Strengths
@@ -273,9 +273,9 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
 
                     {/* Detailed Metrics */}
                     {analysis.scores && (
-                      <Card className="p-6 bg-white dark:bg-slate-900 border-indigo-100 dark:border-slate-800 shadow-soft">
+                      <Card className="p-6 bg-card border-border shadow-soft">
                         <h4 className="text-sm font-bold mb-4 flex items-center gap-2 text-indigo-800 dark:text-violet-400 uppercase tracking-wider">
-                          <BarChart3 className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+                          <BarChart3 className="w-4 h-4 text-primary" />
                           Detailed Metric Breakdown
                         </h4>
                         <div className="space-y-4">
@@ -305,9 +305,9 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
 
                   {/* Recruiter Insights */}
                   {report.recruiterInsights && report.recruiterInsights.length > 0 && (
-                    <Card className="p-6 bg-indigo-50/50 dark:bg-slate-950/30 border-indigo-100 dark:border-slate-800 shadow-soft">
+                    <Card className="p-6 bg-indigo-50/50 dark:bg-slate-950/30 border-border shadow-soft">
                       <h4 className="text-sm font-bold mb-4 flex items-center gap-2 text-indigo-800 dark:text-violet-400 uppercase tracking-wider">
-                        <Target className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+                        <Target className="w-4 h-4 text-primary" />
                         Recruiter Insights
                       </h4>
                       <ul className="space-y-4">
@@ -319,7 +319,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                             transition={{ delay: i * 0.1 }}
                             className="flex items-start gap-3 text-slate-800 dark:text-slate-250 text-sm font-semibold"
                           >
-                            <span className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xs flex items-center justify-center mt-0.5 flex-shrink-0 font-bold">
+                            <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center mt-0.5 flex-shrink-0 font-bold">
                               {i + 1}
                             </span>
                             {insight}
@@ -330,9 +330,9 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                   )}
 
                   {/* Decision Factors for Recruiters */}
-                  <Card className="p-6 bg-white dark:bg-slate-900 border-indigo-100 dark:border-slate-800 shadow-soft">
+                  <Card className="p-6 bg-card border-border shadow-soft">
                     <h4 className="text-sm font-bold mb-4 flex items-center gap-2 text-indigo-800 dark:text-violet-400 uppercase tracking-wider">
-                      <CheckCircle className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+                      <CheckCircle className="w-4 h-4 text-primary" />
                       Key Decision Factors
                     </h4>
                     <div className="space-y-4">
@@ -360,7 +360,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                           )}
                         </ul>
                       </div>
-                      <div className="p-4 rounded-xl bg-indigo-50 dark:bg-slate-950 border border-indigo-200 dark:border-slate-800">
+                      <div className="p-4 rounded-xl bg-indigo-50 dark:bg-slate-950 border border-border">
                         <p className="text-indigo-950 dark:text-slate-350 font-bold mb-3 text-sm">Recruiter Recommendation</p>
                         <p className="text-indigo-950 dark:text-slate-300 text-sm font-semibold leading-relaxed">
                           Based on the analysis, this candidate has a <span className="font-extrabold">{analysis.overallScore || 0}% fit</span> score.
@@ -374,18 +374,18 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
 
                   {/* Industry Fit & Suitable Roles */}
                   <div className="grid md:grid-cols-2 gap-6">
-                    <Card className="p-6 bg-white dark:bg-slate-900 border-indigo-100 dark:border-slate-800 shadow-soft">
-                      <h4 className="text-sm font-bold mb-4 text-slate-900 dark:text-slate-100 uppercase tracking-wider">Industry Fit</h4>
+                    <Card className="p-6 bg-card border-border shadow-soft">
+                      <h4 className="text-sm font-bold mb-4 text-foreground uppercase tracking-wider">Industry Fit</h4>
                       <div className="space-y-4">
                         {(report.industryFit || []).map((fit: any, i: number) => (
                           <div key={i} className="space-y-2">
                             <div className="flex justify-between text-sm font-bold mb-1">
                               <span className="text-slate-800 dark:text-slate-200">{fit.industry}</span>
-                              <span className="text-indigo-700 dark:text-violet-400">{fit.matchScore}%</span>
+                              <span className="text-primary">{fit.matchScore}%</span>
                             </div>
                             <div className="h-2 bg-indigo-100 dark:bg-slate-850 rounded-full overflow-hidden">
                               <motion.div
-                                className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full"
+                                className="h-full bg-primary rounded-full"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${fit.matchScore}%` }}
                                 transition={{ duration: 1, delay: i * 0.2 }}
@@ -397,11 +397,11 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                       </div>
                     </Card>
 
-                    <Card className="p-6 bg-white dark:bg-slate-900 border-indigo-100 dark:border-slate-800 shadow-soft">
-                      <h4 className="text-sm font-bold mb-4 text-slate-900 dark:text-slate-100 uppercase tracking-wider">Suitable Roles</h4>
+                    <Card className="p-6 bg-card border-border shadow-soft">
+                      <h4 className="text-sm font-bold mb-4 text-foreground uppercase tracking-wider">Suitable Roles</h4>
                       <div className="flex flex-wrap gap-2">
                         {(report.targetRoles || []).map((role: string, i: number) => (
-                          <Badge key={i} className="px-3 py-1 text-xs font-semibold text-indigo-700 dark:text-violet-400 bg-indigo-100 dark:bg-slate-800 border border-indigo-200 dark:border-slate-700">
+                          <Badge key={i} className="px-3 py-1 text-xs font-semibold text-primary bg-indigo-100 dark:bg-slate-800 border border-indigo-200 dark:border-slate-700">
                             <Star className="w-3 h-3 mr-1 text-amber-500" />
                             {role}
                           </Badge>
@@ -412,25 +412,25 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
 
                   {/* Hiring Confidence */}
                   {report.hiringConfidence && (
-                    <Card className="p-6 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-slate-950 dark:to-slate-900 border-indigo-100 dark:border-slate-800 shadow-soft text-center">
-                      <h4 className="text-sm font-bold mb-4 text-slate-900 dark:text-slate-100 uppercase tracking-wider">Hiring Confidence</h4>
+                    <Card className="p-6 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-slate-950 dark:to-slate-900 border-border shadow-soft text-center">
+                      <h4 className="text-sm font-bold mb-4 text-foreground uppercase tracking-wider">Hiring Confidence</h4>
                       <Badge className={cn("px-6 py-2 text-sm font-extrabold tracking-widest rounded-full border-2", getConfidenceColor(report.hiringConfidence))}>
                         {report.hiringConfidence.replace("-", " ").toUpperCase()}
                       </Badge>
-                      <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                      <p className="mt-3 text-xs text-muted-foreground">
                         Based on resume quality, relevance, and industry standards
                       </p>
                     </Card>
                   )}
                 </>
               ) : activeTab === "parsed" ? (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-slate-900 dark:text-slate-100">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-foreground">
                   {/* Left Column - Meta & Skills */}
                   <div className="space-y-6 lg:col-span-1">
                     {/* Contact & Personal Card */}
-                    <Card className="p-5 bg-indigo-50/20 dark:bg-slate-900/30 border border-indigo-100 dark:border-slate-800 shadow-soft rounded-2xl">
+                    <Card className="p-5 bg-indigo-50/20 dark:bg-slate-900/30 border border-border shadow-soft rounded-2xl">
                       <h4 className="text-xs font-black mb-4 flex items-center gap-2 text-indigo-800 dark:text-violet-400 uppercase tracking-widest">
-                        <User className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+                        <User className="w-4 h-4 text-primary" />
                         Candidate Info
                       </h4>
                       <div className="space-y-3.5">
@@ -439,7 +439,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                             {data.parsed?.personal?.fullName || "Not Found"}
                           </h3>
                           {data.parsed?.personal?.title && (
-                            <p className="text-xs text-indigo-600 dark:text-violet-400 font-semibold mt-1">
+                            <p className="text-xs text-primary font-semibold mt-1">
                               {data.parsed.personal.title}
                             </p>
                           )}
@@ -451,7 +451,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                           </a>
                         )}
                         {data.parsed?.personal?.phone && (
-                          <div className="flex items-center gap-2.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                          <div className="flex items-center gap-2.5 text-sm font-medium text-muted-foreground">
                             <Phone className="w-4 h-4 text-slate-400" />
                             <span>{data.parsed.personal.phone}</span>
                           </div>
@@ -478,15 +478,15 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                     </Card>
 
                     {/* Technical Skills Card */}
-                    <Card className="p-5 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft rounded-2xl">
+                    <Card className="p-5 bg-card border border-border shadow-soft rounded-2xl">
                       <h4 className="text-xs font-black mb-4 flex items-center gap-2 text-indigo-800 dark:text-violet-400 uppercase tracking-widest">
-                        <Cpu className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+                        <Cpu className="w-4 h-4 text-primary" />
                         Skills Profile
                       </h4>
                       <div className="space-y-4">
                         {data.parsed?.skills?.technical?.length > 0 && (
                           <div>
-                            <span className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400 dark:text-slate-500">Technical Skills</span>
+                            <span className="text-[10px] uppercase font-extrabold tracking-wider text-muted-foreground">Technical Skills</span>
                             <div className="flex flex-wrap gap-1.5 mt-2">
                               {data.parsed.skills.technical.map((s: string, idx: number) => (
                                 <span key={idx} className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-800 dark:bg-slate-800 dark:text-violet-300 inline-flex items-center">
@@ -498,7 +498,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                         )}
                         {data.parsed?.skills?.tools?.length > 0 && (
                           <div>
-                            <span className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400 dark:text-slate-500">Tools / Platforms</span>
+                            <span className="text-[10px] uppercase font-extrabold tracking-wider text-muted-foreground">Tools / Platforms</span>
                             <div className="flex flex-wrap gap-1.5 mt-2">
                               {data.parsed.skills.tools.map((s: string, idx: number) => (
                                 <span key={idx} className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-800 dark:bg-slate-800 dark:text-violet-300 inline-flex items-center">
@@ -510,7 +510,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                         )}
                         {data.parsed?.skills?.soft?.length > 0 && (
                           <div>
-                            <span className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400 dark:text-slate-500">Soft Skills</span>
+                            <span className="text-[10px] uppercase font-extrabold tracking-wider text-muted-foreground">Soft Skills</span>
                             <div className="flex flex-wrap gap-1.5 mt-2">
                               {data.parsed.skills.soft.map((s: string, idx: number) => (
                                 <span key={idx} className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-800 dark:bg-slate-800 dark:text-violet-300 inline-flex items-center">
@@ -524,16 +524,16 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                     </Card>
 
                     {/* Education Card */}
-                    <Card className="p-5 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft rounded-2xl">
+                    <Card className="p-5 bg-card border border-border shadow-soft rounded-2xl">
                       <h4 className="text-xs font-black mb-4 flex items-center gap-2 text-indigo-800 dark:text-violet-400 uppercase tracking-widest">
-                        <GraduationCap className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+                        <GraduationCap className="w-4 h-4 text-primary" />
                         Education
                       </h4>
                       <div className="space-y-4 divide-y divide-indigo-50/50 dark:divide-slate-800/50">
                         {data.parsed?.education?.length > 0 ? (
                           data.parsed.education.map((edu: any, idx: number) => (
                             <div key={edu.id || idx} className={cn("space-y-1", idx > 0 && "pt-3")}>
-                              <h5 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm leading-snug">
+                              <h5 className="font-extrabold text-foreground text-sm leading-snug">
                                 {edu.degree || edu.institution}
                               </h5>
                               {edu.degree && edu.institution !== edu.degree && (
@@ -542,7 +542,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                                 </p>
                               )}
                               {edu.graduationDate && (
-                                <span className="inline-block text-[10px] font-bold text-indigo-600 dark:text-violet-400 bg-indigo-50/50 dark:bg-slate-800 px-2.5 py-0.5 rounded-full mt-1">
+                                <span className="inline-block text-[10px] font-bold text-primary bg-indigo-50/50 dark:bg-slate-800 px-2.5 py-0.5 rounded-full mt-1">
                                   Class of {edu.graduationDate}
                                 </span>
                               )}
@@ -556,9 +556,9 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
 
                     {/* Certifications Card */}
                     {data.parsed?.certifications?.length > 0 && (
-                      <Card className="p-5 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft rounded-2xl">
+                      <Card className="p-5 bg-card border border-border shadow-soft rounded-2xl">
                         <h4 className="text-xs font-black mb-4 flex items-center gap-2 text-indigo-800 dark:text-violet-400 uppercase tracking-widest">
-                          <Award className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+                          <Award className="w-4 h-4 text-primary" />
                           Certifications
                         </h4>
                         <div className="space-y-3">
@@ -579,34 +579,34 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                   <div className="space-y-6 lg:col-span-2">
                     {/* Executive Summary Statement */}
                     {data.parsed?.summary && (
-                      <Card className="p-6 bg-indigo-50/20 dark:bg-slate-900/30 border border-indigo-100 dark:border-slate-800 shadow-soft rounded-2xl relative overflow-hidden">
+                      <Card className="p-6 bg-indigo-50/20 dark:bg-slate-900/30 border border-border shadow-soft rounded-2xl relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-violet-600" />
                         <h4 className="text-xs font-black mb-3 flex items-center gap-2 text-indigo-800 dark:text-violet-400 uppercase tracking-widest">
-                          <BookOpen className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+                          <BookOpen className="w-4 h-4 text-primary" />
                           Parsed Summary
                         </h4>
-                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm font-medium italic">
+                        <p className="text-muted-foreground leading-relaxed text-sm font-medium italic">
                           "{data.parsed.summary}"
                         </p>
                       </Card>
                     )}
 
                     {/* Experience Timeline */}
-                    <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft rounded-2xl">
+                    <Card className="p-6 bg-card border border-border shadow-soft rounded-2xl">
                       <h4 className="text-xs font-black mb-6 flex items-center gap-2 text-indigo-800 dark:text-violet-400 uppercase tracking-widest">
-                        <Briefcase className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+                        <Briefcase className="w-4 h-4 text-primary" />
                         Work Experience & Internships
                       </h4>
-                      <div className="relative border-l border-indigo-100 dark:border-slate-800 pl-6 ml-2 space-y-8">
+                      <div className="relative border-l border-border pl-6 ml-2 space-y-8">
                         {data.parsed?.experience?.length > 0 ? (
                           data.parsed.experience.map((exp: any, idx: number) => (
                             <div key={exp.id || idx} className="relative">
                               {/* Timeline Dot */}
                               <div className={cn(
-                                "absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-2 flex items-center justify-center bg-white dark:bg-slate-900",
+                                "absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-2 flex items-center justify-center bg-card",
                                 exp.current 
                                   ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30" 
-                                  : "border-indigo-500 bg-indigo-50 dark:bg-slate-800"
+                                  : "border-indigo-500 bg-secondary"
                               )}>
                                 <div className={cn(
                                   "w-1.5 h-1.5 rounded-full",
@@ -620,7 +620,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                                     <h4 className="text-base font-extrabold text-slate-950 dark:text-slate-100 leading-tight">
                                       {exp.position}
                                     </h4>
-                                    <p className="text-sm text-indigo-600 dark:text-violet-400 font-bold mt-0.5">
+                                    <p className="text-sm text-primary font-bold mt-0.5">
                                       {exp.company}
                                     </p>
                                   </div>
@@ -628,7 +628,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                                     "px-3 py-1 text-xs font-bold tracking-wide rounded-full uppercase inline-flex items-center",
                                     exp.current 
                                       ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-extrabold"
-                                      : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                                      : "bg-secondary text-muted-foreground"
                                   )}>
                                     {exp.startDate} – {exp.endDate || "Present"}
                                   </span>
@@ -663,9 +663,9 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
 
                     {/* Projects Section */}
                     {data.parsed?.projects?.length > 0 && (
-                      <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft rounded-2xl">
+                      <Card className="p-6 bg-card border border-border shadow-soft rounded-2xl">
                         <h4 className="text-xs font-black mb-6 flex items-center gap-2 text-indigo-800 dark:text-violet-400 uppercase tracking-widest">
-                          <Code className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+                          <Code className="w-4 h-4 text-primary" />
                           Projects
                         </h4>
                         <div className="space-y-6">
@@ -676,7 +676,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                                   {proj.name}
                                 </h4>
                                 {proj.description && proj.description !== proj.name && (
-                                  <p className="text-xs text-indigo-600 dark:text-violet-400 font-semibold mt-0.5">
+                                  <p className="text-xs text-primary font-semibold mt-0.5">
                                     {proj.description}
                                   </p>
                                 )}
@@ -703,7 +703,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                 </div>
               ) : (
                 /* AI Proctoring Audit Log Content */
-                <div className="space-y-6 text-slate-900 dark:text-slate-100">
+                <div className="space-y-6 text-foreground">
                   {/* Compliance Summary Header banner */}
                   {report.proctoring?.autoSubmitted ? (
                     <div className="p-6 rounded-3xl bg-red-50 dark:bg-rose-950/20 border border-red-200 dark:border-rose-900/40 flex items-start gap-4 shadow-sm animate-pulse">
@@ -751,23 +751,23 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
 
                   {/* 4-Card Stats Grid */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <Card className="p-5 bg-white dark:bg-slate-900 border-indigo-100 dark:border-slate-800 shadow-soft">
-                      <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Compliance Status</div>
+                    <Card className="p-5 bg-card border-border shadow-soft">
+                      <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Compliance Status</div>
                       <div className={cn(
                         "text-xl font-extrabold capitalize",
                         report.proctoring?.autoSubmitted ? "text-rose-500" : (report.proctoring?.warningCount > 0 ? "text-amber-500" : "text-emerald-500")
                       )}>
                         {report.proctoring?.autoSubmitted ? "Disqualified" : (report.proctoring?.warningCount > 0 ? "Flagged" : "Compliant")}
                       </div>
-                      <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Audit status level</div>
+                      <div className="text-[10px] text-muted-foreground mt-1">Audit status level</div>
                     </Card>
 
-                    <Card className="p-5 bg-white dark:bg-slate-900 border-indigo-100 dark:border-slate-800 shadow-soft">
-                      <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Warning Count</div>
-                      <div className="text-2xl font-black text-slate-900 dark:text-slate-100">
+                    <Card className="p-5 bg-card border-border shadow-soft">
+                      <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Warning Count</div>
+                      <div className="text-2xl font-black text-foreground">
                         {report.proctoring?.warningCount || 0} <span className="text-slate-450 text-sm">/ 3</span>
                       </div>
-                      <div className="w-full h-1.5 bg-indigo-50 dark:bg-slate-800 rounded-full overflow-hidden mt-1.5">
+                      <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden mt-1.5">
                         <div 
                           className={cn(
                             "h-full rounded-full transition-all duration-500",
@@ -779,30 +779,30 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                       </div>
                     </Card>
 
-                    <Card className="p-5 bg-white dark:bg-slate-900 border-indigo-100 dark:border-slate-800 shadow-soft">
-                      <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Integrity Score</div>
+                    <Card className="p-5 bg-card border-border shadow-soft">
+                      <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Integrity Score</div>
                       <div className={cn(
                         "text-2xl font-black",
                         report.proctoring?.autoSubmitted ? "text-rose-500" : (report.proctoring?.warningCount > 0 ? "text-amber-500" : "text-emerald-500")
                       )}>
                         {report.proctoring ? Math.max(0, 100 - report.proctoring.warningCount * 33.35).toFixed(0) : "100"}%
                       </div>
-                      <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">AI calculated index</div>
+                      <div className="text-[10px] text-muted-foreground mt-1">AI calculated index</div>
                     </Card>
 
-                    <Card className="p-5 bg-white dark:bg-slate-900 border-indigo-100 dark:border-slate-800 shadow-soft">
-                      <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Active Sensors</div>
-                      <div className="text-xl font-extrabold text-indigo-600 dark:text-violet-400">
+                    <Card className="p-5 bg-card border-border shadow-soft">
+                      <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Active Sensors</div>
+                      <div className="text-xl font-extrabold text-primary">
                         4 Enforcements
                       </div>
-                      <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Audio, video, tabs, screen</div>
+                      <div className="text-[10px] text-muted-foreground mt-1">Audio, video, tabs, screen</div>
                     </Card>
                   </div>
 
                   {/* Violation Timeline Audit Card */}
-                  <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft rounded-2xl">
-                    <h4 className="text-sm font-bold mb-6 text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+                  <Card className="p-6 bg-card border border-border shadow-soft rounded-2xl">
+                    <h4 className="text-sm font-bold mb-6 text-foreground uppercase tracking-wider flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-primary" />
                       Session Security Audit Logs
                     </h4>
                     
@@ -812,12 +812,12 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                           <CheckCircle className="w-6 h-6" />
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900 dark:text-slate-100">No violations detected</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">The candidate completed the session within secure guidelines.</p>
+                          <p className="font-bold text-foreground">No violations detected</p>
+                          <p className="text-xs text-muted-foreground mt-1">The candidate completed the session within secure guidelines.</p>
                         </div>
                       </div>
                     ) : (
-                      <div className="relative border-l border-indigo-100 dark:border-slate-800 pl-6 ml-4 space-y-6">
+                      <div className="relative border-l border-border pl-6 ml-4 space-y-6">
                         {report.proctoring.violations.map((violation: any, idx: number) => {
                           const userFriendlyTypes: Record<string, string> = {
                             'tab-blur': 'Tab Switching (Focus Lost)',
@@ -832,7 +832,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                             'fullscreen-exit': 'border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-500',
                             'face-none': 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 text-amber-500',
                             'face-multiple': 'border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-500',
-                            'voice-loud': 'border-indigo-500 bg-indigo-50 dark:bg-slate-950/30 text-indigo-500',
+                            'voice-loud': 'border-indigo-500 bg-indigo-50 dark:bg-slate-950/30 text-primary',
                           };
 
                           const iconMap: Record<string, React.ReactNode> = {
@@ -852,7 +852,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                           };
 
                           const friendlyName = userFriendlyTypes[violation.type] || violation.type.toUpperCase();
-                          const styleStr = typeColors[violation.type] || 'border-indigo-500 bg-indigo-50 text-indigo-500';
+                          const styleStr = typeColors[violation.type] || 'border-indigo-500 bg-indigo-50 text-primary';
                           const detailsStr = detailsMap[violation.type] || 'Suspicious user pattern logged by the system.';
                           const iconEl = iconMap[violation.type] || <ShieldAlert className="w-3.5 h-3.5" />;
 
@@ -864,7 +864,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                             <div key={idx} className="relative">
                               {/* Dot */}
                               <div className={cn(
-                                "absolute -left-[35px] top-1 w-7 h-7 rounded-full border-2 flex items-center justify-center bg-white dark:bg-slate-900 shadow-sm",
+                                "absolute -left-[35px] top-1 w-7 h-7 rounded-full border-2 flex items-center justify-center bg-card shadow-sm",
                                 styleStr
                               )}>
                                 {iconEl}
@@ -873,10 +873,10 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                               <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 rounded-2xl space-y-2">
                                 <div className="flex flex-wrap items-start justify-between gap-2">
                                   <div>
-                                    <h5 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm">
+                                    <h5 className="font-extrabold text-foreground text-sm">
                                       {friendlyName}
                                     </h5>
-                                    <p className="text-xs text-slate-400 dark:text-slate-500 font-bold flex items-center gap-1 mt-0.5">
+                                    <p className="text-xs text-muted-foreground font-bold flex items-center gap-1 mt-0.5">
                                       <Clock className="w-3.5 h-3.5" />
                                       Timestamp: {dateStr}
                                     </p>
@@ -902,19 +902,19 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                   </Card>
 
                   {/* Identity Verification Audit Card */}
-                  <Card className="p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-soft rounded-2xl mt-8">
-                    <h4 className="text-sm font-bold mb-6 text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                      <ShieldAlert className="w-4 h-4 text-indigo-600 dark:text-violet-400" />
+                  <Card className="p-6 bg-card border border-border shadow-soft rounded-2xl mt-8">
+                    <h4 className="text-sm font-bold mb-6 text-foreground uppercase tracking-wider flex items-center gap-2">
+                      <ShieldAlert className="w-4 h-4 text-primary" />
                       Biometric Identity Verification Audit
                     </h4>
 
                     {!report.verification ? (
                       <div className="py-12 text-center text-slate-500 dark:text-slate-450 space-y-3">
-                        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto shadow-sm">
+                        <div className="w-12 h-12 rounded-full bg-secondary text-muted-foreground flex items-center justify-center mx-auto shadow-sm">
                           <User className="w-6 h-6" />
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900 dark:text-slate-100">No Identity Verification Data Available</p>
+                          <p className="font-bold text-foreground">No Identity Verification Data Available</p>
                           <p className="text-xs text-slate-550 dark:text-slate-400 mt-1">This candidate has not undergone biometric identity checks.</p>
                         </div>
                       </div>
@@ -925,8 +925,8 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block text-left">Captured Verification Artifacts</span>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <span className="block text-xs font-bold text-slate-700 dark:text-slate-300 text-center">Government ID Photo</span>
-                              <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950">
+                              <span className="block text-xs font-bold text-muted-foreground text-center">Government ID Photo</span>
+                              <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border bg-slate-950">
                                 <img
                                   src={report.verification.idImageUrl || `/api/interview/${data.id}/verification/id`}
                                   className="w-full h-full object-cover"
@@ -938,8 +938,8 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                               </div>
                             </div>
                             <div className="space-y-2">
-                              <span className="block text-xs font-bold text-slate-700 dark:text-slate-300 text-center">Live Selfie Snapshot</span>
-                              <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950">
+                              <span className="block text-xs font-bold text-muted-foreground text-center">Live Selfie Snapshot</span>
+                              <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border bg-slate-950">
                                 <img
                                   src={report.verification.selfieImageUrl || `/api/interview/${data.id}/verification/selfie`}
                                   className="w-full h-full object-cover"
@@ -959,7 +959,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block text-left">Verification Audit Summary</span>
                             <div className="p-4 rounded-2xl border border-slate-150 dark:border-slate-800 bg-slate-50 dark:bg-slate-955/20 grid grid-cols-2 gap-4">
                               <div>
-                                <span className="block text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-wider">Verification Status</span>
+                                <span className="block text-[10px] text-muted-foreground uppercase font-black tracking-wider">Verification Status</span>
                                 <Badge className={cn(
                                    "border-0 font-extrabold text-xs px-3 py-1 rounded-full mt-1.5",
                                    report.verification.status === "verified"
@@ -972,7 +972,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                                  </Badge>
                               </div>
                               <div>
-                                <span className="block text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-wider">Face Match Confidence</span>
+                                <span className="block text-[10px] text-muted-foreground uppercase font-black tracking-wider">Face Match Confidence</span>
                                 <div className={cn(
                                   "text-2xl font-black mt-1",
                                   report.verification.matched ? "text-emerald-600 dark:text-emerald-450" : "text-rose-500"
@@ -985,7 +985,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
 
                           <div className="space-y-2">
                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block text-left">Biometric Match Rationale</span>
-                            <div className="p-4 rounded-2xl border border-indigo-50 dark:border-slate-800 bg-indigo-50/15 dark:bg-slate-900/30 text-xs font-semibold leading-relaxed text-slate-700 dark:text-slate-300">
+                            <div className="p-4 rounded-2xl border border-border bg-indigo-50/15 dark:bg-slate-900/30 text-xs font-semibold leading-relaxed text-muted-foreground">
                               {report.verification.reason || "No detail provided by the matching engine."}
                             </div>
                           </div>

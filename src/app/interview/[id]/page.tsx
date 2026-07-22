@@ -2074,7 +2074,7 @@ export default function CandidatePortal() {
         : 0;
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-[#f8fafc] via-[#f0f4ff] to-[#e0e7ff] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300 ${(currentStep === 'questions' || currentStep === 'candidate_question') ? 'select-none' : ''}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-[#f8fafc] via-[#f0f4ff] to-[#e0e7ff] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-foreground font-sans transition-colors duration-300 ${(currentStep === 'questions' || currentStep === 'candidate_question') ? 'select-none' : ''}`}>
       {/* Floating ThemeToggle above modals for setup screen access */}
       {(!hasAgreed || showStartConfirm) && (
         <div className="fixed top-4 right-4 z-[110]">
@@ -2101,16 +2101,16 @@ export default function CandidatePortal() {
       `}</style>
 
       {/* Header */}
-      <nav className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-indigo-50/80 dark:border-slate-800 py-3 md:py-4 px-4 md:px-6 shadow-sm sticky top-0 z-50 transition-colors">
+      <nav className="bg-card/80 backdrop-blur-md border-b border-indigo-50/80 dark:border-slate-800 py-3 md:py-4 px-4 md:px-6 shadow-sm sticky top-0 z-50 transition-colors">
         <div className="max-w-full mx-auto px-2 md:px-6 flex flex-wrap items-center justify-between gap-3 md:gap-4">
           <div className="flex items-center gap-2 md:gap-3">
-            <h1 className="text-lg md:text-xl font-black bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent tracking-tight">Voice Interview</h1>
-            <Badge className="hidden sm:inline-flex bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-100 dark:hover:bg-slate-700 border-0 font-bold px-3 py-1">Confidential Session</Badge>
+            <h1 className="text-lg md:text-xl font-black bg-primary bg-clip-text text-transparent tracking-tight">Voice Interview</h1>
+            <Badge className="hidden sm:inline-flex bg-secondary text-primary hover:bg-indigo-100 dark:hover:bg-slate-700 border-0 font-bold px-3 py-1">Confidential Session</Badge>
           </div>
           <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-end">
-            <div className="flex items-center gap-1.5 pr-2 border-r border-indigo-100 dark:border-slate-800">
+            <div className="flex items-center gap-1.5 pr-2 border-r border-border">
               <Link href="/">
-                <Button size="sm" variant="ghost" className="text-slate-500 dark:text-slate-400 hover:text-indigo-700 dark:hover:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 px-2.5 md:px-3 font-semibold text-xs md:text-sm">
+                <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-indigo-700 dark:hover:text-violet-400 hover:bg-secondary px-2.5 md:px-3 font-semibold text-xs md:text-sm">
                   <span className="hidden sm:inline">Candidate Screening Report</span>
                   <span className="inline sm:hidden">Home</span>
                 </Button>
@@ -2130,7 +2130,7 @@ export default function CandidatePortal() {
             <div className="flex items-center gap-2.5 md:gap-6 flex-wrap">
 
               <div className="flex items-center gap-2 md:gap-3 bg-indigo-50 dark:bg-slate-850 rounded-full pl-3 md:pl-4 pr-1.5 py-1 md:py-1.5 border border-indigo-100 dark:border-slate-700">
-                <span className="text-indigo-500 dark:text-violet-400 text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest">Remaining</span>
+                <span className="text-primary dark:text-violet-400 text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest">Remaining</span>
                 <div className="bg-gradient-to-r from-red-500 to-rose-600 text-white font-mono font-bold text-xs md:text-sm px-2.5 py-0.5 md:py-1 rounded-full shadow-md shadow-red-500/25" aria-live="polite">
                   {formatTime(Math.max(0, secondsLeft))}
                 </div>
@@ -2161,21 +2161,21 @@ export default function CandidatePortal() {
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-950/80 dark:bg-slate-950/80 backdrop-blur-md p-4"
         >
-          <Card className="max-w-lg w-full p-8 shadow-2xl border border-indigo-100 dark:border-slate-800 relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-violet-500" />
-            <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 mb-6">
+          <Card className="max-w-lg w-full p-8 shadow-2xl border border-border relative overflow-hidden bg-card rounded-3xl">
+            <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
+            <div className="mx-auto w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-indigo-500/30 mb-6">
               <Sparkles className="w-7 h-7 text-white" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-4 text-center">Resume Active Assessment</h2>
-            <p className="text-slate-600 dark:text-slate-350 font-bold mb-6 text-center leading-relaxed text-sm">
+            <h2 className="text-2xl font-black text-foreground mb-4 text-center">Resume Active Assessment</h2>
+            <p className="text-muted-foreground font-bold mb-6 text-center leading-relaxed text-sm">
               We detected an active interview session in progress for you. Click below to re-enable your camera/microphone and resume from where you left off.
             </p>
-            <div className="bg-indigo-50 dark:bg-slate-900/60 border border-indigo-100 dark:border-slate-800 text-indigo-700 dark:text-violet-400 p-5 rounded-2xl flex items-center gap-3.5 mb-8">
-              <Camera className="w-6 h-6 text-indigo-500 flex-shrink-0" />
+            <div className="bg-indigo-50 dark:bg-slate-900/60 border border-border text-primary p-5 rounded-2xl flex items-center gap-3.5 mb-8">
+              <Camera className="w-6 h-6 text-primary flex-shrink-0" />
               <p className="text-sm font-black leading-snug">Restoring session details will automatically resume your assessment progress and timer.</p>
             </div>
             <div className="flex flex-wrap gap-4 justify-center">
-              <Button onClick={handleResumeSession} className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white gap-2 rounded-2xl px-6 font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all w-full">
+              <Button onClick={handleResumeSession} className="bg-primary hover:from-indigo-700 hover:to-violet-700 text-white gap-2 rounded-2xl px-6 font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all w-full">
                 Resume Assessment <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
@@ -2190,13 +2190,13 @@ export default function CandidatePortal() {
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-950/80 dark:bg-slate-950/80 backdrop-blur-md p-4"
         >
-          <Card className="max-w-lg w-full p-8 shadow-2xl border border-indigo-100 dark:border-slate-800 relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-violet-500" />
-            <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 mb-6">
+          <Card className="max-w-lg w-full p-8 shadow-2xl border border-border relative overflow-hidden bg-card rounded-3xl">
+            <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
+            <div className="mx-auto w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-indigo-500/30 mb-6">
               <ShieldAlert className="w-7 h-7 text-white" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-4 text-center">Terms & Recording Agreement</h2>
-            <p className="text-slate-600 dark:text-slate-350 font-bold mb-6 text-center leading-relaxed text-sm">
+            <h2 className="text-2xl font-black text-foreground mb-4 text-center">Terms & Recording Agreement</h2>
+            <p className="text-muted-foreground font-bold mb-6 text-center leading-relaxed text-sm">
               By proceeding, you consent to having your <strong className="text-red-500 dark:text-red-400 font-extrabold">audio and video recorded</strong> for the duration of this interview.
               The recording will be used strictly for assessment purposes by the administrative team.
             </p>
@@ -2206,9 +2206,9 @@ export default function CandidatePortal() {
             </div>
             <div className="flex flex-wrap gap-4 justify-center">
               <Link href="/">
-                <Button variant="outline" className="rounded-2xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 px-6 font-bold">Cancel</Button>
+                <Button variant="outline" className="rounded-2xl border-border text-primary hover:bg-secondary px-6 font-bold">Cancel</Button>
               </Link>
-              <Button onClick={handleAgreeAndStart} className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white gap-2 rounded-2xl px-6 font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all">
+              <Button onClick={handleAgreeAndStart} className="bg-primary hover:from-indigo-700 hover:to-violet-700 text-white gap-2 rounded-2xl px-6 font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all">
                 I Agree, Start Interview <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
@@ -2223,7 +2223,7 @@ export default function CandidatePortal() {
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-950/80 dark:bg-slate-950/80 backdrop-blur-md p-4 overflow-y-auto"
         >
-          <Card className="max-w-2xl w-full p-8 shadow-2xl border border-indigo-150 dark:border-slate-800 relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl flex flex-col my-8">
+          <Card className="max-w-2xl w-full p-8 shadow-2xl border border-indigo-150 dark:border-slate-800 relative overflow-hidden bg-card rounded-3xl flex flex-col my-8">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
             
             <div className="flex items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-4 mb-6">
@@ -2231,7 +2231,7 @@ export default function CandidatePortal() {
                 <ShieldCheck className="w-6 h-6 text-white" />
               </div>
               <div className="text-left">
-                <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">Identity Verification</h2>
+                <h2 className="text-xl font-black text-foreground">Identity Verification</h2>
                 <p className="text-xs text-slate-550 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5">AI Biometric Identity Portal</p>
               </div>
             </div>
@@ -2243,11 +2243,11 @@ export default function CandidatePortal() {
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${!idImageBase64 ? 'bg-indigo-600 text-white' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400'}`}>
                     1
                   </div>
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Government ID</span>
+                  <span className="text-xs font-bold text-muted-foreground">Government ID</span>
                 </div>
                 <div className="h-0.5 bg-slate-200 dark:bg-slate-800 flex-1" />
                 <div className="flex items-center gap-2 flex-1">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${idImageBase64 ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${idImageBase64 ? 'bg-indigo-600 text-white' : 'bg-secondary text-slate-400'}`}>
                     2
                   </div>
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-355">Selfie Capture</span>
@@ -2260,7 +2260,7 @@ export default function CandidatePortal() {
               <div className="space-y-6">
                 <div className="text-left">
                   <h3 className="text-sm font-black text-slate-855 dark:text-slate-200 uppercase tracking-wider mb-2">Step 1: Capture or Upload Government ID</h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed font-semibold">
+                  <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
                     Please hold your Government ID (Driver's License, Passport, or National ID card) up to the camera or upload a scanned image file. Ensure all details are clearly legible and the face photo on the ID is fully visible.
                   </p>
                 </div>
@@ -2293,9 +2293,9 @@ export default function CandidatePortal() {
                   <div className="flex flex-col gap-3">
                     <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-left">File Upload Fallback</span>
                     <div className="flex-1 flex flex-col justify-center items-center p-6 border-2 border-dashed border-slate-250 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-950/40 text-center relative hover:bg-slate-100 dark:hover:bg-slate-950/60 transition-colors group aspect-video min-h-[140px] md:min-h-0">
-                      <Upload className="w-8 h-8 text-indigo-500 group-hover:scale-110 transition-transform mb-2" />
-                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300">Choose ID Scan File</span>
-                      <span className="text-[9px] text-slate-500 dark:text-slate-400 mt-1 font-semibold">Accepts PNG, JPG, JPEG (Max 5MB)</span>
+                      <Upload className="w-8 h-8 text-primary group-hover:scale-110 transition-transform mb-2" />
+                      <span className="text-xs font-extrabold text-muted-foreground">Choose ID Scan File</span>
+                      <span className="text-[9px] text-muted-foreground mt-1 font-semibold">Accepts PNG, JPG, JPEG (Max 5MB)</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -2313,7 +2313,7 @@ export default function CandidatePortal() {
                       setShowIdVerification(false);
                       setHasAgreed(false);
                     }}
-                    className="rounded-xl border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-805 font-bold px-5 text-xs"
+                    className="rounded-xl border-border text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-805 font-bold px-5 text-xs"
                   >
                     Go Back
                   </Button>
@@ -2379,7 +2379,7 @@ export default function CandidatePortal() {
                 {isVerifying && (
                   <div className="flex flex-col items-center py-12 text-center">
                     <div className="relative mb-6">
-                      <Loader2 className="w-14 h-14 text-indigo-500 animate-spin" />
+                      <Loader2 className="w-14 h-14 text-primary animate-spin" />
                       <Sparkles className="w-6 h-6 text-purple-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
                     </div>
                     <h3 className="text-lg font-black text-slate-855 dark:text-slate-100">Comparing Biometric Signatures...</h3>
@@ -2397,7 +2397,7 @@ export default function CandidatePortal() {
                         <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 flex items-center justify-center text-amber-500 dark:text-amber-400 mb-4">
                           <AlertCircle className="w-7 h-7" />
                         </div>
-                        <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">
+                        <h3 className="text-lg font-black text-foreground">
                           {showManualCheckNotice ? "Manual Verification Required" : "Verification System Busy"}
                         </h3>
                         
@@ -2414,11 +2414,11 @@ export default function CandidatePortal() {
                         <div className="grid grid-cols-2 gap-4 my-6 w-full max-w-md">
                           <div className="flex flex-col items-center gap-1.5">
                             <span className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Government ID</span>
-                            <img src={idImageBase64} className="w-full aspect-video object-cover rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm" />
+                            <img src={idImageBase64} className="w-full aspect-video object-cover rounded-xl border border-border shadow-sm" />
                           </div>
                           <div className="flex flex-col items-center gap-1.5">
                             <span className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Captured Selfie</span>
-                            <img src={selfieImageBase64} className="w-full aspect-video object-cover rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm" />
+                            <img src={selfieImageBase64} className="w-full aspect-video object-cover rounded-xl border border-border shadow-sm" />
                           </div>
                         </div>
 
@@ -2431,7 +2431,7 @@ export default function CandidatePortal() {
                               setVerificationError(null);
                             }}
                             variant="outline"
-                            className="rounded-2xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 px-6 font-bold text-xs"
+                            className="rounded-2xl border-border text-primary hover:bg-secondary px-6 font-bold text-xs"
                           >
                             Retry Capture
                           </Button>
@@ -2440,7 +2440,7 @@ export default function CandidatePortal() {
                               setShowIdVerification(false);
                               setShowStartConfirm(true);
                             }}
-                            className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold rounded-2xl px-6 py-2.5 shadow-md shadow-indigo-500/25 transition-all text-xs flex items-center gap-1.5"
+                            className="bg-primary hover:from-indigo-700 hover:to-violet-700 text-white font-bold rounded-2xl px-6 py-2.5 shadow-md shadow-indigo-500/25 transition-all text-xs flex items-center gap-1.5"
                           >
                             Proceed anyway <ArrowRight className="w-4 h-4" />
                           </Button>
@@ -2451,7 +2451,7 @@ export default function CandidatePortal() {
                         <div className="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-955/20 border border-rose-250 dark:border-rose-900/40 flex items-center justify-center text-rose-500 dark:text-rose-455 mb-4">
                           <AlertCircle className="w-7 h-7" />
                         </div>
-                        <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">Verification Rejected</h3>
+                        <h3 className="text-lg font-black text-foreground">Verification Rejected</h3>
                         <span className="text-xs bg-rose-100 dark:bg-rose-950/45 text-rose-700 dark:text-rose-400 px-3 py-0.5 rounded-full font-black mt-1">
                           Match Confidence: {verificationResult.confidence}%
                         </span>
@@ -2464,11 +2464,11 @@ export default function CandidatePortal() {
                         <div className="grid grid-cols-2 gap-4 my-6 w-full max-w-md">
                           <div className="flex flex-col items-center gap-1.5">
                             <span className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Government ID</span>
-                            <img src={idImageBase64} className="w-full aspect-video object-cover rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm" />
+                            <img src={idImageBase64} className="w-full aspect-video object-cover rounded-xl border border-border shadow-sm" />
                           </div>
                           <div className="flex flex-col items-center gap-1.5">
                             <span className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Captured Selfie</span>
-                            <img src={selfieImageBase64} className="w-full aspect-video object-cover rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm" />
+                            <img src={selfieImageBase64} className="w-full aspect-video object-cover rounded-xl border border-border shadow-sm" />
                           </div>
                         </div>
 
@@ -2494,7 +2494,7 @@ export default function CandidatePortal() {
                     <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 flex items-center justify-center text-emerald-650 dark:text-emerald-400 mb-4 animate-bounce">
                       <ShieldCheck className="w-7 h-7" />
                     </div>
-                    <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">Identity Verified</h3>
+                    <h3 className="text-lg font-black text-foreground">Identity Verified</h3>
                     <span className="text-xs bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 px-3.5 py-0.5 rounded-full font-black mt-1">
                       Biometric Match Confidence: {verificationResult.confidence}%
                     </span>
@@ -2507,11 +2507,11 @@ export default function CandidatePortal() {
                     <div className="grid grid-cols-2 gap-4 my-6 w-full max-w-md">
                       <div className="flex flex-col items-center gap-1.5">
                         <span className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Government ID</span>
-                        <img src={idImageBase64} className="w-full aspect-video object-cover rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm" />
+                        <img src={idImageBase64} className="w-full aspect-video object-cover rounded-xl border border-border shadow-sm" />
                       </div>
                       <div className="flex flex-col items-center gap-1.5">
                         <span className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Captured Selfie</span>
-                        <img src={selfieImageBase64} className="w-full aspect-video object-cover rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm" />
+                        <img src={selfieImageBase64} className="w-full aspect-video object-cover rounded-xl border border-border shadow-sm" />
                       </div>
                     </div>
 
@@ -2520,7 +2520,7 @@ export default function CandidatePortal() {
                         setShowIdVerification(false);
                         setShowStartConfirm(true);
                       }}
-                      className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold rounded-2xl px-8 py-3 shadow-md shadow-indigo-500/25 flex items-center gap-2 text-xs"
+                      className="bg-primary hover:from-indigo-700 hover:to-violet-700 text-white font-bold rounded-2xl px-8 py-3 shadow-md shadow-indigo-500/25 flex items-center gap-2 text-xs"
                     >
                       Proceed to Assessment Instructions <ArrowRight className="w-4 h-4" />
                     </Button>
@@ -2530,8 +2530,8 @@ export default function CandidatePortal() {
                 {/* 3D. Unverified Confirmation review screen */}
                 {!isVerifying && !verificationResult && (
                   <div className="flex flex-col items-center py-4 text-center">
-                    <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">Confirm Captured Images</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-semibold">
+                    <h3 className="text-lg font-black text-foreground">Confirm Captured Images</h3>
+                    <p className="text-xs text-muted-foreground mt-1 font-semibold">
                       Review both pictures to verify that your ID is clear and your face is well-aligned.
                     </p>
 
@@ -2574,13 +2574,13 @@ export default function CandidatePortal() {
                           setSelfieImageBase64(null);
                           setVerificationError(null);
                         }}
-                        className="rounded-2xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 px-6 font-bold text-xs"
+                        className="rounded-2xl border-border text-primary hover:bg-secondary px-6 font-bold text-xs"
                       >
                         Reset All
                       </Button>
                       <Button
                         onClick={handleVerifyIdentity}
-                        className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold rounded-2xl px-8 shadow-md shadow-indigo-500/25 flex items-center gap-2 text-xs"
+                        className="bg-primary hover:from-indigo-700 hover:to-violet-700 text-white font-bold rounded-2xl px-8 shadow-md shadow-indigo-500/25 flex items-center gap-2 text-xs"
                       >
                         Run AI Matching <Sparkles className="w-3.5 h-3.5" />
                       </Button>
@@ -2600,7 +2600,7 @@ export default function CandidatePortal() {
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-950/80 dark:bg-slate-950/80 backdrop-blur-md p-4"
         >
-          <Card className="max-w-2xl w-full p-8 shadow-2xl border border-red-500/20 relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl max-h-[90vh] flex flex-col">
+          <Card className="max-w-2xl w-full p-8 shadow-2xl border border-red-500/20 relative overflow-hidden bg-card rounded-3xl max-h-[90vh] flex flex-col">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-rose-600 animate-pulse" />
             
             <div className="flex items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-4 mb-4 flex-shrink-0">
@@ -2608,13 +2608,13 @@ export default function CandidatePortal() {
                 <ShieldAlert className="w-6 h-6 text-white" />
               </div>
               <div className="text-left">
-                <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">Test Monitoring & Integrity Policy</h2>
+                <h2 className="text-xl font-black text-foreground">Test Monitoring & Integrity Policy</h2>
                 <p className="text-xs text-red-500 dark:text-rose-400 font-extrabold uppercase tracking-wider mt-0.5 animate-pulse">Active AI Proctoring Enabled</p>
               </div>
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-5 pr-2 mb-6 scrollbar-thin scrollbar-thumb-indigo-50 dark:scrollbar-thumb-slate-805">
-              <p className="text-slate-600 dark:text-slate-350 text-sm font-semibold leading-relaxed">
+              <p className="text-muted-foreground text-sm font-semibold leading-relaxed">
                 This assessment is monitored using AI-powered face, voice, and focus monitoring. The following actions are strictly prohibited and will trigger security warnings:
               </p>
 
@@ -2635,7 +2635,7 @@ export default function CandidatePortal() {
                     <div className="w-5 h-5 rounded-full bg-red-100 dark:bg-red-950/35 flex items-center justify-center text-[10px] font-black text-red-600 dark:text-rose-400 flex-shrink-0 mt-0.5">
                       {idx + 1}
                     </div>
-                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300 leading-snug">{rule}</p>
+                    <p className="text-xs font-bold text-muted-foreground leading-snug">{rule}</p>
                   </div>
                 ))}
               </div>
@@ -2654,11 +2654,11 @@ export default function CandidatePortal() {
             </div>
 
             <div className="border-t border-slate-100 dark:border-slate-800 pt-4 flex-shrink-0 flex flex-wrap gap-4 justify-between items-center">
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-bold max-w-[50%] leading-normal">
+              <span className="text-[11px] text-muted-foreground font-bold max-w-[50%] leading-normal">
                 By clicking "Start Test Now", you consent to fullscreen activation and active proctoring checks.
               </span>
               <div className="flex gap-3">
-                <Button onClick={cancelStartConfirm} variant="outline" className="rounded-2xl border-indigo-200 dark:border-slate-850 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 px-6 font-bold text-xs">
+                <Button onClick={cancelStartConfirm} variant="outline" className="rounded-2xl border-indigo-200 dark:border-slate-850 text-primary hover:bg-secondary px-6 font-bold text-xs">
                   Cancel & Go Back
                 </Button>
                 <Button onClick={startInterview} className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white gap-2 rounded-2xl px-6 py-5 font-bold shadow-md shadow-red-500/25 hover:shadow-lg hover:shadow-red-500/35 transition-all text-xs">
@@ -2677,17 +2677,17 @@ export default function CandidatePortal() {
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-950/80 dark:bg-slate-950/80 backdrop-blur-md p-4"
         >
-          <Card className="max-w-lg w-full p-8 shadow-2xl border border-indigo-100 dark:border-slate-800 relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl">
+          <Card className="max-w-lg w-full p-8 shadow-2xl border border-border relative overflow-hidden bg-card rounded-3xl">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-rose-600" />
             <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/30 mb-6">
               <ShieldAlert className="w-7 h-7 text-white" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-4 text-center">End Assessment?</h2>
-            <p className="text-slate-600 dark:text-slate-350 mb-6 text-center leading-relaxed text-sm">
+            <h2 className="text-2xl font-black text-foreground mb-4 text-center">End Assessment?</h2>
+            <p className="text-muted-foreground mb-6 text-center leading-relaxed text-sm">
               Are you sure you want to end the test early? This will submit your current progress and officially close your session. You will not be able to re-enter.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <Button onClick={() => setShowEndConfirm(false)} variant="outline" className="rounded-2xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 px-6 font-bold">
+              <Button onClick={() => setShowEndConfirm(false)} variant="outline" className="rounded-2xl border-border text-primary hover:bg-secondary px-6 font-bold">
                 No, Continue Test
               </Button>
               <Button onClick={() => { setShowEndConfirm(false); setShowReviewModal(true); }} className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white gap-2 rounded-2xl px-6 font-bold shadow-md shadow-red-500/25 hover:shadow-lg hover:shadow-red-500/35 transition-all">
@@ -2705,17 +2705,17 @@ export default function CandidatePortal() {
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-950/80 dark:bg-slate-950/80 backdrop-blur-md p-4"
         >
-          <Card className="max-w-lg w-full p-8 shadow-2xl border border-indigo-100 dark:border-slate-800 relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl">
+          <Card className="max-w-lg w-full p-8 shadow-2xl border border-border relative overflow-hidden bg-card rounded-3xl">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-rose-600" />
             <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/30 mb-6">
               <RotateCcw className="w-7 h-7 text-white" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-4 text-center">Reset Code Editor?</h2>
-            <p className="text-slate-600 dark:text-slate-350 mb-6 text-center leading-relaxed text-sm font-semibold">
+            <h2 className="text-2xl font-black text-foreground mb-4 text-center">Reset Code Editor?</h2>
+            <p className="text-muted-foreground mb-6 text-center leading-relaxed text-sm font-semibold">
               Are you sure you want to reset the editor to the default template? This will erase all your current code changes.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <Button onClick={() => setShowResetConfirmModal(false)} variant="outline" className="rounded-2xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 px-6 font-bold">
+              <Button onClick={() => setShowResetConfirmModal(false)} variant="outline" className="rounded-2xl border-border text-primary hover:bg-secondary px-6 font-bold">
                 Cancel
               </Button>
               <Button onClick={() => { setShowResetConfirmModal(false); setAnswer(DEFAULT_TEMPLATES[selectedLanguage]); }} className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white gap-2 rounded-2xl px-6 font-bold shadow-md shadow-red-500/25 hover:shadow-lg hover:shadow-red-500/35 transition-all">
@@ -2733,13 +2733,13 @@ export default function CandidatePortal() {
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-950/80 dark:bg-slate-950/80 backdrop-blur-md p-4"
         >
-          <Card className="max-w-lg w-full p-8 shadow-2xl border border-indigo-100 dark:border-slate-800 relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl">
+          <Card className="max-w-lg w-full p-8 shadow-2xl border border-border relative overflow-hidden bg-card rounded-3xl">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-amber-500 to-orange-600" />
             <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30 mb-6">
               <ShieldAlert className="w-7 h-7 text-white" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-4 text-center">Submit Without Running?</h2>
-            <p className="text-slate-600 dark:text-slate-350 mb-6 text-center leading-relaxed text-sm font-semibold">
+            <h2 className="text-2xl font-black text-foreground mb-4 text-center">Submit Without Running?</h2>
+            <p className="text-muted-foreground mb-6 text-center leading-relaxed text-sm font-semibold">
               If you submit the code without running it will be considered no answered.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
@@ -2749,7 +2749,7 @@ export default function CandidatePortal() {
                   setPendingNavigation(null);
                 }} 
                 variant="outline" 
-                className="rounded-2xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 px-6 font-bold"
+                className="rounded-2xl border-border text-primary hover:bg-secondary px-6 font-bold"
               >
                 Go Back & Run Code
               </Button>
@@ -2777,19 +2777,19 @@ export default function CandidatePortal() {
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-950/80 dark:bg-slate-950/80 backdrop-blur-md p-4"
         >
-          <Card className="max-w-lg w-full p-8 shadow-2xl border border-indigo-100 dark:border-slate-800 relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl">
+          <Card className="max-w-lg w-full p-8 shadow-2xl border border-border relative overflow-hidden bg-card rounded-3xl">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-green-500" />
             <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 mb-6">
               <CheckCircle className="w-7 h-7 text-white animate-bounce" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-4 text-center">Assessment Submitted!</h2>
-            <p className="text-slate-600 dark:text-slate-350 mb-8 text-center leading-relaxed text-sm">
+            <h2 className="text-2xl font-black text-foreground mb-4 text-center">Assessment Submitted!</h2>
+            <p className="text-muted-foreground mb-8 text-center leading-relaxed text-sm">
               Your responses have been successfully recorded. We have registered your questions and will reply to them through email.
             </p>
             <div className="flex justify-center">
               <Button onClick={() => {
                 setShowSubmitSuccess(false);
-              }} className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white gap-2 rounded-2xl px-8 py-6 font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all text-base">
+              }} className="bg-primary hover:from-indigo-700 hover:to-violet-700 text-white gap-2 rounded-2xl px-8 py-6 font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all text-base">
                 Finish Assessment <ArrowRight className="w-5 h-5" />
               </Button>
             </div>
@@ -2803,10 +2803,10 @@ export default function CandidatePortal() {
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-950/80 dark:bg-slate-950/80 backdrop-blur-md p-4"
         >
-          <Card className="max-w-3xl w-full p-8 shadow-2xl border border-indigo-100 dark:border-slate-800 relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl flex flex-col max-h-[85vh]">
+          <Card className="max-w-3xl w-full p-8 shadow-2xl border border-border relative overflow-hidden bg-card rounded-3xl flex flex-col max-h-[85vh]">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
             
-            <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-2 text-center">Review Your Responses</h2>
+            <h2 className="text-2xl font-black text-foreground mb-2 text-center">Review Your Responses</h2>
             <p className="text-slate-600 dark:text-slate-400 mb-6 text-center text-xs leading-relaxed">
               Please review your answers below before submitting your assessment. You can go back to make changes if needed.
             </p>
@@ -2836,7 +2836,7 @@ export default function CandidatePortal() {
                       {introAnswered ? 'Completed' : 'Skipped'}
                     </span>
                   </div>
-                  <div className="border-x border-slate-200 dark:border-slate-800">
+                  <div className="border-x border-border">
                     <span className="block text-[10px] font-black text-slate-500 dark:text-slate-450 uppercase tracking-wider">Technical Questions</span>
                     <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">
                       <span className="text-emerald-600 dark:text-emerald-400">{answeredTech}</span> / <span className="text-amber-600 dark:text-amber-400">{skippedTech} Skipped</span>
@@ -2891,8 +2891,8 @@ export default function CandidatePortal() {
                         {isAnswered ? 'Answered' : 'Skipped'}
                       </Badge>
                     </div>
-                    <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-snug">{q}</p>
-                    <div className={`text-xs text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed max-h-[100px] overflow-y-auto bg-slate-50/80 dark:bg-slate-950/80 p-2.5 rounded-xl border border-slate-100 dark:border-slate-850 ${
+                    <p className="text-[11px] font-bold text-muted-foreground leading-snug">{q}</p>
+                    <div className={`text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed max-h-[100px] overflow-y-auto bg-slate-50/80 dark:bg-slate-950/80 p-2.5 rounded-xl border border-slate-100 dark:border-slate-850 ${
                       isCoding ? 'font-mono text-[11px] bg-slate-950 text-indigo-200' : 'font-medium'
                     }`}>
                       {ans && ans.trim() !== "" ? ans : "[No response provided]"}
@@ -2924,7 +2924,7 @@ export default function CandidatePortal() {
               <Button 
                 onClick={() => setShowReviewModal(false)} 
                 variant="outline" 
-                className="rounded-2xl border-indigo-200 dark:border-slate-800 text-indigo-700 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 px-6 font-bold text-sm"
+                className="rounded-2xl border-border text-primary hover:bg-secondary px-6 font-bold text-sm"
               >
                 Back to Assessment
               </Button>
@@ -2946,7 +2946,7 @@ export default function CandidatePortal() {
       <main className="max-w-full mx-auto px-6 md:px-12 py-8">
         {isInitializing ? (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center py-40 space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+            <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-indigo-500/30">
               <Sparkles className="w-7 h-7 text-white animate-pulse" />
             </div>
             <p className="text-slate-600 font-bold animate-pulse text-sm">Generating your personalized questions…</p>
@@ -2957,10 +2957,10 @@ export default function CandidatePortal() {
               
               {/* Left Panel: Questions Overview (lg:col-span-2) */}
               <div className="lg:col-span-2 flex flex-col space-y-4">
-                <Card className="p-5 border-indigo-100 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900 rounded-3xl flex-1 flex flex-col overflow-hidden min-h-[500px]">
-                  <div className="flex items-center justify-between border-b border-indigo-50 dark:border-slate-800 pb-3 mb-4">
+                <Card className="p-5 border-border shadow-md bg-card rounded-3xl flex-1 flex flex-col overflow-hidden min-h-[500px]">
+                  <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
                     <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">Assessment Progress</h3>
-                    <Badge className="bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-violet-400 font-bold border-0 text-[10px]">
+                    <Badge className="bg-secondary text-primary font-bold border-0 text-[10px]">
                       {currentStep === 'setup' ? '0' : currentStep === 'intro' ? '5' : currentStep === 'candidate_question' ? '95' : Math.min(90, Math.round(((currentIndex + 1) / (questions.length || 1)) * 90))}%
                     </Badge>
                   </div>
@@ -3007,11 +3007,11 @@ export default function CandidatePortal() {
                                   ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
                                   : isIntroSkipped
                                     ? 'text-amber-600 dark:text-amber-400 font-semibold'
-                                    : 'text-slate-600 dark:text-slate-300'
+                                    : 'text-muted-foreground'
                             }`}>
                               Introduction
                             </span>
-                            <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">Professional summary</span>
+                            <span className="text-[10px] text-muted-foreground mt-1 font-medium">Professional summary</span>
                           </div>
                         </div>
                       );
@@ -3074,7 +3074,7 @@ export default function CandidatePortal() {
                                 }`}>
                                   Verbal Questions
                                 </span>
-                                <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                                <span className="text-[10px] text-muted-foreground mt-1 font-medium">
                                   {isActive 
                                     ? `Question ${currentVerbalNumber} of ${theoreticalQuestions.length}` 
                                     : `Interview verbal questions (${theoreticalQuestions.length} questions)`}
@@ -3121,7 +3121,7 @@ export default function CandidatePortal() {
                                       <div className={`w-4.5 h-4.5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 border ${
                                         isQActive
                                           ? 'border-indigo-500 bg-indigo-500 text-white shadow-sm shadow-indigo-500/20'
-                                          : 'border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800'
+                                          : 'border-slate-300 dark:border-slate-700 text-muted-foreground bg-slate-50 dark:bg-slate-800'
                                       }`}>
                                         {listIdx + 1}
                                       </div>
@@ -3205,7 +3205,7 @@ export default function CandidatePortal() {
                                 }`}>
                                   Coding Challenges
                                 </span>
-                                <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                                <span className="text-[10px] text-muted-foreground mt-1 font-medium">
                                   {isActive 
                                     ? `Question ${currentCodingNumber} of ${codingQuestions.length}` 
                                     : `Hands-on (${codingQuestions.length} challenges)`}
@@ -3252,7 +3252,7 @@ export default function CandidatePortal() {
                                       <div className={`w-4.5 h-4.5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 border ${
                                         isQActive
                                           ? 'border-indigo-500 bg-indigo-500 text-white shadow-sm shadow-indigo-500/20'
-                                          : 'border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800'
+                                          : 'border-slate-300 dark:border-slate-700 text-muted-foreground bg-slate-50 dark:bg-slate-800'
                                       }`}>
                                         {listIdx + 1}
                                       </div>
@@ -3323,7 +3323,7 @@ export default function CandidatePortal() {
                             }`}>
                               Questions for Us
                             </span>
-                            <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">Inquiries for HR Team</span>
+                            <span className="text-[10px] text-muted-foreground mt-1 font-medium">Inquiries for HR Team</span>
                           </div>
                         </div>
                       );
@@ -3457,11 +3457,11 @@ export default function CandidatePortal() {
                   <div className="lg:col-span-4 flex flex-col space-y-6">
                     
                     {/* Question Info Card */}
-                    <Card className="p-6 border-indigo-100 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900 rounded-3xl relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-violet-500" />
+                    <Card className="p-6 border-border shadow-md bg-card rounded-3xl relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
                       
                       <div className="flex justify-between items-center mb-4">
-                        <Badge variant="outline" className="text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[9px] font-black border-indigo-200 dark:border-slate-800 bg-indigo-50 dark:bg-slate-950 px-2.5 py-0.5">
+                        <Badge variant="outline" className="text-muted-foreground uppercase tracking-wider text-[9px] font-black border-border bg-indigo-50 dark:bg-slate-950 px-2.5 py-0.5">
                           {currentStep === 'intro' 
                             ? 'Candidate Introduction' 
                             : currentStep === 'candidate_question' 
@@ -3482,14 +3482,14 @@ export default function CandidatePortal() {
                               speakQuestion(questions[currentIndex]);
                             }
                           }}
-                          className="h-8 px-2 text-indigo-600 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 hover:text-indigo-700 dark:hover:text-violet-350 rounded-lg gap-1 text-[11px] font-bold"
+                          className="h-8 px-2 text-primary hover:bg-secondary hover:text-indigo-700 dark:hover:text-violet-350 rounded-lg gap-1 text-[11px] font-bold"
                           disabled={isAiSpeaking || showStartConfirm}
                         >
                           <Volume2 className="w-3.5 h-3.5" /> Repeat Question
                         </Button>
                       </div>
 
-                      <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 leading-snug">
+                      <h3 className="text-base font-bold text-foreground leading-snug">
                         {showStartConfirm 
                           ? "Assessment starting..." 
                           : currentStep === 'intro'
@@ -3499,21 +3499,21 @@ export default function CandidatePortal() {
                               : (questions[currentIndex] || "Generating...")}
                       </h3>
                       {currentStep === 'candidate_question' && (
-                        <div className="text-xs font-semibold text-indigo-600 dark:text-violet-400 mt-3 bg-indigo-50/50 dark:bg-slate-800/50 p-3 rounded-xl border border-indigo-100/50 dark:border-slate-800 leading-relaxed">
+                        <div className="text-xs font-semibold text-primary mt-3 bg-indigo-50/50 dark:bg-slate-800/50 p-3 rounded-xl border border-indigo-100/50 dark:border-slate-800 leading-relaxed">
                           Note: Whatever text is entered or transcribed in the live transcript area below will be emailed directly to the BizX HR Team.
                         </div>
                       )}
                     </Card>
 
                     {/* Transcribing panel */}
-                    <Card className="p-6 border-indigo-100 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900 rounded-3xl flex-1 flex flex-col space-y-4 min-h-[300px]">
+                    <Card className="p-6 border-border shadow-md bg-card rounded-3xl flex-1 flex flex-col space-y-4 min-h-[300px]">
                       <div className="flex justify-between items-center">
                         <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">Live Transcript</h3>
                         
                         <Badge className={`border-0 font-bold uppercase tracking-wider text-[9px] px-2.5 py-0.5 ${
                           isMicListening 
                             ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 animate-pulse' 
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-450'
+                            : 'bg-secondary text-slate-600 dark:text-slate-450'
                         }`}>
                           {isMicListening ? 'Listening' : 'Muted'}
                         </Badge>
@@ -3522,7 +3522,7 @@ export default function CandidatePortal() {
                       <div className="relative flex-1 flex flex-col">
                         <textarea
                           id="answer"
-                          className="w-full flex-1 min-h-[160px] p-4 text-slate-800 dark:text-slate-100 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all resize-none text-sm font-medium leading-relaxed"
+                          className="w-full flex-1 min-h-[160px] p-4 text-foreground bg-muted/50 border border-border rounded-2xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all resize-none text-sm font-medium leading-relaxed"
                           placeholder={showStartConfirm ? "Permissions granted. Please click 'Start Test' to begin..." : (isMicListening ? "Start speaking now. Your voice response will be transcribed here..." : "Microphone is muted. Click 'Unmute Mic' to speak, or type your answer here...")}
                           value={answer}
                           onChange={e => setAnswer(e.target.value)}
@@ -3568,7 +3568,7 @@ export default function CandidatePortal() {
                         <Button
                           variant="outline"
                           onClick={() => setAnswer('')}
-                          className="rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850 h-10 px-3 font-bold gap-1 text-xs"
+                          className="rounded-2xl border border-border text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-850 h-10 px-3 font-bold gap-1 text-xs"
                           disabled={!answer || showStartConfirm}
                         >
                           <RotateCcw className="w-3.5 h-3.5" /> Clear
@@ -3594,7 +3594,7 @@ export default function CandidatePortal() {
                         )}
                         <Button
                           type="button"
-                          className={`h-12 gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-2xl font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all text-sm ${
+                          className={`h-12 gap-2 bg-primary hover:from-indigo-700 hover:to-violet-700 text-white rounded-2xl font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all text-sm ${
                             currentStep === 'questions' ? 'flex-[2]' : 'w-full'
                           }`}
                           disabled={isSubmitting || showStartConfirm || (currentStep === 'questions' && questions.length === 0)}
@@ -3631,13 +3631,13 @@ export default function CandidatePortal() {
                   {/* IDE Left Column: Question Description & PIP webcam */}
                   <div className="lg:col-span-5 flex flex-col space-y-6">
                     {/* Problem Statement Card */}
-                    <Card className="p-6 border-indigo-100 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900 rounded-3xl relative flex flex-col flex-1 overflow-hidden min-h-[500px]">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-violet-500" />
+                    <Card className="p-6 border-border shadow-md bg-card rounded-3xl relative flex flex-col flex-1 overflow-hidden min-h-[500px]">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
                       
-                      <div className="flex justify-between items-center mb-4 pb-3 border-b border-indigo-50 dark:border-slate-800">
+                      <div className="flex justify-between items-center mb-4 pb-3 border-b border-border">
                         <div className="flex items-center gap-2">
-                          <Code2 className="w-5 h-5 text-indigo-600 dark:text-violet-400" />
-                          <Badge variant="outline" className="text-indigo-600 dark:text-violet-400 uppercase tracking-wider text-[9px] font-black border-indigo-200 dark:border-slate-800 bg-indigo-50 dark:bg-slate-950 px-2.5 py-0.5">
+                          <Code2 className="w-5 h-5 text-primary" />
+                          <Badge variant="outline" className="text-primary uppercase tracking-wider text-[9px] font-black border-border bg-indigo-50 dark:bg-slate-950 px-2.5 py-0.5">
                             Coding Challenge {questions.filter(q => q.startsWith("Coding Challenge:")).findIndex(q => q === questions[currentIndex]) + 1}
                           </Badge>
                         </div>
@@ -3649,7 +3649,7 @@ export default function CandidatePortal() {
                           onClick={() => {
                             speakQuestion(questions[currentIndex]);
                           }}
-                          className="h-8 px-2.5 text-indigo-600 dark:text-violet-400 hover:bg-indigo-50 dark:hover:bg-slate-800 hover:text-indigo-700 dark:hover:text-violet-350 rounded-lg gap-1 text-[11px] font-bold"
+                          className="h-8 px-2.5 text-primary hover:bg-secondary hover:text-indigo-700 dark:hover:text-violet-350 rounded-lg gap-1 text-[11px] font-bold"
                           disabled={isAiSpeaking || showStartConfirm}
                         >
                           <Volume2 className="w-3.5 h-3.5" /> Repeat Question
@@ -3658,7 +3658,7 @@ export default function CandidatePortal() {
 
                       {/* Scrollable Question Content */}
                       <div className="flex-1 overflow-y-auto pr-2 mb-4 scrollbar-thin scrollbar-thumb-indigo-50 dark:scrollbar-thumb-slate-805">
-                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 leading-relaxed whitespace-pre-wrap">
+                        <h3 className="text-base font-bold text-foreground leading-relaxed whitespace-pre-wrap">
                           {questions[currentIndex] || "Generating coding challenge..."}
                         </h3>
                       </div>
@@ -3666,13 +3666,13 @@ export default function CandidatePortal() {
                       {/* PIP Webcam Card */}
                       <div className="mt-auto pt-4 border-t border-indigo-50 dark:border-slate-805 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4">
                         <div className="flex flex-col max-w-[50%]">
-                          <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Webcam Recording</span>
-                          <span className="text-xs font-semibold text-slate-600 dark:text-slate-350 mt-1 leading-snug">
+                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Webcam Recording</span>
+                          <span className="text-xs font-semibold text-muted-foreground mt-1 leading-snug">
                             Position your camera clearly. Your audio is paused, and screen feed is monitored.
                           </span>
                         </div>
                         
-                        <div className="relative aspect-video w-36 md:w-44 rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-800 shadow-md bg-slate-950 flex-shrink-0">
+                        <div className="relative aspect-video w-36 md:w-44 rounded-2xl overflow-hidden border-2 border-border shadow-md bg-slate-950 flex-shrink-0">
                           <video
                             ref={videoCallbackRef}
                             autoPlay
@@ -3702,16 +3702,16 @@ export default function CandidatePortal() {
 
                   {/* IDE Right Column: Code Editor & Navigation */}
                   <div className="lg:col-span-5 flex flex-col space-y-6">
-                    <Card className="p-6 border-indigo-100 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900 rounded-3xl flex-1 flex flex-col overflow-hidden min-h-[500px]">
+                    <Card className="p-6 border-border shadow-md bg-card rounded-3xl flex-1 flex flex-col overflow-hidden min-h-[500px]">
                       {/* Editor Header */}
                       <div className="flex items-center justify-between mb-4 pb-3 border-b border-indigo-50 dark:border-slate-850">
                         {/* Language Selector */}
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Language:</span>
+                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Language:</span>
                           <select
                             value={selectedLanguage}
                             onChange={(e) => setSelectedLanguage(e.target.value)}
-                            className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm animate-none"
+                            className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl px-2.5 py-1 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm animate-none"
                           >
                             <option value="javascript">JavaScript</option>
                             <option value="typescript">TypeScript</option>
@@ -3728,7 +3728,7 @@ export default function CandidatePortal() {
                             size="sm"
                             onClick={handleRunCode}
                             disabled={isRunningCode || isSubmitting}
-                            className="h-8 px-2.5 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-xl font-bold gap-1 text-[11px]"
+                            className="h-8 px-2.5 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 border-border hover:bg-slate-50 dark:hover:bg-slate-850 rounded-xl font-bold gap-1 text-[11px]"
                           >
                             {isRunningCode ? (
                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -3743,7 +3743,7 @@ export default function CandidatePortal() {
                             variant="outline"
                             size="sm"
                             onClick={() => setShowResetConfirmModal(true)}
-                            className="h-8 px-2.5 text-slate-500 hover:text-indigo-600 dark:hover:text-violet-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-xl font-bold gap-1 text-[11px]"
+                            className="h-8 px-2.5 text-slate-500 hover:text-indigo-600 dark:hover:text-violet-400 border-border hover:bg-slate-50 dark:hover:bg-slate-850 rounded-xl font-bold gap-1 text-[11px]"
                           >
                             <RotateCcw className="w-3 h-3" /> Reset Template
                           </Button>
@@ -3753,7 +3753,7 @@ export default function CandidatePortal() {
 
 
                       {/* Editor Workspace Container */}
-                      <div className="relative flex-1 flex border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-950 text-slate-100 font-mono text-[13px] leading-relaxed min-h-[280px]">
+                      <div className="relative flex-1 flex border border-border rounded-2xl overflow-hidden bg-slate-950 text-slate-100 font-mono text-[13px] leading-relaxed min-h-[280px]">
                         {/* Line Numbers Gutter */}
                         <div
                           ref={lineNumbersRef}
@@ -3878,7 +3878,7 @@ export default function CandidatePortal() {
                           </Button>
                           <Button
                             type="button"
-                            className="h-12 gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-2xl font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all text-sm flex-[2]"
+                            className="h-12 gap-2 bg-primary hover:from-indigo-700 hover:to-violet-700 text-white rounded-2xl font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all text-sm flex-[2]"
                             disabled={isSubmitting || showStartConfirm || !answer || answer.trim() === ""}
                             onClick={() => handleNext()}
                           >
@@ -3905,15 +3905,15 @@ export default function CandidatePortal() {
           </motion.div>
         ) : (
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex justify-center items-center py-20">
-            <Card className="p-10 md:p-12 text-center max-w-lg border-0 shadow-xl bg-white dark:bg-slate-900 rounded-3xl relative overflow-hidden">
+            <Card className="p-10 md:p-12 text-center max-w-lg border-0 shadow-xl bg-card rounded-3xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-green-500" />
               <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 dark:bg-emerald-950/20 to-green-100 dark:to-green-950/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/15">
                 <CheckCircle className="w-10 h-10 text-emerald-500 dark:text-emerald-400" />
               </div>
-              <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-4">Interview Complete</h2>
+              <h2 className="text-2xl font-black text-foreground mb-4">Interview Complete</h2>
               {isUploadingVideo ? (
                 <div className="flex flex-col items-center gap-3 py-6">
-                  <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
                   <p className="text-slate-600 dark:text-slate-400 text-sm font-semibold">Securing and saving your video recording. Please do not close this window...</p>
                 </div>
               ) : (
@@ -3929,18 +3929,18 @@ export default function CandidatePortal() {
                           </p>
                         </div>
                       </div>
-                      <p className="text-slate-600 dark:text-slate-350 leading-relaxed mb-8 text-sm">{COMPLETION_TEXT}</p>
+                      <p className="text-muted-foreground leading-relaxed mb-8 text-sm">{COMPLETION_TEXT}</p>
                       <Link href="/">
-                        <Button className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white w-full rounded-2xl h-12 font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all">
+                        <Button className="bg-primary hover:from-indigo-700 hover:to-violet-700 text-white w-full rounded-2xl h-12 font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all">
                           Return to Dashboard
                         </Button>
                       </Link>
                     </>
                   ) : (
                     <>
-                      <p className="text-slate-600 dark:text-slate-350 leading-relaxed mb-8 text-sm">{COMPLETION_TEXT}</p>
+                      <p className="text-muted-foreground leading-relaxed mb-8 text-sm">{COMPLETION_TEXT}</p>
                       <Link href="/">
-                        <Button className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white w-full rounded-2xl h-12 font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all">
+                        <Button className="bg-primary hover:from-indigo-700 hover:to-violet-700 text-white w-full rounded-2xl h-12 font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all">
                           Return to Dashboard
                         </Button>
                       </Link>
@@ -3960,7 +3960,7 @@ export default function CandidatePortal() {
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/95 dark:bg-slate-950/95 backdrop-blur-lg p-6 animate-none"
         >
-          <Card className="max-w-md w-full p-8 shadow-2xl border border-red-500/30 relative overflow-hidden bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-3xl text-center">
+          <Card className="max-w-md w-full p-8 shadow-2xl border border-red-500/30 relative overflow-hidden bg-card text-slate-900 dark:text-white rounded-3xl text-center">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-rose-600 animate-pulse" />
             <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/30 mb-6">
               <ShieldAlert className="w-8 h-8 text-white animate-pulse" />

@@ -14,7 +14,7 @@ const DashboardInner = dynamic(
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 mx-auto"
+            className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-indigo-500/30 mx-auto"
           >
             <Loader2 className="w-6 h-6 text-white animate-spin" />
           </motion.div>

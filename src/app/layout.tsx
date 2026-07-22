@@ -22,11 +22,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
            (function() {
              try {
                var saved = localStorage.getItem('theme');
-               var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-               if (theme === 'dark') {
-                 document.documentElement.classList.add('dark');
-               } else {
-                 document.documentElement.classList.remove('dark');
+               var themes = ["light", "dark", "blue", "purple", "emerald", "rose", "sunset"];
+               var theme = saved && themes.includes(saved) ? saved : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+               if (theme !== 'light') {
+                 document.documentElement.classList.add(theme);
                }
              } catch (e) {}
            })();

@@ -51,7 +51,7 @@ export function ResumeReport({ data, onReset }: ResumeReportProps) {
             </p>
           </div>
           <Link href={`/interview/${data.resumeId || data.id}`}>
-            <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white px-8 h-12 text-lg font-bold rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all">
+            <Button size="lg" className="bg-primary hover:from-indigo-700 hover:to-violet-700 text-white px-8 h-12 text-lg font-bold rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all">
               Start Technical Interview
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
