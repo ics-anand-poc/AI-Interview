@@ -227,7 +227,7 @@ async function run() {
 
     let { data: moduleData } = await supabase.from('learning_modules').select('id').eq('title', 'Imported Tests').maybeSingle();
     if (!moduleData) {
-        const { data: newMod } = await supabase.from('learning_modules').insert({ subject_id: subjectData.id, title: 'Imported Tests', description: 'Auto-imported tests' }).select('id').single();
+        const { data: newMod } = await supabase.from('learning_modules').insert({ subject_id: subjectData!.id, title: 'Imported Tests', description: 'Auto-imported tests' }).select('id').single();
         moduleData = newMod;
     }
 
@@ -253,7 +253,7 @@ async function run() {
             let { data: topicData } = await supabase.from('learning_topics').select('id').eq('title', bank.original).maybeSingle();
             if (!topicData) {
                 const { data: newTop, error: topErr } = await supabase.from('learning_topics').insert({
-                    module_id: moduleData.id,
+                    module_id: moduleData!.id,
                     title: bank.original,
                     description: `Questions for ${bank.original}`,
                     order_index: 0
@@ -268,7 +268,7 @@ async function run() {
             // Create Test
             const { data: testData, error: testErr } = await supabase.from('tests').insert({
                 employee_id: cand.empId,
-                topic_id: topicData.id,
+                topic_id: topicData!.id,
                 title: `Assessment: ${bank.original}`
             }).select('id').single();
 
