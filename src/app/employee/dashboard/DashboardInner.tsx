@@ -373,7 +373,7 @@ export function DashboardInner() {
 // ---------------------------------------------------------------------------
 
 async function fetchAnalytics(token: string): Promise<any> {
-  const r = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ""}/api/employee/analytics`, {
+  const r = await fetch("/api/employee/analytics", {
     headers: { Authorization: `Bearer ${token}` }, cache: "no-store",
   });
   if (!r.ok) throw new Error("Failed to load analytics");
@@ -381,7 +381,7 @@ async function fetchAnalytics(token: string): Promise<any> {
 }
 
 async function fetchResults(token: string): Promise<any[]> {
-  const r = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ""}/api/employee/results`, {
+  const r = await fetch("/api/employee/results", {
     headers: { Authorization: `Bearer ${token}` }, cache: "no-store",
   });
   if (!r.ok) throw new Error("Failed to load results");

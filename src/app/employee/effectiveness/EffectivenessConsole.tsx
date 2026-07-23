@@ -70,12 +70,30 @@ export function EffectivenessConsole() {
         headers: { Authorization: `Bearer ${t}` },
         cache: "no-store"
       });
-      if (!res.ok) throw new Error("Failed to load effectiveness analytics.");
-      const data = await res.json();
-      if (data.success) {
+
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch (e) {
+        // Ignored if JSON parsing fails
+      }
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          window.localStorage.removeItem("employee_token");
+          setErr("Session expired or unauthorized. Redirecting to login...");
+          setTimeout(() => {
+            window.location.href = "/employee";
+          }, 1500);
+          return;
+        }
+        throw new Error(data?.error || `Failed to load metrics (Server status ${res.status})`);
+      }
+
+      if (data && data.success) {
         setAnalytics(data);
       } else {
-        throw new Error(data.error || "Unknown error");
+        throw new Error(data?.error || "Unknown error occurred loading analytics.");
       }
     } catch (e: any) {
       setErr(e.message || "An error occurred.");
