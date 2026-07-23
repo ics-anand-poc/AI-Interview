@@ -187,7 +187,7 @@ async function run() {
       email: user.email,
       department: user.domain || user.product || 'SDM',
       role: user.role || 'employee',
-      is_first_login: false,
+      is_first_login: true,
       password_hash: hash,
       password_salt: salt,
       xp_points: existing?.xp_points || 0,
