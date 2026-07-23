@@ -40,6 +40,9 @@ function getAccountFilePath() {
 let inMemoryStore: AccountStore | null = null;
 
 function readStore(): AccountStore {
+  if (process.env.NODE_ENV === "development") {
+    inMemoryStore = null;
+  }
   if (inMemoryStore) {
     return inMemoryStore;
   }

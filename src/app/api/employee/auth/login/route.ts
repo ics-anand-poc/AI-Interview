@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const employee_id = String(body.employee_id ?? "").trim();
-    const password = String(body.password ?? "");
+    const password = String(body.password ?? "").trim();
 
     if (!employee_id) {
       return NextResponse.json({ error: "Employee ID is required" }, { status: 400 });
@@ -37,22 +37,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid Employee ID" }, { status: 401 });
     }
 
-    if (!hasPassword(employee)) {
-      await auditLogService.addLog({
-        actorEmail: employee.email || employee_id,
-        action: "EMPLOYEE_LOGIN_FIRST_TIME",
-        target: "Employee Portal",
-        details: "Redirected to set initial password",
-        ipAddress: ip
-      });
-      return NextResponse.json({ status: "first_time", employee: { employee_id: employee_id, full_name: employee.full_name } });
-    }
+    const isHashValid = hasPassword(employee) && verifyPassword(password, employee.password_salt ?? "", employee.password_hash ?? "");
+    const isFirstLogin = employee.is_first_login ?? (!hasPassword(employee));
+    const isBlankPassword = password === "";
+    const isEmpIdAsPassword = password.toUpperCase() === employee.employee_id.trim().toUpperCase();
 
-    if (!password) {
-      return NextResponse.json({ error: "Password is required" }, { status: 400 });
-    }
+    const isAllowedFirstTime = isFirstLogin && (isBlankPassword || isEmpIdAsPassword || isHashValid);
 
-    if (!verifyPassword(password, employee.password_salt ?? "", employee.password_hash ?? "")) {
+    if (!isHashValid && !isAllowedFirstTime) {
       await auditLogService.addLog({
         actorEmail: employee.email || employee.employee_id,
         action: "EMPLOYEE_LOGIN_FAILURE",
@@ -66,12 +58,12 @@ export async function POST(request: NextRequest) {
     const token = signToken(employee.employee_id);
     await syncEmployeeToSupabase(employee);
 
-    if (employee.is_first_login) {
+    if (isFirstLogin) {
       await auditLogService.addLog({
         actorEmail: employee.email || employee.employee_id,
         action: "EMPLOYEE_LOGIN_FIRST_TIME_SUCCESS",
         target: "Employee Portal",
-        details: "First time login with initial password. Prompting to keep or change password.",
+        details: "First time login with initial or blank password. Prompting to keep or change password.",
         ipAddress: ip
       });
       return NextResponse.json({

@@ -459,7 +459,7 @@ export default function EmployeeLoginPage() {
                 <div>
                   <p className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wider mb-0.5">First time logging in?</p>
                   <p className="text-xs text-slate-700 dark:text-slate-350 leading-relaxed">
-                    Use your <span className="text-foreground font-semibold">Employee ID</span> with a <span className="text-foreground font-semibold">blank password</span>.
+                    Use your <span className="text-foreground font-semibold">Employee ID</span> with a <span className="text-foreground font-semibold">blank password</span> or your assigned initial password.
                   </p>
                 </div>
               </div>

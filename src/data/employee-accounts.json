@@ -3546,7 +3546,7 @@
       "email": "meena.1.mishra.ext@nokia.com",
       "department": "SDM",
       "role": "Deployment",
-      "is_first_login": true,
+      "is_first_login": false,
       "password_hash": "gvgxHTsiE3id7XzLEMGetWOqXcCVZ/xw4VDz959vz7ddJHNIXF1x4bpT4HY5mJFSBHew35MBTJyiOBTivwabKg==",
       "password_salt": "wXy/3zX/9jDCqM4mYroF2w==",
       "xp_points": 0,
