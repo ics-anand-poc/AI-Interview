@@ -147,6 +147,16 @@ export function saveEmployeePassword(employeeId: string, password: string) {
   return true;
 }
 
+export function completeFirstTimeLogin(employeeId: string) {
+  const store = readStore();
+  const employee = store.employees.find((item) => normalizeEmployeeId(item.employee_id) === normalizeEmployeeId(employeeId));
+  if (!employee) return false;
+
+  employee.is_first_login = false;
+  writeStore(store);
+  return true;
+}
+
 export function signToken(employeeId: string, expiresInMs?: number) {
   const duration = expiresInMs ?? 7 * 24 * 60 * 60 * 1000; // 7 days
   const expiresAt = Date.now() + duration;

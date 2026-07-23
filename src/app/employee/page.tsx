@@ -31,6 +31,18 @@ export default function EmployeeLoginPage() {
   const [resetNewPassword, setResetNewPassword] = useState("");
   const [resetConfirmPassword, setResetConfirmPassword] = useState("");
   const [org, setOrg] = useState<string | null>(null);
+  
+  // First time login choices modal states
+  const [firstTimeModalData, setFirstTimeModalData] = useState<{
+    token: string;
+    employee_id: string;
+    full_name: string;
+  } | null>(null);
+  const [changePasswordMode, setChangePasswordMode] = useState(false);
+  const [modalNewPassword, setModalNewPassword] = useState("");
+  const [modalConfirmPassword, setModalConfirmPassword] = useState("");
+  const [modalError, setModalError] = useState("");
+  const [modalSubmitting, setModalSubmitting] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -45,6 +57,72 @@ export default function EmployeeLoginPage() {
       }
     }
   }, []);
+
+  const handleKeepPassword = async () => {
+    if (!firstTimeModalData) return;
+    setModalSubmitting(true);
+    setModalError("");
+
+    try {
+      const res = await fetch("/api/employee/auth/confirm-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${firstTimeModalData.token}`,
+        },
+        body: JSON.stringify({ action: "keep" }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setModalError(data.error || "Failed to confirm password.");
+        return;
+      }
+      window.localStorage.setItem("employee_token", firstTimeModalData.token);
+      router.push("/employee/dashboard");
+    } catch (err: any) {
+      setModalError(err.message || "An unexpected error occurred.");
+    } finally {
+      setModalSubmitting(false);
+    }
+  };
+
+  const handleChangePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firstTimeModalData) return;
+    setModalError("");
+
+    if (modalNewPassword !== modalConfirmPassword) {
+      setModalError("Passwords do not match.");
+      return;
+    }
+    if (modalNewPassword.length < 8) {
+      setModalError("Password must be at least 8 characters long.");
+      return;
+    }
+
+    setModalSubmitting(true);
+    try {
+      const res = await fetch("/api/employee/auth/confirm-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${firstTimeModalData.token}`,
+        },
+        body: JSON.stringify({ action: "change", password: modalNewPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setModalError(data.error || "Failed to update password.");
+        return;
+      }
+      window.localStorage.setItem("employee_token", firstTimeModalData.token);
+      router.push("/employee/dashboard");
+    } catch (err: any) {
+      setModalError(err.message || "An unexpected error occurred.");
+    } finally {
+      setModalSubmitting(false);
+    }
+  };
 
   const handleOutlookSSO = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -121,6 +199,17 @@ export default function EmployeeLoginPage() {
       if (!response.ok) {
         setError(result?.error || `Login failed (Server returned status ${response.status}).`);
         setLoading(false);
+        return;
+      }
+
+      if (result && result.status === "first_time_modal") {
+        setFirstTimeModalData({
+          token: result.token,
+          employee_id: result.employee?.employee_id || trimmedId,
+          full_name: result.employee?.full_name || trimmedId,
+        });
+        setChangePasswordMode(false);
+        setModalError("");
         return;
       }
 
@@ -558,6 +647,119 @@ export default function EmployeeLoginPage() {
             </form>
 
           </div>
+        </div>
+      )}
+
+      {firstTimeModalData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
+          <Card className="w-full max-w-md p-6 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 shadow-2xl rounded-3xl relative text-left">
+            <button
+              type="button"
+              onClick={() => setFirstTimeModalData(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold"
+            >
+              ✕
+            </button>
+
+            <div className="text-center mb-4">
+              <div className="mx-auto mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/10 text-primary">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Welcome, {firstTimeModalData.full_name}!</h2>
+              <p className="text-xs text-muted-foreground mt-1">Employee ID: {firstTimeModalData.employee_id}</p>
+            </div>
+
+            {modalError && (
+              <div className="rounded-xl bg-red-500/10 border border-red-500/25 px-4 py-2.5 text-xs text-red-400 mb-4 font-semibold flex items-center gap-2">
+                <span>⚠</span>
+                <span>{modalError}</span>
+              </div>
+            )}
+
+            {!changePasswordMode ? (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/50 dark:bg-indigo-950/20 p-4 text-xs text-slate-700 dark:text-slate-350 leading-relaxed">
+                  <p className="font-bold text-primary dark:text-indigo-300 mb-1">🔐 First Time Login</p>
+                  You are logging in with your initial assigned password. You can choose to keep this password or set a new custom one now.
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={handleKeepPassword}
+                    disabled={modalSubmitting}
+                    className="w-full py-2.5 rounded-xl bg-primary text-white font-bold shadow-md shadow-indigo-500/20 hover:shadow-lg transition-all"
+                  >
+                    {modalSubmitting ? "Processing..." : "Keep Same Password & Continue"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setChangePasswordMode(true);
+                      setModalNewPassword("");
+                      setModalConfirmPassword("");
+                    }}
+                    disabled={modalSubmitting}
+                    className="w-full py-2.5 rounded-xl border-border font-bold hover:bg-secondary"
+                  >
+                    Set a New Password
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleChangePasswordSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      required
+                      className="w-full text-sm rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-slate-900 dark:text-white font-medium outline-none focus:border-indigo-500 transition-all"
+                      placeholder="Create a strong password"
+                      value={modalNewPassword}
+                      onChange={(e) => setModalNewPassword(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
+                    Confirm New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      required
+                      className="w-full text-sm rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-slate-900 dark:text-white font-medium outline-none focus:border-indigo-500 transition-all"
+                      placeholder="Repeat your password"
+                      value={modalConfirmPassword}
+                      onChange={(e) => setModalConfirmPassword(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setChangePasswordMode(false)}
+                    disabled={modalSubmitting}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold border-border"
+                  >
+                    ← Back
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={modalSubmitting}
+                    className="flex-1 py-2.5 rounded-xl bg-primary text-white font-bold"
+                  >
+                    {modalSubmitting ? "Saving..." : "Save & Continue"}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </Card>
         </div>
       )}
     </div>
