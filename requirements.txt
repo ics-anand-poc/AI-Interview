@@ -1,0 +1,8 @@
+torch==2.2.2
+torchvision==0.17.2
+facenet-pytorch==2.6.0
+opencv-python==5.0.0.93
+numpy==1.26.4
+Pillow==10.2.0
+requests==2.34.2
+tqdm==4.69.0

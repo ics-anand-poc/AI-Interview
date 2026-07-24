@@ -292,11 +292,21 @@ export class GeminiAIEngine {
       await writeFile(selfieTempPath, Buffer.from(selfieData.data, "base64"));
 
       const pythonScriptPath = join(process.cwd(), "faceproj", "compare_images.py");
-      const cmd = `python "${pythonScriptPath}" "${idTempPath}" "${selfieTempPath}"`;
-      
-      console.log(`Executing local biometric check command: ${cmd}`);
-      const { stdout } = await execPromise(cmd);
-      console.log("Local biometric check result:", stdout);
+
+// Force use of Python from the virtual environment
+const pythonExe = join(process.cwd(), "venv", "Scripts", "python.exe");
+
+const cmd = `"${pythonExe}" "${pythonScriptPath}" "${idTempPath}" "${selfieTempPath}"`;
+
+console.log(`Executing local biometric check command: ${cmd}`);
+
+const { stdout, stderr } = await execPromise(cmd);
+
+if (stderr) {
+  console.error("Python stderr:", stderr);
+}
+
+console.log("Local biometric check result:", stdout);
 
       // Clean up temp files
       try {
