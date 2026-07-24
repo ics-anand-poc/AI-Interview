@@ -12,6 +12,8 @@ dist/
 
 # Testing
 coverage/
+uploads/recordings/
+uploads/logs/
 
 # Environment Files
 .env
@@ -21,7 +23,6 @@ coverage/
 .env.production.local
 
 # Uploads
-uploads/*
 !uploads/.gitkeep
 
 # Debug Logs

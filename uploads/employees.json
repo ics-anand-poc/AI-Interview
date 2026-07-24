@@ -1,0 +1,2066 @@
+[
+  {
+    "employee_id": "1012383",
+    "full_name": "Nikhil Kamal Kumar Jain",
+    "email": "Nikhil.Jain@infinite.com",
+    "department": "Engineering",
+    "skills": "Total 25yrs Arch, product road map, Estimation, Risk Analysis, Automation",
+    "grade": "E9",
+    "designation": "Enterprise Architect",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1029774",
+    "full_name": "Ragunathan Arjunan",
+    "email": "ragunathana@infinite.com",
+    "department": "Engineering",
+    "skills": "19+  Years of exp in Manual, Healthcare, Team Handling, Selenium, API - Postman, SQL - Basics",
+    "grade": "E5",
+    "designation": "Senior Test Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Sql",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1032406",
+    "full_name": "Glory Angel C",
+    "email": "Glory.Angel@infinite.com",
+    "department": "Engineering",
+    "skills": "5+ Years of exp in Functional, System, Integration, Automation, Security, API - Rest API, Performance - Jmeter",
+    "grade": "E2",
+    "designation": "Software Test Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "63000012",
+    "full_name": "Krithika K",
+    "email": "Krithika.Kumaraswamy@infinite.com",
+    "department": "Engineering",
+    "skills": "10+ Years of exp in Angular, React, Javascript, HTML, CSS, Jwuery, Node JS, SQL",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1031050",
+    "full_name": "Tembhurne Ashwin Nutandas",
+    "email": "Ashwin.Tembhurne@infinite.com",
+    "department": "Engineering",
+    "skills": "3.4+ Years of exp in Docker, Kuberenetes, Cloud - AWS(Basic), Oracle, Azure, Monitoring, Grafana, EFK - Elastic Search",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Aws",
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1029912",
+    "full_name": "Lingampally Ramesh",
+    "email": "Ramesh.Lingampally@infinite.com",
+    "department": "Engineering",
+    "skills": "3.5+ Years of exp in Manual Testing, Testcase Design, Defect Management, SQL Basics, Cross Browser Testing (Browser Stack), STLC, SDLC",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1039393",
+    "full_name": "Kondala Rao N",
+    "email": "Kondala.Neerukattu@infinite.com",
+    "department": "Engineering",
+    "skills": "11.5 Years of exp in CyberArk (5 Years), CPM, Vault, PSM , Window, Linux, AWS, AZUE, GCP, Privilege Cloud, CI/CD, Jekins  Database(Oracle , MySQL)",
+    "grade": "E4",
+    "designation": "Lead System Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Aws",
+      "Linux"
+    ]
+  },
+  {
+    "employee_id": "1041275",
+    "full_name": "Purushottam Mishra",
+    "email": "Purushottam.Mishra@infinite.com",
+    "department": "Engineering",
+    "skills": "17+ Years of exp Oracle, Snowflake, AxiomSL,  Big Query, Java script, Azure, Data Architect - 2+ Years",
+    "grade": "E6",
+    "designation": "Data Architect",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1034808",
+    "full_name": "Parameswararao Katta",
+    "email": "Parameswararao.Katta@infinite.com",
+    "department": "Engineering",
+    "skills": "12+ Years of exp in SQL Server, SSIS, MDP Data Bricks, Red shift, SSRS - Basic",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1028782",
+    "full_name": "Mansoor Basha Mohammed",
+    "email": "Mansoor.Mohammed@infinite.com",
+    "department": "Engineering",
+    "skills": "6+ Years of exp in Integration Platforn TIBCO & MuleSoft Integration Administration\nProduction Support & Incident Management\nCI/CD - Azure DevOps & Jenkins, API, Kafka, Splunk Monitoring",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Azure",
+      "Splunk",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "63000124",
+    "full_name": "B S Vishnu Prasad",
+    "email": "Vishnu.Prasad@infinite.com",
+    "department": "Engineering",
+    "skills": "5.5+ Years of exp in DevOps, Azure, Cloud, Kuberenetes, CI/CD, Terraform",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1038309",
+    "full_name": "Sunny Kumar",
+    "email": "Sunny.Kumar2@infinite.com",
+    "department": "Engineering",
+    "skills": "5+ Years of exp in Java, JBPM, Pega, Camunda, SQL, React native",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1034625",
+    "full_name": "Sunny Kumar Jaiswal",
+    "email": "Sunny.Jaiswal@infinite.com",
+    "department": "Engineering",
+    "skills": "6.10+ Years of exp in Gen AI Testing, Functional, DB Testing, Automation, Payment gateway , Security, Campaign Testing, Slenium, Python, Team handling, BA",
+    "grade": "E2",
+    "designation": "Software Test Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Python"
+    ]
+  },
+  {
+    "employee_id": "1037962",
+    "full_name": "R Ravikumar",
+    "email": "Ravikumar.Ramakrishnan@infinite.com",
+    "department": "Engineering",
+    "skills": "13+ Years of exp , 8+ Years in React, Java script, Typescript, HTML, CSS, Next JS, Node JS",
+    "grade": "E5",
+    "designation": "Senior Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1036422",
+    "full_name": "Praveen Jayakumar",
+    "email": "Praveen.Jayakumar@infinite.com",
+    "department": "Engineering",
+    "skills": "11+ Years of exp in React, EXT JS, JS, Senior technical lead - 4+ Years",
+    "grade": "E5",
+    "designation": "Senior Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1037828",
+    "full_name": "Rupesh Kumar",
+    "email": "Rupesh.Kumar@infinite.com",
+    "department": "Engineering",
+    "skills": "13.5+ Years of exp in Java, spring, Microservices, PM Certified, Data science certification",
+    "grade": "E6",
+    "designation": "Technical Architect",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1027257",
+    "full_name": "Rashmi R",
+    "email": "Rashmi.Raju@infinite.com",
+    "department": "Engineering",
+    "skills": "5.10+ Years of exp In SQL, EDI, Manual, Selenium, Python, ETL Testing",
+    "grade": "E2",
+    "designation": "Software Test Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Python",
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1037617",
+    "full_name": "Malli karjuna B",
+    "email": "Mallikarjuna.Bellam@infinite.com",
+    "department": "Engineering",
+    "skills": "12+ Yearsvof exp in Java, J2WE, Spring React, DB - Oracle, Casandra",
+    "grade": "E6",
+    "designation": "Associate Principal Consultant",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1024468",
+    "full_name": "Ayaz Ahmad Khan",
+    "email": "Ayaz.Khan@infinite.com",
+    "department": "Engineering",
+    "skills": "7 Years - Report Automation using Salesforce and Internal tools 12 Months - Performance managing handled appraisals for over 6k emp 24 Months - Accurately handled payroll and Automated using Internal tools 12 Months - Compensation handled for over 6k emp 60 Months - Publishing reports and administrate BrassRing data management48 Months -  Connecting and getting updates from Sales person and capturing the records in Salesforce Total of 15 years of experience Infinite experience 5 years",
+    "grade": "E5",
+    "designation": "Deputy Manager",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1021388",
+    "full_name": "Ahsan Mohammed Khan",
+    "email": "Ahsan.Khan@infinite.com",
+    "department": "Engineering",
+    "skills": "17+ Years of exp in IT Operations lead, Linux, AWS, Grafana, Application monitoring",
+    "grade": "E5",
+    "designation": "Senior Project Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Aws",
+      "Linux"
+    ]
+  },
+  {
+    "employee_id": "1036259",
+    "full_name": "R Samiksha",
+    "email": "Samiksha.Rajendran@infinite.com",
+    "department": "Engineering",
+    "skills": "4.5+ Years of exp in Sourcing, Power Bi, Supply chain risk management, Contract negotiation, Procurement, Relationship management",
+    "grade": "E2",
+    "designation": "Business Analyst",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1039724",
+    "full_name": "Naveen Harsani",
+    "email": "Naveen.Harsani@infinite.com",
+    "department": "Engineering",
+    "skills": "15+ Years of exp, 9+ Years in Playwright, Python, Java script, AWS, Manual, API - Rest, DB. Test Lead - 4 Years",
+    "grade": "E4",
+    "designation": "Test Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Python",
+      "Aws",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1039644",
+    "full_name": "Sanjeev Rawat",
+    "email": "Sanjeev.Rawat@infinite.com",
+    "department": "Engineering",
+    "skills": "9+ Years of exp in Manual, Debugging, Troubshooting",
+    "grade": "E3",
+    "designation": "Senior Software Test Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1040762",
+    "full_name": "Sumeet Singh",
+    "email": "Sumeet.Singh@infinite.com",
+    "department": "Engineering",
+    "skills": "14 Years of exp in Manual, OTT, Jira, Database - Basic, Test Lead",
+    "grade": "E4",
+    "designation": "Lead Quality Analyst",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Jira"
+    ]
+  },
+  {
+    "employee_id": "1037131",
+    "full_name": "Saba UL Haque",
+    "email": "Sabaul.Haque@infinite.com",
+    "department": "Engineering",
+    "skills": "4.8+ Years of exp in Python, ML, Gen AI, GCP, NLP, LLM, Py Torch, Tenserflow, Scikit Learn, AWS, Azure, Data bricks, Django, Flask, Fast API, Mongo DB, Postgrs SQL",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 63,
+    "matchingSkills": [
+      "Python",
+      "Sql",
+      "Aws",
+      "Azure",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1035313",
+    "full_name": "Hithesh",
+    "email": "Hithesh.Devadiga@infinite.com",
+    "department": "Engineering",
+    "skills": "7+ Years of exp in Kubernetes, AWS, ELK, Jenkins, Ansible, Dynatrace",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Aws",
+      "Dynatrace"
+    ]
+  },
+  {
+    "employee_id": "1026409",
+    "full_name": "Sanjana Stephen",
+    "email": "Sanjana.Stephen@infinite.com",
+    "department": "Engineering",
+    "skills": "5+ Years of exp in React, Node JS, Vue JS, Redux, Typescript, SCSS, Express JS, Graph QL, Redis, My SQL, Rest API, Jest, Postman, Git lab, Git, Cron job",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Sql",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1037759",
+    "full_name": "K Manoj Kumar",
+    "email": "Manojkumar.Krishnamurthy@infinite.com",
+    "department": "Engineering",
+    "skills": "10.10 Years of exp in Python, Agentic AI, Azure, SQL, No SQL, ML, Docker. Technical lead - 4+ Years",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Python",
+      "Sql",
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1022494",
+    "full_name": "Busagani Murali Krishna",
+    "email": "Murali.Krishna@infinite.com",
+    "department": "Engineering",
+    "skills": "6.8+ Years of exp in Qlik Replica, Postgraze, SQL DBA, Workday",
+    "grade": "E3",
+    "designation": "Senior System Administrator",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1027774",
+    "full_name": "Kota Ayyappa Reddy",
+    "email": "Ayyappa.Reddy@infinite.com",
+    "department": "Engineering",
+    "skills": "4.3 Years of exp in ADB, ADF, Py Spark, ADLS, Power Bi",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1034780",
+    "full_name": "S P Balasubramanian",
+    "email": "Balasubramanian.Subbiah@infinite.com",
+    "department": "Engineering",
+    "skills": "20+ Years of exp in Azure/GCP Cloud, Python, Agentic AI,  GCP DevOps - Edureka certified. Kubernetes - Work Experience on Nokia NCS. Programming Lanuages - C, C++, Java. Telecom domain",
+    "grade": "E6",
+    "designation": "Technical Architect",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Python",
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1037965",
+    "full_name": "S Pravinwilson",
+    "email": "Pravin.Wilson@infinite.com",
+    "department": "Engineering",
+    "skills": "11+ Years of exp in UX UI Design, User research, Business analyst, Digital Marketing, Video Editing, Visual/Graphic designs",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1037482",
+    "full_name": "Vinod Reddy Patlola",
+    "email": "Vinod.Patlola@infinite.com",
+    "department": "Engineering",
+    "skills": "12+ Years of exp in Java, Springboot, Microservices, Jenkins, CI/CD, Cloud - AWS, Azure, DB - Oracle, MY SQL, Commanda, Nifi (Nokia tools). Technical lead - 6+ Years",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Sql",
+      "Aws",
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1036068",
+    "full_name": "Deepak Manglani",
+    "email": "Deepak.Manglani@infinite.com",
+    "department": "Engineering",
+    "skills": "3.10 Years of exp in Application Monitoring, JIRA, Incident Management, Fresh desk , MIXPANEL, SPLUNK Monitoring Banking Digital Payment",
+    "grade": "E2",
+    "designation": "Support Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Splunk",
+      "Jira"
+    ]
+  },
+  {
+    "employee_id": "1031317",
+    "full_name": "Vaishnavi Kulkarni",
+    "email": "Vaishnavi.Kulkarni@infinite.com",
+    "department": "Engineering",
+    "skills": "11+ Years of exp in COBOL, jcl, vsam, JS, DB2, Mainframe",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1031535",
+    "full_name": "Anu Abraham Varughese",
+    "email": "Anu.Varughese@infinite.com",
+    "department": "Engineering",
+    "skills": "18+ Years of exp in Mainframe, US Banking SME, Cobol, Functional roles - Business analyst. Manager - 5+ Years of exp",
+    "grade": "E7",
+    "designation": "Senior Technical Manager",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1035973",
+    "full_name": "Sushant  Nadkarni",
+    "email": "Sushant.Nadkarni@infinite.com",
+    "department": "Engineering",
+    "skills": "2+ Years of exp in Java, HTML, CSS,  Python, C++, Dot net",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Python"
+    ]
+  },
+  {
+    "employee_id": "1025101",
+    "full_name": "Rakesh Deshpande",
+    "email": "Rakesh.Deshpande@infinite.com",
+    "department": "Engineering",
+    "skills": "9.7+ Years of exp in Dot net core, Rest API, SQL Server, MVC, SSIS,WCF, Bootstrap, JS",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Sql",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1030813",
+    "full_name": "Patel Ravi P",
+    "email": "Ravi.Patel2@infinite.com",
+    "department": "Engineering",
+    "skills": "10.8+ Years of exp in SSIS, SSRS, Power BI, SQL Server",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1033321",
+    "full_name": "Katta Naga Sasi Kiran",
+    "email": "Sasikiran.Katta@infinite.com",
+    "department": "Engineering",
+    "skills": "2.5+ Years of exp in Java, AWS, SQL, Gen AI, K2 Studio",
+    "grade": "E1",
+    "designation": "Associate Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Sql",
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "1036745",
+    "full_name": "Madan Mohan Chukka",
+    "email": "Madanmohan.Chukka@infinite.com",
+    "department": "Engineering",
+    "skills": "10+ Years of exp in SQL,SSIS,POWER BI, QUERY,TABLEAU",
+    "grade": "E5",
+    "designation": "Senior Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1032047",
+    "full_name": "Jagdish Chandra Gupta",
+    "email": "Jagdish.Gupta@infinite.com",
+    "department": "Engineering",
+    "skills": "12+ Years of exp in Functional, Selenium, API, Data base",
+    "grade": "E4",
+    "designation": "Test Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1034659",
+    "full_name": "Hariharan",
+    "email": "Hariharan.Ravibabu2@infinite.com",
+    "department": "Engineering",
+    "skills": "15.5+ Years of exp in API & Integration Testing (Postman), Tosca, Test Management – Jira, Azure DevOps, VSTS, qTest; Agile/Scrum, Defect Management, QA Governance, Team Leadership. Certified Scrum Master",
+    "grade": "E4",
+    "designation": "Test Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Azure",
+      "Jira",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1041192",
+    "full_name": "Pooja Gangadhar Murme",
+    "email": "Pooja.Murme@infinite.com",
+    "department": "Engineering",
+    "skills": "6+ Years of exp, 4+ Years in Linux, SQL, Incedent management, Java, Splunk, Service now, Jira, Confluence",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 63,
+    "matchingSkills": [
+      "Sql",
+      "Linux",
+      "Splunk",
+      "Service Now",
+      "Jira"
+    ]
+  },
+  {
+    "employee_id": "1040760",
+    "full_name": "Vyas Dhairya Jitendra",
+    "email": "Dhairya.Vyas2@infinite.com",
+    "department": "Engineering",
+    "skills": "4+ Years of exp in Java, Spring Boot, AWS, Kubernetes, Python, Kafka, Databases, SQL, PostgreSQL, Kafka, AWS, Kubernetes, Docker, Python, Git",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Python",
+      "Sql",
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "1026476",
+    "full_name": "Chigurupati Samuel",
+    "email": "Samuel.Chigurupati@infinite.com",
+    "department": "Engineering",
+    "skills": "12+ Years of exp in Kubernetes, AWS, GCP. Git lab, Jenkins, Terraform",
+    "grade": "E3",
+    "designation": "Senior System Administrator",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "1038141",
+    "full_name": "Surendar",
+    "email": "Surendar.Gunasekaran@infinite.com",
+    "department": "Engineering",
+    "skills": "4+ Years of exp in SQL, Automation QA, Ticket handling",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1037507",
+    "full_name": "Karolin Rajareegam",
+    "email": "Karolin.Rajareegam@infinite.com",
+    "department": "Engineering",
+    "skills": "6+ Years of exp in SQL, Jira, Linux, Order 360, Service now",
+    "grade": "E4",
+    "designation": "Technical Support Specialist",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 50,
+    "matchingSkills": [
+      "Sql",
+      "Linux",
+      "Service Now",
+      "Jira"
+    ]
+  },
+  {
+    "employee_id": "1031733",
+    "full_name": "Shruti Pandey",
+    "email": "Shruti.Pandey@infinite.com",
+    "department": "Engineering",
+    "skills": "3.6+ Years of exp in Selenium, JAVA, Manual, Regression, Smoke, API - Postman, Rest assured, SQL, Cerfication - CDAC - AI",
+    "grade": "E1",
+    "designation": "Associate Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Sql",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1028486",
+    "full_name": "Joseph Gregory",
+    "email": "Joseph.Gregory@infinite.com",
+    "department": "Engineering",
+    "skills": "15+ Years of exp, 12+ Exp in Java, SQL, Microservices, Cloud, Kubernetes, AWS, PCF",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Sql",
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "1032174",
+    "full_name": "Sivakumar P",
+    "email": "Sivakumar.Palanisamy@infinite.com",
+    "department": "Engineering",
+    "skills": "16+ Years of exp in SDH, DWDM, OTN, Basics - Python",
+    "grade": "E3",
+    "designation": "Senior System Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Python"
+    ]
+  },
+  {
+    "employee_id": "1038311",
+    "full_name": "Thodeti Madhuri",
+    "email": "Madhuri.Thodeti@infinite.com",
+    "department": "Engineering",
+    "skills": "5.7+ Years of exp in React, Typescript, MUI, Redux, Tailwind CSS, J Query",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1041823",
+    "full_name": "S Parthasarathy",
+    "email": "Parthasarathy.Shanmugam@infinite.com",
+    "department": "Engineering",
+    "skills": "15+ years experience in DWDM,IP Networking, System testing, OTN, SDH, SONET, Nokia 1678 MCC & 1675 MSS, System Validation, Regression Testing, Integration Testing on ALU-DMX 1678 MCC platform. Automation using Python scripts for monitoring and backup. Secondary: IXIA, Spirent, ANT tools, Debugging, Feature Testing",
+    "grade": "E4",
+    "designation": "Technical Support Specialist",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Python"
+    ]
+  },
+  {
+    "employee_id": "1030485",
+    "full_name": "Kammari Bhanu Prasad",
+    "email": "Kammari.Bhanuprasad@infinite.com",
+    "department": "Engineering",
+    "skills": "3.5+ Years of exp in SQL, Database, SSIS, SSRS, Paginated Reports, Power Bi",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1039665",
+    "full_name": "Srikanth Gurram",
+    "email": "Srikanth.Gurram@infinite.com",
+    "department": "Engineering",
+    "skills": "18+ years of experience, including 5+ years in telecom (Verizon), Strong expertise in release governance, Agile delivery, scope control, and stakeholder management, QA Coordination, Defect Triage, Metrics & Reporting",
+    "grade": "E6",
+    "designation": "Project Manager",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 9,
+    "matchingSkills": [
+      "And Stakeholder Management"
+    ]
+  },
+  {
+    "employee_id": "1032140",
+    "full_name": "Manika  Mathur",
+    "email": "Manika.Mathur@infinite.com",
+    "department": "Engineering",
+    "skills": "23+ Years of exp in AI, Service Delivery management, Program management, Scrum master, ITL Certified, Agile transformation Lead, Digital transformation, Data Anayltics, DDH",
+    "grade": "E7",
+    "designation": "Program Manager",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1038536",
+    "full_name": "Saravanan Moorthy",
+    "email": "Saravanan.Moorthy@infinite.com",
+    "department": "Engineering",
+    "skills": "20+ Years of exp in Java, Database, Angular, Azure, React, Microfrontend, Microservices, Design, End-End project Life cycle. Solution architect, Java Architect. 5+ Years as architect",
+    "grade": "E7",
+    "designation": "Senior Technical Architect",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1031503",
+    "full_name": "Lalitha  M",
+    "email": "Lalitha.M@infinite.com",
+    "department": "Engineering",
+    "skills": "14+ Years of exp in Functional, Agile, Scrum, Mobile app, Product testing, Vision +, Optis, UI, API",
+    "grade": "E5",
+    "designation": "Senior Test Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1035988",
+    "full_name": "Satyam Kumar Dwivedi",
+    "email": "Satyamkumar.Dwivedi@infinite.com",
+    "department": "Engineering",
+    "skills": "1.8+ Years of exp in Core JAVA, HTML, CSS, Automation, Selenium, Manual, API - Soup UI",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1035883",
+    "full_name": "Amit Topiwala",
+    "email": "Amit.Topiwala@infinite.com",
+    "department": "Engineering",
+    "skills": "5.2+ Years of exp in Python, Kubernetes, AWS, CI/CD (Jenkins), AI / Agentic Workflows, PostgreSQL, Jenkins, Git, PostgreSQL, Claude Code",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Python",
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "1040535",
+    "full_name": "Dayanandan  S",
+    "email": "Dayanandan.Saravanan@infinite.com",
+    "department": "Engineering",
+    "skills": "3.7+ Years of exp in AWS, Kubernetes, Docker, Jenkins",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "1035222",
+    "full_name": "Manish Kumar Vishwakarma",
+    "email": "Manish.Vishwakarma@infinite.com",
+    "department": "Engineering",
+    "skills": "6+ Years of exp in Java, Springboot, SQL, Angular, DevOps, Kubernetes, Docker, AWS",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Sql",
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "1031469",
+    "full_name": "Hiteshkumar Thakor",
+    "email": "Hitesh.Thakor@infinite.com",
+    "department": "Engineering",
+    "skills": "17+ Years of exp in .Net 8/6, Microservices, C#, Web API, Angular 18, Azure DevOps, Agile Scrum, GIT, SQL, PostgreSql, Rancher, Docker, Boomi, Okta",
+    "grade": "E6",
+    "designation": "Technical Manager",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Sql",
+      "Azure",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1036252",
+    "full_name": "Nimish  Kumar",
+    "email": "Nimish.Kumar@infinite.com",
+    "department": "Engineering",
+    "skills": "19+ Years of exp, 12+ Years in PM, PMO, People management, Project delivery, Certified Scrum master, PMP Certfied",
+    "grade": "E6",
+    "designation": "Project Manager",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1038114",
+    "full_name": "Brunda T L",
+    "email": "Brunda.Lingaraju@infinite.com",
+    "department": "Engineering",
+    "skills": "4+ Years of exp in Apex, LWC, Flows, Agent force, Integration",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1041905",
+    "full_name": "Praveen Kumar Nenawa",
+    "email": "Praveen.Nenawa@infinite.com",
+    "department": "Engineering",
+    "skills": "14+ Years of exp in SAP BRIM, SAP ABAP, SAP CRM, Project management. Architect - 4+ Years",
+    "grade": "E6",
+    "designation": "Solution Architect",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1025000",
+    "full_name": "Mahaboob Subhani Shaik",
+    "email": "Mahaboob.Shaik@infinite.com",
+    "department": "Engineering",
+    "skills": "10+ Years of exp in System Admin, Office 365, End point management, Sharepoint, Teams",
+    "grade": "E3",
+    "designation": "Senior System Administrator",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 17,
+    "matchingSkills": [
+      "Teams"
+    ]
+  },
+  {
+    "employee_id": "1031272",
+    "full_name": "Reena Devi",
+    "email": "Reena.Devi@infinite.com",
+    "department": "Engineering",
+    "skills": "12+ Years of exp in Manual Testing, Robot Framework with Python, Java, Selenium, API testing and Playwright with TS, Agile, Scrum, Azure Devops",
+    "grade": "E4",
+    "designation": "Test Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Python",
+      "Azure",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1031491",
+    "full_name": "Inderpreet  Kaur",
+    "email": "Inderpreet.Kaur@infinite.com",
+    "department": "Engineering",
+    "skills": "10+ Years of exp in Automation, API, Manual, Playwright, typescript, js, Azure DevOps, Swagger, Agile, SQL, Git hub. Test lead - 4 years",
+    "grade": "E4",
+    "designation": "Test Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Sql",
+      "Azure",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1037860",
+    "full_name": "A Saravana kumar",
+    "email": "Saravanakumar.Arumugam@infinite.com",
+    "department": "Engineering",
+    "skills": "8+ Years of exp, 7+ Years in Neworking, Automation Developer, Python, Robot Framework",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Python"
+    ]
+  },
+  {
+    "employee_id": "1039983",
+    "full_name": "Vaibhav Motiram Khanzode",
+    "email": "Vaibhav.Khanzode@infinite.com",
+    "department": "Engineering",
+    "skills": "8 Years of exp in VSphere, Vmware,HA/DRS,Hyper -V Nutanix AHV ,Windows Server, Linux, ACtive Directory + Certifications - AWS(Pursuing Nutanix Certification)",
+    "grade": "E3",
+    "designation": "Senior System Administrator",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Aws",
+      "Linux",
+      "Windows"
+    ]
+  },
+  {
+    "employee_id": "1037527",
+    "full_name": "Mayaluru Nishanth Kumar Reddy",
+    "email": "Nishanth.Mayaluru@infinite.com",
+    "department": "Engineering",
+    "skills": "8+ Years of exp in Dot net core Web API, Dot net MVC, SQL, HTML 5, CSS3, Jquery, JS, Typescript, React JS, SSRS Reporting, Xunit, Azure Cloud Services",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Sql",
+      "Azure",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1037984",
+    "full_name": "Irshad Ali",
+    "email": "Irshad.Ali@infinite.com",
+    "department": "Engineering",
+    "skills": "6+ Years of exp in Next JS, React JS, JS, Node JS, (AI, Copilot - Basic), Tailwind, Bootstrap, Gitlab",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1038241",
+    "full_name": "Dasyam Gandhi",
+    "email": "Gandhi.Dasyam@infinite.com",
+    "department": "Engineering",
+    "skills": "16+ Years of exp, 14+ years in Springboot, microservices, Java, SQL, Oracle, Release management, DevOps, Jenkins",
+    "grade": "E5",
+    "designation": "Senior Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1036145",
+    "full_name": "Shiva Prasad",
+    "email": "Shiva.Prasad@infinite.com",
+    "department": "Engineering",
+    "skills": "4+ Years of exp in ETL, QA, DWH Testing, Bi Testing, Cloud data testing, SQL, Dtabricks, Snowflakes, ADF",
+    "grade": "E2",
+    "designation": "Software Test Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1021478",
+    "full_name": "Suresh S",
+    "email": "Suresh.Shanmugam@infinite.com",
+    "department": "Engineering",
+    "skills": "Manual, Healthcare, Functonal, Selenium, API, Postman, SQL, Python,  Java,  Mobile App",
+    "grade": "E5",
+    "designation": "Senior Test Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Python",
+      "Sql",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1033460",
+    "full_name": "Rodrigues Wilfred E",
+    "email": "Rodrigues.Wilfred2@infinite.com",
+    "department": "Engineering",
+    "skills": "12+ Years of exp in Business operations, Requirement gathering, Stake holder management, Salesforce, SAP, Field glass, PM Tools - Slack, Jira. Certfications - PMP, CSM",
+    "grade": "E3",
+    "designation": "Senior Business Analyst",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Jira"
+    ]
+  },
+  {
+    "employee_id": "63000097",
+    "full_name": "Chandra Prakash Shrivastava",
+    "email": "Chandraprakash.Shrivastava@infinite.com",
+    "department": "Engineering",
+    "skills": "6+ Years of exp in Angular, HTML, CSS, Accessibility, JS, Responsive development, micro frontend.",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "63000146",
+    "full_name": "Ayushi Kejriwal",
+    "email": "Ayushi.Kejriwal@infinite.com",
+    "department": "Engineering",
+    "skills": "9+ Years of exp in Angular, JS, HTML",
+    "grade": "E5",
+    "designation": "Senior Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1026841",
+    "full_name": "Lakshmi Narasimhan S",
+    "email": "Lakshmi.Narasimhan@infinite.com",
+    "department": "Engineering",
+    "skills": "18+ Years of exp in Adobe CC, MS Office, PMO, Figma, Azure. PMO - 4+ Years",
+    "grade": "E6",
+    "designation": "Technical Manager",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1037121",
+    "full_name": "Fasila Asmila",
+    "email": "Fasila.Asmila@infinite.com",
+    "department": "Engineering",
+    "skills": "6.7+ Years of exp in React, JS, Angular, Node JS - Basic, Typescript, Jest, Redux",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1041472",
+    "full_name": "Rajkishor Panda",
+    "email": "Rajkishor.Panda@infinite.com",
+    "department": "Engineering",
+    "skills": "Java, Springboot, Microservices, SQL, Post grace, Shell script",
+    "grade": "E2",
+    "designation": "System Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Sql",
+      "Shell"
+    ]
+  },
+  {
+    "employee_id": "1037838",
+    "full_name": "Ajay B Shukla",
+    "email": "Ajay.Shukla@infinite.com",
+    "department": "Engineering",
+    "skills": "14+ Years of exp in Infor ERP, Power Bi",
+    "grade": "E5",
+    "designation": "Senior Lead Technical Consultant",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1032294",
+    "full_name": "K Preethi",
+    "email": "Preethi.Kurapati@infinite.com",
+    "department": "Engineering",
+    "skills": "5+ Years of exp. 3+ in QA. Manual, API, Database admin, SQL - Basic",
+    "grade": "E2",
+    "designation": "Database Administrator",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Sql",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1042017",
+    "full_name": "Vineet Kumar",
+    "email": "Vineet.Kumar@infinite.com",
+    "department": "Engineering",
+    "skills": "2.9+ Years of exp in Python, Power Bi, SQL Server, Confluence",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Python",
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1031662",
+    "full_name": "Rishabh Anurag",
+    "email": "Rishabh.Anurag@infinite.com",
+    "department": "Engineering",
+    "skills": "3.8+ Years of exp in Selenium JAVA, N8N, SQL Server, API, Dot net, Microsoft Azure, Gen AI, Agentic AI - Intermediate",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Sql",
+      "Azure",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1041606",
+    "full_name": "M Vijay",
+    "email": "Vijay.Minnalkodi@infinite.com",
+    "department": "Engineering",
+    "skills": "2.4+ Years of exp in Business Analyst, PMO, Python - Basics, SQL",
+    "grade": "E2",
+    "designation": "Business Analyst",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Python",
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1027065",
+    "full_name": "Naga Murali Krishna Valluru",
+    "email": "Muralikrishna.Valluru@infinite.com",
+    "department": "Engineering",
+    "skills": "11+ Years of exp in Dot net, C sharp, DB, Dot net core MVC, Web API, Entity Framework. Azure - Basics. Technical Lead - 2+ Years",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Azure",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1034942",
+    "full_name": "Vuyala Raju",
+    "email": "Raju.Vuyala@infinite.com",
+    "department": "Engineering",
+    "skills": "10+ Years of exp in Power Bi, Fabric, SQL, Datafactory, UI/UX Design, DAX, Power Query, Power Automate. Technical lead - 2+ Years",
+    "grade": "E4",
+    "designation": "Technical Leead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1037967",
+    "full_name": "Akash Soni",
+    "email": "Akash.Soni@infinite.com",
+    "department": "Engineering",
+    "skills": "3+ Years of exp in LWC, Apex flows, salesforce Admin",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1040444",
+    "full_name": "Jasmine Grace J",
+    "email": "Jasminegrace.Jebakumar@infinite.com",
+    "department": "Engineering",
+    "skills": "20+ Years of exp in Microservices | DDD | Event Driven Architecture | Java | Spring Boot | REST APIs, AI/GenAI Adoption | Distributed Systems\nAzure | Azure Key Vault | API Gateway | Kubernetes, Oracle Commerce (ATG) | Composable Commerce | Unified Architecture | CI/CD (Azure DevOps, GitHub Actions.",
+    "grade": "E8",
+    "designation": "Technical Director",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Azure",
+      "Api",
+      "Architecture"
+    ]
+  },
+  {
+    "employee_id": "1032417",
+    "full_name": "Kavya P",
+    "email": "Kavya.Parameshwarappa@infinite.com",
+    "department": "Engineering",
+    "skills": "7+ Years of exp, 4+ Years of in SQL, Pyspark, Azure Data. Python",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Python",
+      "Sql",
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1024721",
+    "full_name": "S Arulraj",
+    "email": "Arulraj.Subramanian@infinite.com",
+    "department": "Engineering",
+    "skills": "Java, J2ee, SQL, NoSQL, AWS, Python /AI/RAG/Agentic AI, Sun Certified Java Programmer, SAFe scrum master 5.0, SAFe Practitioner 5.0, Team Management and Leadership",
+    "grade": "E9",
+    "designation": "Assistant Vice President",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Python",
+      "Sql",
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "1039462",
+    "full_name": "Srinivas Surendra Kasabed",
+    "email": "Srinivas.Kasabed@infinite.com",
+    "department": "Engineering",
+    "skills": "28+ Years of exp in SQL Server DBA, Oracle DBA, AWS, Terraform, AI Automation , Powershell ,NBN Tool , Claude, Perplexity AI, MAKE.COM, Power Automate",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Sql",
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "1036112",
+    "full_name": "Sudarvelan Selvakannan",
+    "email": "Sudarvelan.Selvakannan@infinite.com",
+    "department": "Engineering",
+    "skills": "2+ Years of exp in Java, selenium, Cucumber",
+    "grade": "E1",
+    "designation": "Associate Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1036973",
+    "full_name": "Sominath Mahadu Sapkal",
+    "email": "Sominath.Sapkal@infinite.com",
+    "department": "Engineering",
+    "skills": "4+ Years of exp in Mainframe, Python, SQL, Java, DB Tools",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Python",
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1037504",
+    "full_name": "Lakkavajjala Sai Subrahmanya Ganesh",
+    "email": "Ganesh.Lakkavajjala@infinite.com",
+    "department": "Engineering",
+    "skills": "2.10 Years of exp in Java, JS, Html, Python - Basics",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Python"
+    ]
+  },
+  {
+    "employee_id": "1038092",
+    "full_name": "Mohammad Asim",
+    "email": "Mohammad.Asim@infinite.com",
+    "department": "Engineering",
+    "skills": "19+ Years of exp in Post grace, Mongo DB, Oracle, Redshift, My SQL",
+    "grade": "E5",
+    "designation": "Senior Lead Database Administrator",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1040667",
+    "full_name": "Saraswathi G",
+    "email": "Saraswathi.Gopal@infinite.com",
+    "department": "Engineering",
+    "skills": "1+ Years of exp in AI, Python, ML, Power Bi",
+    "grade": "E1",
+    "designation": "Associate Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Python"
+    ]
+  },
+  {
+    "employee_id": "1041485",
+    "full_name": "N Suhanaaz",
+    "email": "Suhanaaz.Nisar@infinite.com",
+    "department": "Engineering",
+    "skills": "12.5+ Years of exp in Python AI, DevOps, Power Bi, Analytics, Automation, End-to-end, Scrum, PM",
+    "grade": "E6",
+    "designation": "Technical Manager",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Python"
+    ]
+  },
+  {
+    "employee_id": "1025865",
+    "full_name": "R Sharmila",
+    "email": "Sharmila.Ramalingam@infinite.com",
+    "department": "Engineering",
+    "skills": "8+ Years of exp, 5+ years in Lunix, Kubernetes, AWS, 3+ Years of exp in MSS Media Gateway - Telecom.",
+    "grade": "E3",
+    "designation": "Senior System Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "1031404",
+    "full_name": "Rajesh Ravipati",
+    "email": "Rajesh.Ravipati@infinite.com",
+    "department": "Engineering",
+    "skills": "Informatics, SQL Server, Snowflake, Dataware house, Salesforce",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1038427",
+    "full_name": "Manohar Reddy Mandadi",
+    "email": "Manohar.Mandadi@infinite.com",
+    "department": "Engineering",
+    "skills": "15+ Years of exp in Java, springboot, microservices, Web flux, Docker, kubernetes, Jira, Git, Kafka, Rabbit MQ, AWS, PCF, Technical architect - 2.5+ Years",
+    "grade": "E6",
+    "designation": "Technical Architect",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Aws",
+      "Jira"
+    ]
+  },
+  {
+    "employee_id": "1021568",
+    "full_name": "S M Giridharan",
+    "email": "Suriya.Giridharan@infinite.com",
+    "department": "Engineering",
+    "skills": "18+ Years of exp in SIT Testing, Telecom domain (OSS, BSS), AWS, Kuberenets",
+    "grade": "E7",
+    "designation": "Senior Technical Architect",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "1031274",
+    "full_name": "Shameer Usmani",
+    "email": "Shameer.Usmani@infinite.com",
+    "department": "Engineering",
+    "skills": "14+ Years of exp in Functional, Salesforce, BFSI Domain, API - Postman, Jira, Service now. Lead - 4+ Years",
+    "grade": "E4",
+    "designation": "Test Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Service Now",
+      "Jira",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1039581",
+    "full_name": "Penasir Begum T",
+    "email": "Penasir.Begum@infinite.com",
+    "department": "Engineering",
+    "skills": "9.5+ Years of exp in AEM 6.5 and AEM as a Cloud, Core Java, Html, Css, Javascript",
+    "grade": "E5",
+    "designation": "Senior Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1041640",
+    "full_name": "Partha Sarathi Samantaray",
+    "email": "Parthasarathi.Samantaray@infinite.com",
+    "department": "Engineering",
+    "skills": "16+ Years of exp in FICO, FSCM, MMSD",
+    "grade": "E6",
+    "designation": "Technical Manager",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1042565",
+    "full_name": "Vigneshwaran Mani",
+    "email": "Vigneshwaran.Mani@infinite.com",
+    "department": "Engineering",
+    "skills": "4+ Years of exp in AWS, Azure, DevOps, GCP",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Aws",
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1037624",
+    "full_name": "Anandhan S",
+    "email": "Anandhan.Sadhasivam@infinite.com",
+    "department": "Engineering",
+    "skills": "14+ Years of exp in Agentic AI, Geni AI, Python, Lan graph, Lan chain, RAG, React JS, Knowledge Graph",
+    "grade": "E6",
+    "designation": "Technical Manager",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Python"
+    ]
+  },
+  {
+    "employee_id": "1039996",
+    "full_name": "Ishwar Nataraj",
+    "email": "Ishwar.Nataraj@infinite.com",
+    "department": "Engineering",
+    "skills": "21+ Years of exp in Snowflake, Python, Dot net, SQL Server, Dot net, Oracle. PM - 8+ Years",
+    "grade": "E7",
+    "designation": "Senior Project Manager",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Python",
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1041005",
+    "full_name": "Kavya Y",
+    "email": "Kavya.Yogesh@infinite.com",
+    "department": "Engineering",
+    "skills": "6.3+ Years of exp in Snowflake, SQL, ETL, AWS, Python",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Python",
+      "Sql",
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "1042051",
+    "full_name": "Rajesh Ladu Gawade",
+    "email": "Rajesh.Gawade@infinite.com",
+    "department": "Engineering",
+    "skills": "4.5+ Years of exp in Dot net, Angular, React, Azure, SQL Server, HTML, CSS, JS",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Sql",
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1033589",
+    "full_name": "V Shalini",
+    "email": "Shalini.Venkatachalapathy@infinite.com",
+    "department": "Engineering",
+    "skills": "9.5+ Years of exp in Vendor, Work force Management, Budget and forecasting, Onboarding- Off baording, Asset management, Billing, Employee Engagement, Payroll activities.",
+    "grade": "E4",
+    "designation": "Lead Functional Consultant",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1036007",
+    "full_name": "Abhirup Roy",
+    "email": "Abhirup.Roy@infinite.com",
+    "department": "Engineering",
+    "skills": "4.7+ Years of exp in Microsoft Azure, ADF, ADB, Py spark, SQL, Python",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Python",
+      "Sql",
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1036456",
+    "full_name": "Dayashankar  Mishra",
+    "email": "Dayashankar.Mishra@infinite.com",
+    "department": "Engineering",
+    "skills": "11+ Years of exp in Network Optimization, Coordination, Management, My COM",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 20,
+    "matchingSkills": [
+      "Management"
+    ]
+  },
+  {
+    "employee_id": "1040612",
+    "full_name": "Syed Manishad",
+    "email": "Manishad.Syed@infinite.com",
+    "department": "Engineering",
+    "skills": "1+ Years of exp in Power Bi, Data Analytics, SQL, AI Tools, MIS Automation",
+    "grade": "E1",
+    "designation": "Associate Executive",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1033909",
+    "full_name": "Punam Sandesh Gadekar",
+    "email": "Punam.Gadekar@infinite.com",
+    "department": "Engineering",
+    "skills": "7.6+ Years of in SQL, Snowflake, SSIS, SSRS, Looker, Tablue",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1039616",
+    "full_name": "Bandla Pavan Kumar",
+    "email": "Pavankumar.Bandla@infinite.com",
+    "department": "Engineering",
+    "skills": "11+ Years of exp in Pyspark, Oracle, SQL, Spark, My SQL, Python - Basics, ETL Tools, Qlik Replication",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Python",
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1039858",
+    "full_name": "Kadavakallu Vinod Kumar",
+    "email": "Vinodkumar.Kadavakallu@infinite.com",
+    "department": "Engineering",
+    "skills": "14+ Years of exp , 8+ years in Snowflake Dev, nowflake DBA, DBT, AWS Azure, SQL, Snowflake scripting",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Sql",
+      "Aws",
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1039871",
+    "full_name": "G Rajkumar",
+    "email": "Rajkumar.Guntu@infinite.com",
+    "department": "Engineering",
+    "skills": "12+ Years of exp in Snowflake, SQL, Data Ware housing, Jasper Report, Tablue, DB Production support. Tech lead - 5+ Years",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "1039952",
+    "full_name": "R V Sateesh",
+    "email": "Sateesh.Rajanala@infinite.com",
+    "department": "Engineering",
+    "skills": "7.2+ Years of exp in Linux, Azure, Kubernetes, DevOps, Docker, Git, AWS",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Aws",
+      "Azure",
+      "Linux"
+    ]
+  },
+  {
+    "employee_id": "1040135",
+    "full_name": "Chandrakant Bhagwan Kurulekar",
+    "email": "Chandrakant.Kurulekar@infinite.com",
+    "department": "Engineering",
+    "skills": "10+ Years of exp, 7+ Years in Azure, AWS, DevOps, Microsoft Intune, Desktop Admin, Security and complaince",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Aws",
+      "Azure"
+    ]
+  },
+  {
+    "employee_id": "1042221",
+    "full_name": "Sumanth Reddy Palle",
+    "email": "Sumanth.Palle@infinite.com",
+    "department": "Engineering",
+    "skills": "13+ Years of exp, Kafka, GCP, Operations Lead, DevOps (Git hub, Ansible, Jenkins), Tibco, API Gateway, Linux",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 25,
+    "matchingSkills": [
+      "Linux",
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1040136",
+    "full_name": "Shrikrishna Bapurao Tokampalle",
+    "email": "Shrikrishna.Tokampalle@infinite.com",
+    "department": "Engineering",
+    "skills": "AWS, Azure, CIC/CD. Git hub, Networking, DNS, Logging, monitoring, Azure AD, Jira",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 38,
+    "matchingSkills": [
+      "Aws",
+      "Azure",
+      "Jira"
+    ]
+  },
+  {
+    "employee_id": "1030977",
+    "full_name": "Bodapati  Sirisha",
+    "email": "Sirisha.Bodapati@infinite.com",
+    "department": "Engineering",
+    "skills": "4.2+ Years of exp in Salesforce, Oracle DB, Automation QA, Salesforce marketing cloud, Informatica",
+    "grade": "E2",
+    "designation": "Software Test Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "1037467",
+    "full_name": "P Lalasa",
+    "email": "Lalasa.Pothireddy@infinite.com",
+    "department": "Engineering",
+    "skills": "8+ Years of exp in Selenium Java, Test NG, Cucumber, API - Rest Assured, Postman, (Cypress, Playwright, JS - Basic)",
+    "grade": "E3",
+    "designation": "Senior Software Test Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "1041033",
+    "full_name": "Gourishankar Uppin",
+    "email": "Gourishankar.Uppin@infinite.com",
+    "department": "Engineering",
+    "skills": "9+ Years of exp, 3+ Years in Power Bi, SQL, Tablue, IBM Sprectrum protect (TSM)",
+    "grade": "E5",
+    "designation": "Senior Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Sql"
+    ]
+  },
+  {
+    "employee_id": "63000081",
+    "full_name": "Anushree G",
+    "email": "AnuGirigowda@zyter.com",
+    "department": "Engineering",
+    "skills": "3.7+ Years of exp in Manual, Automation Selenium, API - Postman, Swagger, Regression, DB Validation",
+    "grade": "E2",
+    "designation": "Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "63000162",
+    "full_name": "Rahul Jetli",
+    "email": "Rahul.Jetli@zyter.com",
+    "department": "Engineering",
+    "skills": "Angular, JS, Python, HTML, CSS, DevOps",
+    "grade": "E4",
+    "designation": "Technical Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Python"
+    ]
+  },
+  {
+    "employee_id": "63000050",
+    "full_name": "Prasanna M",
+    "email": "PraMahadevu@zyter.com",
+    "department": "Engineering",
+    "skills": "4.8+ Years of exp in QA Automation, Playwright, Python, Cyress, Java script",
+    "grade": "E2",
+    "designation": "Software Test Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Python"
+    ]
+  },
+  {
+    "employee_id": "63000020",
+    "full_name": "R Pandidevi",
+    "email": "Pandidevi.Rajaguru@infinite.com",
+    "department": "Engineering",
+    "skills": "16+ Years of exp Project management, Scrum master, QA Lead - Automation, Manual. PM - 10+ Years",
+    "grade": "E6",
+    "designation": "Project Manager",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  },
+  {
+    "employee_id": "63000010",
+    "full_name": "Arvind Kumar Yadav",
+    "email": "AYadav@zyter.com",
+    "department": "Engineering",
+    "skills": "11+ Years of exp in Selenium Web driver, Manual, API - Rest, Postman, Cypress, Playwright, Web+ Mobile (Android+ iOS), App testing",
+    "grade": "E5",
+    "designation": "Senior Test Lead",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Api"
+    ]
+  },
+  {
+    "employee_id": "63000001",
+    "full_name": "Kuruba Sai Ganesh",
+    "email": "kuruba.ganesh@zyter.com",
+    "department": "Engineering",
+    "skills": "5+ Years of exp in AWS, EKS, Terraform, Jenkins",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "63000002",
+    "full_name": "M Sainathreddy",
+    "email": "m.sainathreddy@zyter.com",
+    "department": "Engineering",
+    "skills": "7.10+ Years of exp, 6+ Years of exp in AWS, Docker, Kuberenetes, Grafana, Terraform, Promotheus, EKS",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "63000078",
+    "full_name": "Nandigam Pravalika",
+    "email": "PraNandigam@zyter.com",
+    "department": "Engineering",
+    "skills": "4 Years of exp in App Deployment, CI/CD. Terraform, Jenkins, Docker, Kubernetes, AWS,",
+    "grade": "E1",
+    "designation": "Associate Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 13,
+    "matchingSkills": [
+      "Aws"
+    ]
+  },
+  {
+    "employee_id": "63000024",
+    "full_name": "Aiswarya",
+    "email": "Aishwarya.Nagraj@infinite.com",
+    "department": "Engineering",
+    "skills": "6+ Years of exp in HTML, CSS, JS, Mirth - Integratation/ Dashboard, Angular - Basics",
+    "grade": "E3",
+    "designation": "Senior Software Engineer",
+    "status": "Active",
+    "shortlisted": false,
+    "score": 0,
+    "matchingSkills": []
+  }
+]
