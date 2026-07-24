@@ -103,13 +103,15 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
   
   // New proctoring states
   const [warningCount, setWarningCount] = useState(0);
+  const [violations, setViolations] = useState<any[]>([]);
   const [showProctorWarning, setShowProctorWarning] = useState<string | null>(null);
   const lastTriggerRef = useRef(0);
+  const multipleFaceCounterRef = useRef(0);
 
   const [clmReady, setClmReady] = useState(false);
   const [camStream, setCamStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-
+  
   useEffect(() => {
     setToken(window.localStorage.getItem("employee_token") ?? "");
   }, []);
@@ -282,7 +284,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
         console.error("Failed to load clmtrackr scripts from CDN:", err);
       }
     };
-
+  
     loadScripts();
 
     return () => {
@@ -294,6 +296,31 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
       }
     };
   }, []);
+  const saveProctoringData = async (
+  warningCount: number,
+  violationsList: any[],
+  autoSubmitted = false
+) => {
+  try {
+    await fetch(`/api/employee/tests/${testId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        proctoring: {
+          warningCount,
+          autoSubmitted,
+          violations: violationsList,
+        },
+      }),
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
+  
 
   const triggerProctorWarning = useCallback((violationType: string) => {
     if (phase !== "running") return;
@@ -307,6 +334,42 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
       if (prev >= 3) return prev;
 
       const nextCount = prev + 1;
+
+const newViolation = {
+  type:
+  violationType === "Tab Switch Detected"
+    ? "tab-blur"
+    : violationType ===
+      "Fullscreen Mode Exited"
+    ? "fullscreen-exit"
+    : violationType ===
+      "Face Missing"
+    ? "face-none"
+    : violationType ===
+      "Multiple Persons Detected"
+    ? "face-multiple"
+    : violationType === "Looking Down"
+    ? "looking-down"
+    : violationType,
+  timestamp: new Date().toISOString(),
+  warningCount: nextCount,
+};
+
+setViolations(prev => {
+  const updated = [
+    ...prev,
+    newViolation,
+  ];
+
+  saveProctoringData(
+    nextCount,
+    updated,
+    nextCount >= 3
+  );
+
+  return updated;
+});
+
       let msgText = "";
       if (nextCount >= 3) {
         msgText = "You have exceeded the maximum of 3 security violations. Your assessment is being automatically submitted.";
@@ -322,6 +385,12 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
         msgText = "Copying or pasting text is strictly disabled.";
       } else if (violationType === "Fullscreen Mode Exited") {
         msgText = "You exited fullscreen mode. Please remain in fullscreen during the test.";
+        } else if (
+  violationType ===
+  "Multiple Persons Detected"
+) {
+  msgText =
+    "More than one person was detected in the camera feed.";
       } else if (violationType === "Face Missing") {
         msgText = "Face not detected in camera feed. Please face your screen clearly.";
       } else if (violationType.startsWith("Looking")) {
@@ -469,6 +538,36 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
 
       const positions = trackerInstance.getCurrentPosition();
       const score = trackerInstance.getScore();
+      // Multiple-person detection
+if ((window as any).faceDetections) {
+  const faceCount =
+    (window as any).faceDetections.length;
+
+  if (faceCount > 1) {
+    multipleFaceCounterRef.current++;
+
+    if (
+      multipleFaceCounterRef.current >= 3
+    ) {
+      triggerProctorWarning(
+        "Multiple Persons Detected"
+      );
+
+      multipleFaceCounterRef.current = 0;
+    }
+  } else {
+    multipleFaceCounterRef.current = 0;
+  }
+}
+      (async () => {
+  try {
+
+    
+
+  } catch (err) {
+    console.error(err);
+  }
+})();
 
       let detectedState: typeof lastState = 'one';
 
@@ -494,9 +593,9 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
           detectedState = 'right';
         } else if (horizontalRatio > 1.30) {
           detectedState = 'left';
-        } else if (verticalRatio < 0.45) {
+        } else if (verticalRatio < 0.50) {
           detectedState = 'up';
-        } else if (verticalRatio > 0.85) {
+        } else if (verticalRatio > 0.60) {
           detectedState = 'down';
         } else {
           detectedState = 'one';
@@ -529,9 +628,9 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
         if (lastState === 'none' && duration >= 4.0) {
           triggerProctorWarning("Face Missing");
           stateStartTime = now;
-        } else if (['left', 'right', 'up', 'down'].includes(lastState) && duration >= 4.0) {
+        } else if (['left', 'right', 'up', 'down'].includes(lastState) && duration >= 2.0) {
           let warningMsg = "Looking Away";
-          if (lastState === 'down') warningMsg = "Looking Down (possible phone usage)";
+          if (lastState === 'down') warningMsg = "Looking Down";
           triggerProctorWarning(warningMsg);
           stateStartTime = now;
         }
@@ -951,11 +1050,14 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
       {phase === "running" && (
         <div className="fixed bottom-6 right-6 w-44 h-32 rounded-2xl overflow-hidden border-2 border-indigo-500 shadow-xl bg-slate-950 z-50">
           <video
-            ref={videoRef}
-            muted
-            playsInline
-            className="w-full h-full object-cover transform -scale-x-100"
-          />
+  ref={videoRef}
+  muted
+  playsInline
+  style={{
+    transform: "scaleX(1)",
+  }}
+  className="w-full h-full object-cover"
+/>
           <div className="absolute bottom-2 left-2 bg-red-600/90 text-white text-[9px] font-black tracking-widest px-2 py-0.5 rounded uppercase flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
             Live Proctor

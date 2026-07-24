@@ -74,15 +74,32 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await request.json();
-    const { in_progress, current_question_index, status, started_at } = body;
+    const {
+  in_progress,
+  current_question_index,
+  status,
+  started_at,
+  proctoring,
+} = body;
 
     const employeeUuid = await getEmployeeUuid(auth.employeeId);
 
     const updates: any = {};
-    if (in_progress !== undefined) updates.in_progress = in_progress;
-    if (current_question_index !== undefined) updates.current_question_index = current_question_index;
-    if (status !== undefined) updates.status = status;
-    if (started_at !== undefined) updates.started_at = started_at;
+
+if (in_progress !== undefined)
+  updates.in_progress = in_progress;
+
+if (current_question_index !== undefined)
+  updates.current_question_index = current_question_index;
+
+if (status !== undefined)
+  updates.status = status;
+
+if (started_at !== undefined)
+  updates.started_at = started_at;
+
+if (proctoring !== undefined)
+  updates.proctoring = proctoring;
 
     try {
       const { data, error } = await supabase

@@ -820,6 +820,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                       <div className="relative border-l border-border pl-6 ml-4 space-y-6">
                         {report.proctoring.violations.map((violation: any, idx: number) => {
                           const userFriendlyTypes: Record<string, string> = {
+                            'looking-down': 'Looking Down',
                             'tab-blur': 'Tab Switching (Focus Lost)',
                             'fullscreen-exit': 'Exited Fullscreen Mode',
                             'face-none': 'Face Tracking Lost (No Face Detected)',
@@ -836,6 +837,7 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                           };
 
                           const iconMap: Record<string, React.ReactNode> = {
+                            'looking-down':<User className="w-3.5 h-3.5" />,
                             'tab-blur': <AppWindow className="w-3.5 h-3.5" />,
                             'fullscreen-exit': <Activity className="w-3.5 h-3.5" />,
                             'face-none': <UserMinus className="w-3.5 h-3.5" />,
@@ -844,6 +846,8 @@ export function AdminResumeDetails({ data, onClose }: AdminResumeDetailsProps) {
                           };
 
                           const detailsMap: Record<string, string> = {
+                            'looking-down':
+'Candidate continuously looked downward away from the screen for several seconds. Possible phone or notes usage.',
                             'tab-blur': 'Candidate switched focus away from the test dashboard to another application or tab. This poses a high risk of code copy-pasting or search lookup.',
                             'fullscreen-exit': 'Candidate exited fullscreen mode. Access to test queries was restricted until re-entering fullscreen.',
                             'face-none': 'Webcam feedback reported no active face detection for longer than 5 seconds. Indicates leaving seat or covering webcam.',
