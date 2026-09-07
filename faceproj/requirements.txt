@@ -1,8 +1,10 @@
 --index-url https://download.pytorch.org/whl/cpu
---extra-index-url https://pypi.org/simple
 
 torch==2.2.2
 torchvision==0.17.2
+
+--index-url https://pypi.org/simple
+
 facenet-pytorch==2.6.0
 opencv-python==4.11.0.86
 numpy==1.26.4

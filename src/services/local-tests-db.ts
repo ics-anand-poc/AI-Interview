@@ -2,6 +2,7 @@ import { join } from "path";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import crypto from "crypto";
 import { supabase } from "@/lib/db";
+import type { EmployeeProctoringState } from "@/lib/employee-proctoring";
 
 export interface LocalTest {
   id: string;
@@ -20,14 +21,12 @@ export interface LocalTest {
   created_at: string;
   topic_title?: string;
   subject_title?: string;
-  // Added by migrations/20260823081000_employee_auth_and_scoring_columns.sql — kept in
-  // sync here so the local-JSON fallback store models the same shape as the live DB.
   session_recording_url?: string | null;
-  proctoring?: any;
+  proctoring?: EmployeeProctoringState | null;
   score_correct?: number | null;
   score_total?: number | null;
   score_percent?: number | null;
-  ai_analysis?: any;
+  ai_analysis?: unknown;
 }
 
 export interface LocalTestQuestion {
@@ -73,6 +72,10 @@ export class LocalTestsDb {
     return LocalTestsDb.instance;
   }
 
+  static scoreFromAttempts(attempts: LocalTestAttempt[], _test: LocalTest): number {
+    return attempts.reduce((total, attempt) => total + (attempt.is_correct ? 1 : 0), 0);
+  }
+
   private async resolveEmployeeUuid(idOrCode: string): Promise<string> {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrCode);
     if (isUuid) return idOrCode;
@@ -111,14 +114,12 @@ export class LocalTestsDb {
       completed_at: row.completed_at,
       in_progress: inProgress,
       created_at: row.created_at,
-      topic_title: row.topic_title,
-      subject_title: row.subject_title,
       session_recording_url: row.session_recording_url ?? null,
       proctoring: row.proctoring ?? null,
       score_correct: row.score_correct ?? null,
       score_total: row.score_total ?? null,
       score_percent: row.score_percent ?? null,
-      ai_analysis: row.ai_analysis ?? null
+      ai_analysis: row.ai_analysis ?? null,
     };
   }
 
@@ -485,15 +486,6 @@ export class LocalTestsDb {
       const db = await this.loadDB();
       return db.test_attempts.filter((a) => a.employee_id === employeeId);
     }
-  }
-
-  /**
-   * Counts how many of the given attempts were correct for a specific test. Used as a
-   * fallback wherever `test.score_correct`/`score_percent` haven't been persisted yet
-   * (e.g. older records from before the scoring columns migration).
-   */
-  static scoreFromAttempts(attempts: LocalTestAttempt[], test: Pick<LocalTest, "id">): number {
-    return attempts.filter((a) => a.test_id === test.id && a.is_correct).length;
   }
 }
 

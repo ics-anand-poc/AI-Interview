@@ -19,10 +19,6 @@ import { EMPLOYEE_PROCTOR_MAX_VIOLATIONS } from "@/lib/employee-proctoring";
 
 const DEFAULT_TIME_LIMIT_SECONDS = 1800;
 
-// Matches the inline union already used by ResultsView's `videoUploadState` prop
-// (see src/components/test-view.tsx) so both sides of that prop agree on the type.
-type VideoUploadState = "pending" | "uploading" | "done" | "failed";
-
 function createMediaRecorder(stream: MediaStream): MediaRecorder | null {
   if (typeof window === "undefined" || typeof MediaRecorder === "undefined") return null;
   const mimeTypes = [
@@ -131,7 +127,6 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
   const [timeLeft,    setTimeLeft]    = useState<number | null>(null);
   const [msg,         setMsg]         = useState<string | null>(null);
   const [submitted,   setSubmitted]   = useState<{ correct: number; total: number; accuracy_pct: number; ai_analysis?: { summary?: string; strengths?: string[]; weaknesses?: string[]; next_steps?: string[]; continue_message?: string } | string; topic_title: string } | null>(null);
-  const [videoUploadState, setVideoUploadState] = useState<VideoUploadState>("pending");
 
   const savedRef     = useRef(false);
   const timerRef     = useRef<ReturnType<typeof setInterval> | null>(null);

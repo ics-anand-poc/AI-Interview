@@ -5967,14 +5967,14 @@ export default function AdminDashboard() {
                                   JD Match
                                 </span>
                                 {(() => {
-                                  const score = getScore(row) ?? 0;
+                                  const score = getScore(row);
                                   return (
                                     <Badge className={`border-0 font-extrabold text-xs px-3 py-1 ${
-                                      score >= 40
+                                      score !== null && score >= 40
                                         ? "bg-emerald-100 dark:bg-emerald-950/35 text-emerald-800 dark:text-emerald-300"
                                         : "bg-amber-100 dark:bg-amber-955/35 text-amber-855 dark:text-amber-300"
                                     }`}>
-                                      {score}%
+                                      {score === null ? "—" : `${score}%`}
                                     </Badge>
                                   );
                                 })()}

@@ -6,9 +6,26 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Trigger dev server restart to clear global HMR and singleton cache
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_CLOUD_DOCS_INGEST:
+      process.env.VERCEL === "1" ||
+      process.env.CONTAINER === "1" ||
+      process.env.DOCS_USE_CLOUD === "1"
+        ? "1"
+        : "0",
+  },
+  // Produces a self-contained .next/standalone build (server.js + only the
+  // node_modules actually used) — this is what the Azure VM Dockerfile
+  // copies out; without it the container image ships the full dev
+  // node_modules tree and `next start` instead of the trimmed server.
+  output: "standalone",
   serverExternalPackages: ['sqlite3', 'pdf-parse', 'mammoth', 'pdfjs-dist'],
   outputFileTracingIncludes: {
-    '/api/**/*': ['./node_modules/pdf-parse/**/*'],
+    '/api/**/*': [
+      './node_modules/pdf-parse/**/*',
+      './src/data/employee-accounts.json',
+      './src/data/employee_test_manifest.json',
+    ],
   },
   turbopack: {
     root: __dirname,

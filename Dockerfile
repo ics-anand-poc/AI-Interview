@@ -1,34 +1,84 @@
-# Multi-stage build for production
-FROM node:18-alpine AS deps
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
+# =============================================================================
+# AI Interview Platform — Azure VM / Azure Container Apps / ACR
+# =============================================================================
+#
+# Prerequisites:
+#   - Supabase project with schema applied (see supabase/migrations)
+#   - Storage buckets for documents if DOCS_USE_CLOUD=1
+#
+# Build (pass public Next.js vars at build time):
+#   docker build -t ai-interview:latest \
+#     --build-arg NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co \
+#     --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ... \
+#     --build-arg NEXT_PUBLIC_APP_URL=https://your-domain \
+#     .
+#
+# Run locally against this image:
+#   docker run -p 3000:3000 --env-file .env.azure ai-interview:latest
+#
+# On the Azure app VM this is built via docker-compose.azure.yml / the
+# deploy-develop GitHub Actions workflow — see scripts/deploy-azure-vm.sh.
+#
+# =============================================================================
 
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
+
+# --- Install all dependencies (devDeps required for `next build`) ---
+FROM base AS deps
+COPY package.json package-lock.json* .npmrc ./
+RUN npm ci
+
+# --- Build Next.js standalone output ---
+FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN mkdir -p public
+
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV NEXT_TELEMETRY_DISABLED=1
+
 RUN npm run build
 
-# Production image
-FROM node:18-alpine AS runner
-WORKDIR /app
+# --- Production runtime ---
+FROM base AS runner
 
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Container / Azure runtime — Supabase DB + cloud doc storage (not local JSON/docs)
+ENV CONTAINER=1
+ENV USE_SUPABASE_PRIMARY=1
+ENV DOCS_USE_CLOUD=1
+ENV UPLOADS_DIR=/app/uploads
 
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+RUN addgroup --system --gid 1001 nodejs \
+  && adduser --system --uid 1001 nextjs \
+  && mkdir -p /app/uploads \
+  && chown -R nextjs:nodejs /app/uploads
+
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package*.json ./
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Seed/fallback JSON bundled with the app (accounts, manifest, local_tests_db)
+COPY --chown=nextjs:nodejs src/data ./src/data
 
 USER nextjs
-
 EXPOSE 3000
 
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
+VOLUME ["/app/uploads"]
 
-CMD ["npm", "start"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+CMD ["node", "server.js"]

@@ -19,6 +19,8 @@ coverage/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.azure
+.env.local.test_overlay
 
 uploads/*
 !uploads/.gitkeep
