@@ -1,7 +1,7 @@
 /**
  * Recruiter-style BR/JD vs profile matching.
- * Score is not raw chip coverage: job family, stack sides, evidence strength,
- * and table-stakes skills (Git, HTML, …) decide rank and the 60% qualified line.
+ * Core title skills weigh more than a long preferred list, so a Java profile
+ * can clear 60% on a Java req without also having Wireshark/Diameter.
  */
 
 const CANONICAL_ALIASES: Record<string, string> = {
@@ -12,6 +12,7 @@ const CANONICAL_ALIASES: Record<string, string> = {
   python: "python",
   py: "python",
   java: "java",
+  "core java": "java",
   "c++": "c++",
   cpp: "c++",
   "c#": "c#",
@@ -99,11 +100,80 @@ const CANONICAL_ALIASES: Record<string, string> = {
   nokia: "nokia",
   "cloud mobility manager": "cmm",
   "cloud mobile gateway": "cmg",
+  servlet: "servlet",
+  springframework: "spring",
+  "spring framework": "spring",
+  wireshark: "wireshark",
+  pcap: "pcap",
+  helm: "helm",
+  "helm chart": "helm",
+  istio: "istio",
+  openshift: "openshift",
+  openstack: "openstack",
+  caas: "caas",
+  cnf: "cnf",
+  vnf: "vnf",
+  lld: "lld",
+  hld: "hld",
+  pcrf: "pcrf",
+  pcef: "pcef",
+  hss: "hss",
+  hlr: "hlr",
+  udm: "udm",
+  nds: "nds",
+  sdl: "sdl",
+  sdm: "sdm",
+  "subscriber data management": "sdm",
+  ims: "ims",
+  ntas: "ntas",
+  cfx: "cfx",
+  sbc: "sbc",
+  diameter: "diameter",
+  sip: "sip",
+  gtp: "gtp",
+  sctp: "sctp",
+  http2: "http/2",
+  "http/2": "http/2",
+  "http 2": "http/2",
+  "http-2": "http/2",
+  "robot framework": "robot framework",
+  robot: "robot framework",
+  yocto: "yocto",
+  etl: "etl",
+  ".net": ".net",
+  dotnet: ".net",
+  "asp.net": ".net",
+  "asp.net core": ".net",
+  "net core": ".net",
 };
 
 const RELATED_EQUIVALENCE: Record<string, string[]> = {
   unix: ["linux"],
-  linux: ["unix"],
+  linux: ["unix", "bash"],
+  bash: ["linux", "shell"],
+  spring: ["java"],
+  java: ["spring"],
+  kubernetes: ["openshift", "caas"],
+  openshift: ["kubernetes"],
+  openstack: ["caas"],
+  helm: ["kubernetes"],
+  istio: ["kubernetes"],
+  cnf: ["kubernetes", "vnf"],
+  vnf: ["cnf"],
+  hss: ["hlr", "udm", "sdm"],
+  hlr: ["hss", "sdm"],
+  udm: ["hss", "sdm"],
+  sdm: ["hss", "hlr", "udm", "nds", "sdl"],
+  nds: ["sdm", "sdl"],
+  sdl: ["sdm", "nds"],
+  ims: ["sip", "ntas", "cfx", "sbc"],
+  ntas: ["ims", "cfx"],
+  cfx: ["ims", "sbc"],
+  sbc: ["ims", "cfx"],
+  pcrf: ["pcef", "diameter"],
+  pcef: ["pcrf"],
+  ".net": ["c#"],
+  "c#": [".net"],
 };
 
 const WEAK_BODY_SKILLS = new Set([
@@ -117,7 +187,15 @@ const TABLE_STAKES_SKILLS = new Set([
 
 const FE_FRAMEWORKS = new Set(["react", "angular", "vue", "next.js"]);
 const BE_LANGUAGES = new Set([
-  "java", "python", "node.js", "c#", "go", "spring", "django", "flask", "express",
+  "java", "python", "node.js", "c#", "go", "spring", "django", "flask", "express", ".net",
+]);
+const TELECOM_CORE = new Set([
+  "pcrf", "pcef", "hss", "hlr", "udm", "nds", "sdl", "sdm", "ims", "ntas", "cfx", "sbc",
+  "diameter", "sip", "gtp", "sctp", "cmg", "cmm", "mme", "paco",
+]);
+const CLOUD_CORE = new Set([
+  "kubernetes", "openshift", "openstack", "aws", "azure", "gcp", "docker", "helm", "istio",
+  "cnf", "vnf", "caas",
 ]);
 
 const STOP_WORDS = new Set([
@@ -141,6 +219,7 @@ export type JobFamily =
   | "ai"
   | "devops"
   | "engineering"
+  | "telecom"
   | "other";
 
 export type FamilyRelation = "match" | "adjacent" | "mismatch";
@@ -243,7 +322,8 @@ function hasPhrase(haystack: string, needle: string): boolean {
 }
 
 function canonicalizeToken(raw: string): string {
-  const t = raw.toLowerCase().replace(/\s+/g, " ").trim();
+  let t = raw.toLowerCase().replace(/\s+/g, " ").trim();
+  t = t.replace(/^(core|advanced|strong|hands[-\s]on)\s+/g, "");
   if (!t) return "";
   if (CANONICAL_ALIASES[t]) return CANONICAL_ALIASES[t];
   const compact = t.replace(/[\s._-]/g, "");
@@ -252,8 +332,11 @@ function canonicalizeToken(raw: string): string {
 }
 
 function splitSkillList(line: string): string[] {
-  return line
-    .split(/[,;|/]+/)
+  const protectedLine = line
+    .replace(/\bci\s*\/\s*cd\b/gi, "ci-cd")
+    .replace(/\bhttp\s*\/\s*2\b/gi, "http-2");
+  return protectedLine
+    .split(/[,;|]+/)
     .map((s) => s.replace(/\s+/g, " ").trim())
     .filter((s) => s.length >= 2 && !STOP_WORDS.has(s.toLowerCase()));
 }
@@ -323,7 +406,8 @@ export function parseJdRequirements(jdText: string): {
 }
 
 function collectEmployeeSkills(employeeText: string): { canonical: Set<string>; raw: string } {
-  const raw = normalizeProfileText(employeeText);
+  const raw = normalizeProfileText(employeeText)
+    .replace(/\d+(?:\.\d+)?\s*\+?\s*years?\s+(?:of\s+)?exp(?:erience)?\s+in\s+/gi, "");
   const canonical = new Set<string>();
   for (const phrase of PHRASE_CANONICALS) {
     if (hasPhrase(raw, phrase)) canonical.add(CANONICAL_ALIASES[phrase] || phrase);
@@ -573,6 +657,23 @@ export function candidateMatchText(row: {
 
 function inferJobFamily(text: string, title = ""): JobFamily {
   const blob = `${title} ${text}`.toLowerCase();
+  const titleLower = title.toLowerCase();
+
+  if (
+    /\b(delivery manager|technical project manager|program manager|engineering manager|director|vice president|\bvp\b|head of)\b/.test(titleLower)
+  ) {
+    return "manager";
+  }
+  if (/\b(java developer|python developer|software engineer)\b/.test(titleLower) && !/\btest/.test(titleLower)) {
+    return "backend";
+  }
+  if (/\b(azure admin|cloud admin)\b/.test(titleLower)) return "devops";
+  if (/\b(ims testing|automation testing|test engineer|python automation)\b/.test(titleLower)) return "qa";
+  if (
+    /\b(pcrf|ntas|cfx|sbc|sdm deployment|ims deployment|subscriber data)\b/.test(titleLower)
+  ) {
+    return "telecom";
+  }
 
   if (
     /\b(technical manager|engineering manager|program manager|delivery manager|director|vice president|\bvp\b|head of|e6|e7|e8|e9)\b/.test(blob)
@@ -588,8 +689,15 @@ function inferJobFamily(text: string, title = ""): JobFamily {
     return "manager";
   }
 
+  const telecomHit = [...TELECOM_CORE].some((s) => hasPhrase(blob, s));
+  if (telecomHit && !/\b(java developer|python developer)\b/.test(titleLower)) {
+    if (/\b(test|qa|sdet)\b/.test(titleLower)) return "qa";
+    return "telecom";
+  }
+
   if (
     /\b(test lead|test engineer|qa\b|sdet|quality analyst|software test|qa automation|playwright|selenium|cypress|manual testing)\b/.test(blob)
+    && !/\bkubernetes|openshift|openstack|aws|azure|devops\b/.test(blob)
   ) {
     return "qa";
   }
@@ -637,8 +745,9 @@ function familyAlignment(jdFamily: JobFamily, personFamily: JobFamily): { score:
     engineering: ["fullstack", "frontend", "backend", "devops", "ai"],
     frontend: ["fullstack", "engineering"],
     backend: ["fullstack", "engineering", "devops", "ai"],
-    devops: ["backend", "engineering", "fullstack"],
+    devops: ["backend", "engineering", "fullstack", "telecom"],
     ai: ["backend", "engineering"],
+    telecom: ["devops", "engineering"],
     qa: [],
     support: [],
     manager: [],
@@ -650,6 +759,8 @@ function familyAlignment(jdFamily: JobFamily, personFamily: JobFamily): { score:
     ["support", "fullstack"], ["support", "engineering"], ["support", "frontend"], ["support", "backend"],
     ["manager", "fullstack"], ["manager", "engineering"], ["manager", "frontend"], ["manager", "backend"],
     ["qa", "support"],
+    ["telecom", "frontend"], ["telecom", "backend"], ["telecom", "fullstack"],
+    ["telecom", "qa"], ["telecom", "support"], ["telecom", "manager"],
   ];
 
   if (
@@ -663,14 +774,18 @@ function familyAlignment(jdFamily: JobFamily, personFamily: JobFamily): { score:
 
   if ((adjacent[jdFamily] || []).includes(personFamily)) {
     const score =
-      (jdFamily === "fullstack" && personFamily === "backend") ? 72
+      (jdFamily === "backend" && personFamily === "engineering") ? 88
+      : (jdFamily === "engineering" && personFamily === "backend") ? 88
+      : (jdFamily === "fullstack" && personFamily === "backend") ? 72
       : (jdFamily === "fullstack" && personFamily === "frontend") ? 68
       : (jdFamily === "fullstack" && personFamily === "engineering") ? 80
+      : (jdFamily === "devops" && personFamily === "telecom") ? 62
+      : (jdFamily === "telecom" && personFamily === "devops") ? 58
       : 60;
     return { score, relation: "adjacent" };
   }
 
-  return { score: 35, relation: "adjacent" };
+  return { score: 18, relation: "adjacent" };
 }
 
 function parseYears(text: string): number | null {
@@ -725,22 +840,57 @@ function stackFit(
   jdFamily: JobFamily,
   required: string[],
   credits: Map<string, number>,
+  coreCoverage = 0,
 ): number {
-  if (jdFamily !== "fullstack") return 70;
-  const reqFe = required.filter((s) => FE_FRAMEWORKS.has(s));
-  const reqBe = required.filter((s) => BE_LANGUAGES.has(s));
-  const hasFe = reqFe.length === 0 || reqFe.some((s) => (credits.get(s) || 0) >= 0.7);
-  const hasBe = reqBe.length === 0 || reqBe.some((s) => (credits.get(s) || 0) >= 0.7);
-  if (hasFe && hasBe) return 100;
-  if (hasFe || hasBe) return 50;
-  return 15;
+  if (jdFamily === "fullstack") {
+    const reqFe = required.filter((s) => FE_FRAMEWORKS.has(s));
+    const reqBe = required.filter((s) => BE_LANGUAGES.has(s));
+    const hasFe = reqFe.length === 0 || reqFe.some((s) => (credits.get(s) || 0) >= 0.7);
+    const hasBe = reqBe.length === 0 || reqBe.some((s) => (credits.get(s) || 0) >= 0.7);
+    if (hasFe && hasBe) return 100;
+    if (hasFe || hasBe) return 50;
+    return 15;
+  }
+  return Math.round(35 + 65 * Math.max(0, Math.min(1, coreCoverage)));
+}
+
+function pickCoreSkills(title: string, required: string[]): { core: string[]; extra: string[] } {
+  if (required.length <= 4) return { core: required, extra: [] };
+  const titleBlob = title.toLowerCase();
+  const ranked = required.map((skill, index) => {
+    const canon = canonicalizeToken(skill) || skill;
+    let weight = Math.max(0, 6 - index);
+    if (hasPhrase(titleBlob, canon) || hasPhrase(titleBlob, skill)) weight += 24;
+    if (BE_LANGUAGES.has(canon) || FE_FRAMEWORKS.has(canon)) weight += 14;
+    const titleIsAppDev = /\b(java|python|\.net|react|angular)\b/.test(titleBlob);
+    const titleIsTelecom = /\b(pcrf|sdm|ims|ntas|cfx|sbc|hss|hlr)\b/.test(titleBlob);
+    const titleIsAzure = /\bazure\b/.test(titleBlob);
+    if (CLOUD_CORE.has(canon)) weight += titleIsTelecom ? 6 : 12;
+    if (TELECOM_CORE.has(canon)) weight += titleIsAppDev ? -10 : 14;
+    if (titleIsAzure && ["kubernetes", "linux", "helm", "azure", "openshift"].includes(canon)) weight += 16;
+    if (titleIsAzure && canon === "openstack") weight -= 8;
+    if (TABLE_STAKES_SKILLS.has(canon) || WEAK_BODY_SKILLS.has(canon)) weight -= 20;
+    return { skill: canon, weight };
+  });
+  ranked.sort((a, b) => b.weight - a.weight || a.skill.localeCompare(b.skill));
+  const coreCount = Math.min(4, Math.max(3, Math.round(required.length * 0.3)));
+  const core: string[] = [];
+  const seen = new Set<string>();
+  for (const row of ranked) {
+    if (seen.has(row.skill)) continue;
+    seen.add(row.skill);
+    core.push(row.skill);
+    if (core.length >= coreCount) break;
+  }
+  const extra = required.filter((skill) => !seen.has(canonicalizeToken(skill) || skill));
+  return { core, extra };
 }
 
 function decide(score: number, relation: FamilyRelation, coveragePct: number, stack: number, jdFamily: JobFamily): MatchDecision {
   if (relation === "mismatch") return "reject";
   const fullstackComplete = jdFamily !== "fullstack" || stack === 100;
-  if (score >= 70 && relation === "match" && coveragePct >= 70 && fullstackComplete) return "interview";
-  if (score >= QUALIFIED_COVERAGE_PERCENT && coveragePct >= 50 && fullstackComplete) return "screen";
+  if (score >= 75 && relation === "match" && coveragePct >= 60 && fullstackComplete) return "interview";
+  if (score >= QUALIFIED_COVERAGE_PERCENT && fullstackComplete) return "screen";
   if (score >= 40) return "hold";
   return "reject";
 }
@@ -761,6 +911,7 @@ export function calculateSkillMatch(
 
   const scoringRequired = required.filter((s) => !TABLE_STAKES_SKILLS.has(s));
   const scoredSkills = scoringRequired.length > 0 ? scoringRequired : required;
+  const { core, extra } = pickCoreSkills(parsed.title, scoredSkills);
 
   const emp = collectEmployeeSkills(employeeSkills);
   const jdFamily = inferJobFamily(jdSkills, parsed.title);
@@ -775,21 +926,26 @@ export function calculateSkillMatch(
     if (credit >= 0.7) matchedFull.push(req);
   }
 
-  const coverage = scoredSkills.reduce((sum, s) => sum + (credits.get(s) || 0), 0) / scoredSkills.length;
+  const avgCredit = (skills: string[]) =>
+    skills.length ? skills.reduce((sum, skill) => sum + (credits.get(skill) || 0), 0) / skills.length : 0;
+  const coreCoverage = avgCredit(core);
+  const extraCoverage = extra.length ? avgCredit(extra) : coreCoverage;
+  const coverage = 0.82 * coreCoverage + 0.18 * extraCoverage;
   const coveragePct = coverage * 100;
-  const stack = stackFit(jdFamily, scoredSkills, credits);
+  const corePct = coreCoverage * 100;
+  const stack = stackFit(jdFamily, scoredSkills, credits, coreCoverage);
   const level = levelFit(emp.raw, parsed.title, personFamily);
 
   let score = Math.round(
-    0.45 * coveragePct +
-    0.30 * alignment.score +
-    0.15 * stack +
-    0.10 * level
+    0.58 * coveragePct +
+    0.22 * alignment.score +
+    0.12 * stack +
+    0.08 * level
   );
 
   const years = parseYears(emp.raw);
   if (alignment.relation === "mismatch") {
-    score = Math.min(score, 28);
+    score = Math.min(score, 32);
   } else if (jdFamily === "fullstack" && stack < 100) {
     score = Math.min(score, 58);
     if (years != null && years < 3) score = Math.min(score, 38);
@@ -797,11 +953,23 @@ export function calculateSkillMatch(
   if (jdFamily === "fullstack" && personFamily === "ai") {
     score = Math.min(score, 36);
   }
-  if (coveragePct < 50) {
-    score = Math.min(score, 58);
+  if (corePct < 40) {
+    score = Math.min(score, 54);
   }
-  if (coveragePct < 35) {
-    score = Math.min(score, 48);
+  if (corePct < 25) {
+    score = Math.min(score, 40);
+  }
+  if (alignment.relation !== "mismatch" && corePct >= 70) {
+    score = Math.max(score, 64);
+  }
+  if (alignment.relation === "match" && corePct >= 55) {
+    score = Math.max(score, 62);
+  }
+  if (alignment.relation !== "mismatch") {
+    const titleSkills = scoredSkills.filter((skill) => hasPhrase(parsed.title.toLowerCase(), skill));
+    if (titleSkills.length > 0 && avgCredit(titleSkills) >= 0.7) {
+      score = Math.max(score, 66);
+    }
   }
 
   score = Math.max(0, Math.min(100, score));
