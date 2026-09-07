@@ -450,11 +450,11 @@ function isWeakMention(raw: string, skill: string): boolean {
 
 function skillCredit(emp: { canonical: Set<string>; raw: string }, required: string): number {
   if (!employeeHasSkill(emp, required)) return 0;
-  if (isWeakMention(emp.raw, required)) return 0.25;
+  if (isWeakMention(emp.raw, required)) return 0.5;
   const yearsNear = skillYearsHint(emp.raw, required);
   if (yearsNear >= 4) return 1;
-  if (yearsNear >= 2) return 0.9;
-  return 0.75;
+  if (yearsNear >= 2) return 0.95;
+  return 0.88;
 }
 
 function skillYearsHint(raw: string, skill: string): number {
@@ -741,51 +741,44 @@ function familyAlignment(jdFamily: JobFamily, personFamily: JobFamily): { score:
   if (jdFamily === personFamily) return { score: 100, relation: "match" };
 
   const adjacent: Record<string, JobFamily[]> = {
-    fullstack: ["engineering", "frontend", "backend", "devops"],
-    engineering: ["fullstack", "frontend", "backend", "devops", "ai"],
-    frontend: ["fullstack", "engineering"],
-    backend: ["fullstack", "engineering", "devops", "ai"],
-    devops: ["backend", "engineering", "fullstack", "telecom"],
-    ai: ["backend", "engineering"],
-    telecom: ["devops", "engineering"],
-    qa: [],
-    support: [],
-    manager: [],
-    other: ["engineering", "fullstack"],
+    fullstack: ["engineering", "frontend", "backend", "devops", "ai", "telecom"],
+    engineering: ["fullstack", "frontend", "backend", "devops", "ai", "telecom", "qa", "support"],
+    frontend: ["fullstack", "engineering", "backend"],
+    backend: ["fullstack", "engineering", "devops", "ai", "telecom", "qa"],
+    devops: ["backend", "engineering", "fullstack", "telecom", "qa"],
+    ai: ["backend", "engineering", "fullstack"],
+    telecom: ["devops", "engineering", "backend", "qa", "support"],
+    qa: ["engineering", "backend", "devops", "telecom"],
+    support: ["engineering", "devops", "telecom", "qa"],
+    manager: ["engineering", "telecom", "devops"],
+    other: ["engineering", "fullstack", "backend", "devops", "telecom"],
   };
 
   const mismatchPairs: Array<[JobFamily, JobFamily]> = [
-    ["qa", "fullstack"], ["qa", "engineering"], ["qa", "frontend"], ["qa", "backend"],
-    ["support", "fullstack"], ["support", "engineering"], ["support", "frontend"], ["support", "backend"],
-    ["manager", "fullstack"], ["manager", "engineering"], ["manager", "frontend"], ["manager", "backend"],
-    ["qa", "support"],
-    ["telecom", "frontend"], ["telecom", "backend"], ["telecom", "fullstack"],
-    ["telecom", "qa"], ["telecom", "support"], ["telecom", "manager"],
+    ["manager", "frontend"],
   ];
 
   if (
     mismatchPairs.some(([a, b]) => (jdFamily === a && personFamily === b) || (jdFamily === b && personFamily === a))
-    || personFamily === "qa" && ["fullstack", "engineering", "frontend", "backend"].includes(jdFamily)
-    || personFamily === "manager" && ["fullstack", "engineering", "frontend", "backend", "qa", "support"].includes(jdFamily)
-    || personFamily === "support" && ["fullstack", "engineering", "frontend", "backend"].includes(jdFamily)
   ) {
-    return { score: personFamily === "qa" ? 8 : personFamily === "manager" ? 15 : 12, relation: "mismatch" };
+    return { score: 42, relation: "mismatch" };
   }
 
   if ((adjacent[jdFamily] || []).includes(personFamily)) {
     const score =
-      (jdFamily === "backend" && personFamily === "engineering") ? 88
-      : (jdFamily === "engineering" && personFamily === "backend") ? 88
-      : (jdFamily === "fullstack" && personFamily === "backend") ? 72
-      : (jdFamily === "fullstack" && personFamily === "frontend") ? 68
-      : (jdFamily === "fullstack" && personFamily === "engineering") ? 80
-      : (jdFamily === "devops" && personFamily === "telecom") ? 62
-      : (jdFamily === "telecom" && personFamily === "devops") ? 58
-      : 60;
+      (jdFamily === "backend" && personFamily === "engineering") ? 92
+      : (jdFamily === "engineering" && personFamily === "backend") ? 92
+      : (jdFamily === "fullstack" && personFamily === "backend") ? 80
+      : (jdFamily === "fullstack" && personFamily === "frontend") ? 78
+      : (jdFamily === "fullstack" && personFamily === "engineering") ? 86
+      : (jdFamily === "devops" && personFamily === "telecom") ? 78
+      : (jdFamily === "telecom" && personFamily === "devops") ? 76
+      : (jdFamily === "telecom" && (personFamily === "backend" || personFamily === "engineering")) ? 70
+      : 72;
     return { score, relation: "adjacent" };
   }
 
-  return { score: 18, relation: "adjacent" };
+  return { score: 55, relation: "adjacent" };
 }
 
 function parseYears(text: string): number | null {
@@ -813,25 +806,25 @@ function levelFit(profileText: string, jdTitle: string, personFamily: JobFamily)
   const years = parseYears(profileText);
   const ic = jdIsIcBuilder(jdTitle);
 
-  if (personFamily === "manager" && ic) return 20;
-  if (personFamily === "qa" && ic) return 25;
+  if (personFamily === "manager" && ic) return 55;
+  if (personFamily === "qa" && ic) return 62;
 
-  let score = 80;
+  let score = 88;
   if (ic) {
     if (grade != null) {
       if (grade <= 3) score = 95;
-      else if (grade === 4) score = 78;
-      else if (grade === 5) score = 70;
-      else score = 25;
+      else if (grade === 4) score = 88;
+      else if (grade === 5) score = 82;
+      else score = 70;
     }
     if (/\b(senior technical lead|technical lead|tech lead)\b/.test(profileText) && !/\blead\b/.test(jdTitle.toLowerCase())) {
-      score = Math.min(score, 72);
+      score = Math.min(score, 84);
     }
   }
 
-  if (years != null && years < 3 && ic) score = Math.min(score, 45);
+  if (years != null && years < 3 && ic) score = Math.min(score, 70);
   if (years != null && years >= 12 && ic && !/\b(lead|senior|principal|staff)\b/.test(jdTitle.toLowerCase())) {
-    score = Math.min(score, 60);
+    score = Math.min(score, 80);
   }
   return score;
 }
@@ -851,7 +844,7 @@ function stackFit(
     if (hasFe || hasBe) return 50;
     return 15;
   }
-  return Math.round(35 + 65 * Math.max(0, Math.min(1, coreCoverage)));
+  return Math.round(55 + 45 * Math.max(0, Math.min(1, coreCoverage)));
 }
 
 function pickCoreSkills(title: string, required: string[]): { core: string[]; extra: string[] } {
@@ -887,11 +880,10 @@ function pickCoreSkills(title: string, required: string[]): { core: string[]; ex
 }
 
 function decide(score: number, relation: FamilyRelation, coveragePct: number, stack: number, jdFamily: JobFamily): MatchDecision {
-  if (relation === "mismatch") return "reject";
   const fullstackComplete = jdFamily !== "fullstack" || stack === 100;
-  if (score >= 75 && relation === "match" && coveragePct >= 60 && fullstackComplete) return "interview";
-  if (score >= QUALIFIED_COVERAGE_PERCENT && fullstackComplete) return "screen";
-  if (score >= 40) return "hold";
+  if (score >= 75 && coveragePct >= 50 && fullstackComplete) return "interview";
+  if (score >= QUALIFIED_COVERAGE_PERCENT) return "screen";
+  if (score >= 30) return "hold";
   return "reject";
 }
 
@@ -937,39 +929,29 @@ export function calculateSkillMatch(
   const level = levelFit(emp.raw, parsed.title, personFamily);
 
   let score = Math.round(
-    0.58 * coveragePct +
-    0.22 * alignment.score +
-    0.12 * stack +
-    0.08 * level
+    0.45 * coveragePct +
+    0.28 * alignment.score +
+    0.15 * stack +
+    0.12 * level
   );
 
   const years = parseYears(emp.raw);
-  if (alignment.relation === "mismatch") {
-    score = Math.min(score, 32);
-  } else if (jdFamily === "fullstack" && stack < 100) {
-    score = Math.min(score, 58);
-    if (years != null && years < 3) score = Math.min(score, 38);
+  if (jdFamily === "fullstack" && stack < 100) {
+    score = Math.min(score, 72);
+    if (years != null && years < 3) score = Math.min(score, 58);
   }
-  if (jdFamily === "fullstack" && personFamily === "ai") {
-    score = Math.min(score, 36);
-  }
-  if (corePct < 40) {
-    score = Math.min(score, 54);
-  }
-  if (corePct < 25) {
-    score = Math.min(score, 40);
-  }
-  if (alignment.relation !== "mismatch" && corePct >= 70) {
+  const solidHits = scoredSkills.filter((skill) => (credits.get(skill) || 0) >= 0.5).length;
+  if (solidHits >= 2) score = Math.max(score, 58);
+  else if (solidHits >= 1) score = Math.max(score, 48);
+  if (corePct >= 70) {
     score = Math.max(score, 64);
   }
-  if (alignment.relation === "match" && corePct >= 55) {
-    score = Math.max(score, 62);
+  if (alignment.relation === "match" && corePct >= 50) {
+    score = Math.max(score, 60);
   }
-  if (alignment.relation !== "mismatch") {
-    const titleSkills = scoredSkills.filter((skill) => hasPhrase(parsed.title.toLowerCase(), skill));
-    if (titleSkills.length > 0 && avgCredit(titleSkills) >= 0.7) {
-      score = Math.max(score, 66);
-    }
+  const titleSkills = scoredSkills.filter((skill) => hasPhrase(parsed.title.toLowerCase(), skill));
+  if (titleSkills.length > 0 && avgCredit(titleSkills) >= 0.5) {
+    score = Math.max(score, 60);
   }
 
   score = Math.max(0, Math.min(100, score));
@@ -1036,9 +1018,9 @@ export function calculateSkillMatch(
     grade: parseGrade(emp.raw),
     weighted: {
       coverage: Math.round(0.45 * coveragePct),
-      family: Math.round(0.30 * alignment.score),
+      family: Math.round(0.28 * alignment.score),
       stack: Math.round(0.15 * stack),
-      level: Math.round(0.10 * level),
+      level: Math.round(0.12 * level),
     },
   };
 
