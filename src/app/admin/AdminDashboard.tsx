@@ -571,6 +571,17 @@ function composeRequirementFileName(brNo: string, filename: string): string {
   return `${br} | ${file}`;
 }
 
+function interviewExportFileName(jdFileName?: string): string {
+  const { brNo, filename } = requirementFileParts(jdFileName);
+  const raw = brNo !== "N/A" ? brNo : filename;
+  const cleaned = raw
+    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-")
+    .replace(/\s+/g, " ")
+    .replace(/[. ]+$/g, "")
+    .trim();
+  return `${cleaned || "corp_pool_shortlisted"}.xlsx`;
+}
+
 function dateInputToCreatedAt(dateStr: string, previous?: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return previous || new Date().toISOString();
   const [year, month, day] = dateStr.split("-").map(Number);
@@ -2651,10 +2662,18 @@ export default function AdminDashboard() {
     }
 
     try {
+      const activeId =
+        selectedJdId && selectedJdId !== "all" && !String(selectedJdId).includes("@")
+          ? selectedJdId
+          : pickDefaultJd(jds)?.id;
+      const currentJd = jds.find((j) => j.id === activeId);
+      const exportFileName = interviewExportFileName(currentJd?.fileName);
+
       const res = await fetch("/api/admin/employees/export-shortlisted", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          fileName: exportFileName,
           employees: shortlisted.map((emp) => ({
             employee_id: emp.employee_id,
             full_name: emp.full_name,
@@ -2679,7 +2698,7 @@ export default function AdminDashboard() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `corp_pool_shortlisted_${new Date().toISOString().split("T")[0]}.xlsx`;
+      link.download = exportFileName;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -4435,6 +4454,9 @@ export default function AdminDashboard() {
   const qualifiedUnshortlistedIds = scoredEmployees
     .filter((emp) => !emp.shortlisted && Number(emp.score) >= QUALIFIED_COVERAGE_PERCENT)
     .map((emp) => emp.employee_id);
+  const selectedUnshortlistedIds = selectedEmployeeIds.filter((id) =>
+    scoredEmployees.some((emp) => emp.employee_id === id && !emp.shortlisted)
+  );
   const jdIsSelectedForFit =
     Boolean(selectedJdId) && selectedJdId !== "all" && Boolean(jdSavedText.trim());
 
@@ -5192,6 +5214,18 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         <div className="flex gap-2 w-full sm:w-auto flex-wrap justify-end">
+                          {selectedEmployeeIds.length > 0 && (
+                            <Button
+                              size="sm"
+                              disabled={selectedUnshortlistedIds.length === 0}
+                              onClick={() => handleBulkShortlistEmployees(true, selectedUnshortlistedIds)}
+                              className="flex-1 sm:flex-none rounded-xl bg-violet-600 hover:bg-violet-700 text-white gap-1.5 font-bold text-xs"
+                              title="Shortlist everyone currently selected in Corp Pool"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              Shortlist selected ({selectedUnshortlistedIds.length})
+                            </Button>
+                          )}
                           {jdIsSelectedForFit && (
                             <Button
                               size="sm"

@@ -86,7 +86,15 @@ export async function POST(request: NextRequest) {
     };
 
     const buffer = await workbook.xlsx.writeBuffer();
-    const filename = `corp_pool_shortlisted_${new Date().toISOString().split("T")[0]}.xlsx`;
+    const requestedName = String(body.fileName || "")
+      .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-")
+      .replace(/"/g, "")
+      .trim();
+    const filename = requestedName.toLowerCase().endsWith(".xlsx")
+      ? requestedName
+      : requestedName
+        ? `${requestedName}.xlsx`
+        : `corp_pool_shortlisted_${new Date().toISOString().split("T")[0]}.xlsx`;
 
     return new NextResponse(buffer, {
       headers: {
