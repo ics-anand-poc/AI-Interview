@@ -273,10 +273,11 @@
 .shortlist-btn.is-on {
   background: #7c3aed;
   color: #fff;
+  cursor: pointer;
   box-shadow: 0 8px 18px -10px rgba(124, 58, 237, 0.7);
 }
 .shortlist-btn.is-on:hover:not(:disabled) {
-  background: #6d28d9;
+  background: #5b21b6;
 }
 .shortlist-check {
   animation: shortlist-pop 0.35s cubic-bezier(0.22, 1, 0.36, 1);

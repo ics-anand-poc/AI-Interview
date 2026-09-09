@@ -908,10 +908,13 @@ function ShortlistToggle({
     <button
       type="button"
       onClick={(e) => {
+        e.preventDefault();
         e.stopPropagation();
         onClick();
       }}
-      className={`shortlist-btn ${shortlisted ? "is-on" : "is-off"} ${compact ? "h-7 px-2.5 text-[10px]" : "h-9 px-5 text-xs"}`}
+      title={shortlisted ? "Click to remove from shortlist" : "Click to shortlist"}
+      aria-pressed={shortlisted}
+      className={`shortlist-btn cursor-pointer ${shortlisted ? "is-on" : "is-off"} ${compact ? "h-7 px-2.5 text-[10px]" : "h-9 px-5 text-xs"}`}
     >
       {shortlisted ? (
         <>
@@ -1615,7 +1618,16 @@ export default function AdminDashboard() {
       }
       // Never wipe prior roster/portal data on partial/empty error payloads
       if (Array.isArray(data.employees)) {
-        setEmployees(data.employees);
+        const pending = shortlistIntentRef.current;
+        setEmployees(
+          pending.size
+            ? data.employees.map((emp: any) =>
+                pending.has(emp.employee_id)
+                  ? { ...emp, shortlisted: Boolean(pending.get(emp.employee_id)) }
+                  : emp
+              )
+            : data.employees
+        );
       }
       if (Array.isArray(data.allTestResults)) {
         setAllTestResults(data.allTestResults);
@@ -2794,20 +2806,28 @@ export default function AdminDashboard() {
     scheduleShortlistFlush();
   };
 
-  const handleShortlistEmployee = (employeeId: string) => {
+  const handleShortlistEmployee = (employeeId: string, currentlyShortlisted?: boolean) => {
     const pending = shortlistIntentRef.current.get(employeeId);
     const previousValue =
       typeof pending === "boolean"
         ? pending
-        : Boolean(employeesRef.current.find((emp) => emp.employee_id === employeeId)?.shortlisted);
-    applyShortlistValues(new Map([[employeeId, !previousValue]]));
+        : typeof currentlyShortlisted === "boolean"
+          ? currentlyShortlisted
+          : Boolean(employeesRef.current.find((emp) => emp.employee_id === employeeId)?.shortlisted);
+    const next = !previousValue;
+    applyShortlistValues(new Map([[employeeId, next]]));
+    if (!next) {
+      setSelectedEmployeeIds((prev) => prev.filter((id) => id !== employeeId));
+    }
   };
 
   const handleBulkShortlistEmployees = (shortlisted: boolean, ids?: string[]) => {
     const targetIds = ids?.length ? ids : selectedEmployeeIds;
     if (!targetIds.length) return;
     applyShortlistValues(new Map(targetIds.map((id) => [id, shortlisted])));
-    setSelectedEmployeeIds([]);
+    setSelectedEmployeeIds((prev) =>
+      shortlisted ? [] : prev.filter((id) => !targetIds.includes(id))
+    );
     setActionSuccess(
       shortlisted
         ? `Shortlisted ${targetIds.length} ${targetIds.length === 1 ? "person" : "people"}.`
@@ -4822,6 +4842,9 @@ export default function AdminDashboard() {
   const selectedUnshortlistedIds = selectedEmployeeIds.filter((id) =>
     scoredEmployees.some((emp) => emp.employee_id === id && !emp.shortlisted)
   );
+  const selectedShortlistedIds = selectedEmployeeIds.filter((id) =>
+    scoredEmployees.some((emp) => emp.employee_id === id && emp.shortlisted)
+  );
   const jdIsSelectedForFit =
     Boolean(selectedJdId) && selectedJdId !== "all" && Boolean(jdSavedText.trim());
 
@@ -5608,6 +5631,7 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex gap-2 w-full sm:w-auto flex-wrap justify-end">
                           {selectedEmployeeIds.length > 0 && (
+                            <>
                             <Button
                               size="sm"
                               disabled={selectedUnshortlistedIds.length === 0}
@@ -5618,6 +5642,16 @@ export default function AdminDashboard() {
                               <CheckCircle2 className="w-3.5 h-3.5" />
                               Shortlist selected ({selectedUnshortlistedIds.length})
                             </Button>
+                            <Button
+                              size="sm"
+                              disabled={selectedShortlistedIds.length === 0}
+                              onClick={() => handleBulkShortlistEmployees(false, selectedShortlistedIds)}
+                              className="flex-1 sm:flex-none rounded-xl bg-white dark:bg-slate-900 border border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 gap-1.5 font-bold text-xs"
+                              title="Remove selected people from the shortlist"
+                            >
+                              Unshortlist selected ({selectedShortlistedIds.length})
+                            </Button>
+                            </>
                           )}
                           {jdIsSelectedForFit && (
                             <Button
@@ -5930,7 +5964,7 @@ export default function AdminDashboard() {
                                       <div className="flex items-center justify-center">
                                         <ShortlistToggle
                                           shortlisted={Boolean(emp.shortlisted)}
-                                          onClick={() => handleShortlistEmployee(emp.employee_id)}
+                                          onClick={() => handleShortlistEmployee(emp.employee_id, Boolean(emp.shortlisted))}
                                         />
                                       </div>
                                     </td>
@@ -8727,7 +8761,7 @@ export default function AdminDashboard() {
                 <ShortlistToggle
                   shortlisted={Boolean(activeEmployee.shortlisted)}
                   compact={false}
-                  onClick={() => handleShortlistEmployee(activeEmployee.employee_id)}
+                  onClick={() => handleShortlistEmployee(activeEmployee.employee_id, Boolean(activeEmployee.shortlisted))}
                 />
               </div>
             </div>
