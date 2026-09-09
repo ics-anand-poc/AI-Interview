@@ -97,7 +97,7 @@ export async function parseMatchResultWorkbook(
     table = parseCsv(buffer.toString("utf8"));
   } else {
     const wb = new ExcelJS.Workbook();
-    await wb.xlsx.load(buffer);
+    await wb.xlsx.load(buffer as any);
     const sheet = wb.worksheets[0];
     if (!sheet) return { title, demand, scores: [] };
     sheet.eachRow((row) => {

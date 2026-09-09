@@ -5,7 +5,6 @@
 import {
   getIdTypeLabel,
   isGovernmentIdType,
-  normalizeDetectedIdType,
   type GovernmentIdType,
   type VerificationFailureCode,
 } from "@/lib/identity-verification-shared";
@@ -215,11 +214,9 @@ export async function verifyFaceBiometricsOnly(
 }
 
 /**
- * Full production verification: selected ID type must match the card (when Gemini available),
- * and the face on the card must match the selfie.
- *
- * Hosted path without GEMINI_API_KEY: pass browser face-api descriptors
- * (`idDescriptor` + `selfieDescriptor`) for embedding match.
+ * Full production verification: the face on the card must match the selfie.
+ * Hosted path: pass browser face-api descriptors (`idDescriptor` + `selfieDescriptor`)
+ * when FaceNet is unavailable.
  */
 export async function verifyCandidateIdentity(input: {
   idImageBase64: string;
@@ -255,9 +252,6 @@ export async function verifyCandidateIdentity(input: {
     input.selfieImageBase64
   );
 
-  const geminiResult = null;
-  const geminiError: string | null = null;
-
   const localFace =
     remoteFace == null
       ? await runLocalFaceNet(input.idImageBase64, input.selfieImageBase64)
@@ -278,7 +272,7 @@ export async function verifyCandidateIdentity(input: {
         confidence: facenetFace.confidence,
         reason: facenetFace.reason,
         selectedIdType,
-        detectedIdType: geminiResult?.detectedIdTypeRaw || selectedIdType,
+        detectedIdType: selectedIdType,
         idTypeMatched: true,
         faceMatched: false,
         failureCode: facenetFace.failureCode,
@@ -286,61 +280,9 @@ export async function verifyCandidateIdentity(input: {
       };
     }
 
-    // Optional Gemini document checks when available
-    if (geminiResult) {
-      if (!geminiResult.qualityOk) {
-        return {
-          matched: false,
-          confidence: facenetFace.confidence,
-          reason:
-            geminiResult.reason ||
-            "ID image quality is too low. Recapture a clearer, well-lit photo of the full card.",
-          selectedIdType,
-          detectedIdType: geminiResult.detectedIdTypeRaw,
-          idTypeMatched: false,
-          faceMatched: facenetFace.matched,
-          failureCode: "low_quality",
-          engine: "hybrid",
-        };
-      }
-      if (geminiResult.spoofSuspected) {
-        return {
-          matched: false,
-          confidence: Math.min(facenetFace.confidence, 40),
-          reason:
-            geminiResult.reason ||
-            "Possible spoof detected (screen/print). Use the original physical ID and a live selfie.",
-          selectedIdType,
-          detectedIdType: geminiResult.detectedIdTypeRaw,
-          idTypeMatched: false,
-          faceMatched: false,
-          failureCode: "spoof_suspected",
-          engine: "hybrid",
-        };
-      }
-      const detectedNormalized = normalizeDetectedIdType(geminiResult.detectedIdTypeRaw);
-      const idTypeMatched =
-        detectedNormalized === selectedIdType ||
-        (detectedNormalized === null && Boolean(geminiResult.idTypeMatched));
-      if (!idTypeMatched) {
-        return {
-          matched: false,
-          confidence: 0,
-          reason: `Selected ${getIdTypeLabel(selectedIdType)}, but the uploaded document appears to be ${getIdTypeLabel(detectedNormalized) || geminiResult.detectedIdTypeRaw}. Please select the correct type or upload the matching card.`,
-          selectedIdType,
-          detectedIdType: geminiResult.detectedIdTypeRaw,
-          idTypeMatched: false,
-          faceMatched: facenetFace.matched,
-          failureCode: "id_type_mismatch",
-          engine: "hybrid",
-        };
-      }
-    }
-
     const MIN_CONFIDENCE = Number(process.env.IDENTITY_MIN_CONFIDENCE || 70);
     let faceMatched = facenetFace.matched;
     let confidence = facenetFace.confidence;
-    // Optional soft boost/check from browser face-api (never overrides a clear FaceNet fail)
     if (faceApiMatch && faceMatched && faceApiMatch.matched) {
       confidence = Math.round(confidence * 0.85 + faceApiMatch.confidence * 0.15);
     }
@@ -354,216 +296,70 @@ export async function verifyCandidateIdentity(input: {
         confidence,
         reason: facenetFace.reason,
         selectedIdType,
-        detectedIdType: geminiResult?.detectedIdTypeRaw || selectedIdType,
+        detectedIdType: selectedIdType,
         idTypeMatched: true,
         faceMatched: false,
         failureCode: "face_mismatch",
-        engine: geminiResult ? "hybrid" : facenetEngine,
+        engine: facenetEngine,
       };
     }
 
     return {
       matched: true,
       confidence,
-      reason: geminiResult
-        ? `Identity verified via FaceNet. ${getIdTypeLabel(selectedIdType)} confirmed. ${facenetFace.reason}`
-        : `${getIdTypeLabel(selectedIdType)} accepted. ${facenetFace.reason}`,
+      reason: `${getIdTypeLabel(selectedIdType)} accepted. ${facenetFace.reason}`,
       selectedIdType,
-      detectedIdType: geminiResult?.detectedIdTypeRaw || selectedIdType,
+      detectedIdType: selectedIdType,
       idTypeMatched: true,
       faceMatched: true,
-      engine: geminiResult ? "hybrid" : facenetEngine,
+      engine: facenetEngine,
     };
   }
 
-  // --- Path B: No FaceNet — face-api / Gemini fallbacks ---
-  if (!geminiResult) {
-    if (faceApiMatch) {
-      const MIN_CONFIDENCE = Number(process.env.IDENTITY_MIN_CONFIDENCE || 70);
-      let faceMatched = faceApiMatch.matched;
-      let confidence = faceApiMatch.confidence;
-      if (faceMatched && confidence < MIN_CONFIDENCE) {
-        faceMatched = false;
-      }
-      if (!faceMatched) {
-        return {
-          matched: false,
-          confidence,
-          reason: faceApiMatch.reason,
-          selectedIdType,
-          detectedIdType: selectedIdType,
-          idTypeMatched: true,
-          faceMatched: false,
-          failureCode: "face_mismatch",
-          engine: "faceapi",
-        };
-      }
+  // --- Path B: No FaceNet — browser face-api fallback ---
+  if (faceApiMatch) {
+    const MIN_CONFIDENCE = Number(process.env.IDENTITY_MIN_CONFIDENCE || 70);
+    let faceMatched = faceApiMatch.matched;
+    let confidence = faceApiMatch.confidence;
+    if (faceMatched && confidence < MIN_CONFIDENCE) {
+      faceMatched = false;
+    }
+    if (!faceMatched) {
       return {
-        matched: true,
+        matched: false,
         confidence,
-        reason: `${getIdTypeLabel(selectedIdType)} accepted (selected by candidate). ${faceApiMatch.reason}`,
+        reason: faceApiMatch.reason,
         selectedIdType,
         detectedIdType: selectedIdType,
         idTypeMatched: true,
-        faceMatched: true,
+        faceMatched: false,
+        failureCode: "face_mismatch",
         engine: "faceapi",
       };
     }
-
     return {
-      matched: false,
-      confidence: 0,
-      reason: `Identity verification engine unavailable. Configure FACE_MATCH_SERVICE_URL (Render FaceNet) for production. Images saved for manual audit. ${geminiError || ""}`.trim(),
-      selectedIdType,
-      detectedIdType: null,
-      idTypeMatched: false,
-      faceMatched: false,
-      failureCode: "engine_error",
-      engine: "none",
-      isSystemError: true,
-    };
-  }
-
-  const detectedNormalized = normalizeDetectedIdType(geminiResult.detectedIdTypeRaw);
-  // Prefer normalized class equality; allow model flag only when class is ambiguous
-  const idTypeMatched =
-    detectedNormalized === selectedIdType ||
-    (detectedNormalized === null && Boolean(geminiResult.idTypeMatched));
-
-  if (!geminiResult.qualityOk) {
-    return {
-      matched: false,
-      confidence: geminiResult.confidence,
-      reason:
-        geminiResult.reason ||
-        "ID image quality is too low. Recapture a clearer, well-lit photo of the full card.",
-      selectedIdType,
-      detectedIdType: geminiResult.detectedIdTypeRaw,
-      idTypeMatched,
-      faceMatched: false,
-      failureCode: "low_quality",
-      engine: faceApiMatch ? "hybrid" : "gemini",
-    };
-  }
-
-  if (geminiResult.spoofSuspected) {
-    return {
-      matched: false,
-      confidence: Math.min(geminiResult.confidence, 40),
-      reason:
-        geminiResult.reason ||
-        "Possible spoof detected (screen/print). Use the original physical ID and a live selfie.",
-      selectedIdType,
-      detectedIdType: geminiResult.detectedIdTypeRaw,
-      idTypeMatched,
-      faceMatched: false,
-      failureCode: "spoof_suspected",
-      engine: faceApiMatch ? "hybrid" : "gemini",
-    };
-  }
-
-  if (!idTypeMatched) {
-    return {
-      matched: false,
-      confidence: 0,
-      reason: `Selected ${getIdTypeLabel(selectedIdType)}, but the uploaded document appears to be ${getIdTypeLabel(detectedNormalized) || geminiResult.detectedIdTypeRaw}. Please select the correct type or upload the matching card.`,
-      selectedIdType,
-      detectedIdType: geminiResult.detectedIdTypeRaw,
-      idTypeMatched: false,
-      faceMatched: false,
-      failureCode: "id_type_mismatch",
-      engine: faceApiMatch ? "hybrid" : "gemini",
-    };
-  }
-
-  if (!geminiResult.faceVisibleOnId && !faceApiMatch?.matched) {
-    return {
-      matched: false,
-      confidence: 0,
-      reason: "No clear face photo found on the ID. Ensure the card portrait is fully visible and sharp.",
-      selectedIdType,
-      detectedIdType: geminiResult.detectedIdTypeRaw,
-      idTypeMatched: true,
-      faceMatched: false,
-      failureCode: "no_face_on_id",
-      engine: "gemini",
-    };
-  }
-
-  if (!geminiResult.faceVisibleOnSelfie && !faceApiMatch?.matched) {
-    return {
-      matched: false,
-      confidence: 0,
-      reason: "No clear face found in the selfie. Face the camera with good lighting and try again.",
-      selectedIdType,
-      detectedIdType: geminiResult.detectedIdTypeRaw,
-      idTypeMatched: true,
-      faceMatched: false,
-      failureCode: "no_face_on_selfie",
-      engine: "gemini",
-    };
-  }
-
-  // FaceNet unavailable — Gemini ± browser face-api only
-  let faceMatched = geminiResult.faceMatched;
-  let confidence = geminiResult.confidence;
-  let engine: IdentityVerificationResult["engine"] = "gemini";
-  let reason = geminiResult.reason;
-
-  if (faceApiMatch) {
-    engine = "hybrid";
-    if (geminiResult.faceMatched && faceApiMatch.matched) {
-      faceMatched = true;
-      confidence = Math.round((geminiResult.confidence + faceApiMatch.confidence) / 2);
-      reason = `ID type confirmed as ${getIdTypeLabel(selectedIdType)}. Biometric match confirmed by cloud vision and face embeddings.`;
-    } else if (!geminiResult.faceMatched && faceApiMatch.matched && faceApiMatch.confidence >= 75) {
-      faceMatched = true;
-      confidence = faceApiMatch.confidence;
-      reason = `ID type confirmed. Face match accepted via embeddings (${faceApiMatch.reason})`;
-      engine = "faceapi";
-    } else if (geminiResult.faceMatched && !faceApiMatch.matched) {
-      faceMatched = false;
-      confidence = Math.min(geminiResult.confidence, faceApiMatch.confidence);
-      reason = `ID type OK, but face embeddings disagreed with cloud score. ${faceApiMatch.reason}`;
-    } else {
-      faceMatched = false;
-      confidence = Math.max(geminiResult.confidence, faceApiMatch.confidence);
-      reason = geminiResult.reason || faceApiMatch.reason;
-    }
-  }
-
-  const MIN_CONFIDENCE = Number(process.env.IDENTITY_MIN_CONFIDENCE || 70);
-  if (faceMatched && confidence < MIN_CONFIDENCE) {
-    faceMatched = false;
-    reason = `Face similarity ${confidence}% is below the required ${MIN_CONFIDENCE}% threshold. Retake a clearer selfie facing the camera.`;
-  }
-
-  if (!faceMatched) {
-    return {
-      matched: false,
+      matched: true,
       confidence,
-      reason:
-        reason ||
-        "The face on the ID does not match the live selfie. Ensure the same person is photographed.",
+      reason: `${getIdTypeLabel(selectedIdType)} accepted (selected by candidate). ${faceApiMatch.reason}`,
       selectedIdType,
-      detectedIdType: geminiResult.detectedIdTypeRaw,
+      detectedIdType: selectedIdType,
       idTypeMatched: true,
-      faceMatched: false,
-      failureCode: "face_mismatch",
-      engine,
+      faceMatched: true,
+      engine: "faceapi",
     };
   }
 
   return {
-    matched: true,
-    confidence,
+    matched: false,
+    confidence: 0,
     reason:
-      reason ||
-      `Identity verified. ${getIdTypeLabel(selectedIdType)} confirmed and biometric match confidence ${confidence}%.`,
+      "Identity verification engine unavailable. Configure FACE_MATCH_SERVICE_URL (Render FaceNet) for production. Images saved for manual audit.",
     selectedIdType,
-    detectedIdType: geminiResult.detectedIdTypeRaw,
-    idTypeMatched: true,
-    faceMatched: true,
-    engine,
+    detectedIdType: null,
+    idTypeMatched: false,
+    faceMatched: false,
+    failureCode: "engine_error",
+    engine: "none",
+    isSystemError: true,
   };
 }
