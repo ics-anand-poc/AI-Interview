@@ -29,7 +29,9 @@ const nextConfig = {
         ? "1"
         : "0",
   },
-  output: "standalone",
+  // Next 16.3 + Vercel adapter skips next-server.js.nft.json when standalone is on.
+  // Azure/Docker still need standalone; Vercel ignores that directory anyway.
+  ...(process.env.VERCEL ? {} : { output: "standalone" }),
   serverExternalPackages: ['sqlite3', 'pdf-parse', 'mammoth', 'pdfjs-dist'],
   outputFileTracingIncludes: {
     '/api/**/*': [
