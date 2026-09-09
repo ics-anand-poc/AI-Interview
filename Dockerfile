@@ -76,8 +76,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Employee portal Excel sources (admin employee tab + login cohort)
-COPY --chown=nextjs:nodejs excel ./excel
+# excel/ workbooks were removed from git (credentials). Keep the dir for runtime lookups.
+RUN mkdir -p /app/excel && chown nextjs:nodejs /app/excel
 
 # Seed/fallback JSON bundled with the app (accounts, manifest, local_tests_db)
 COPY --chown=nextjs:nodejs src/data ./src/data
