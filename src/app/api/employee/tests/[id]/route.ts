@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/db";
-import { authenticateRequest, isAssessmentOnlyEmployee, isProductQbEmployee, PRODUCT_ASSESSMENT_TOPIC_ID } from "@/lib/employee-auth";
+import { authenticateRequest, isAssessmentOnlyEmployee, isProductQbEmployee, PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID, PRODUCT_ASSESSMENT_TOPIC_ID } from "@/lib/employee-auth";
 import { localTestsDb } from "@/services/local-tests-db";
 import { writeLog } from "@/lib/structured-logger";
 import { syncLocalTestStateToSupabase, syncQuestionsToSupabase } from "@/services/employee-test-supabase-sync";
@@ -118,7 +118,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (
       isAssessmentOnlyEmployee(auth.employee) &&
-      testRow.topic_id !== PRODUCT_ASSESSMENT_TOPIC_ID
+      testRow.topic_id !== PRODUCT_ASSESSMENT_TOPIC_ID &&
+      testRow.topic_id !== PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID
     ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

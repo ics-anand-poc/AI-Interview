@@ -1,29 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addEmployeeAccount, getEmployeeAccount, saveEmployeePassword, signToken, syncEmployeeToSupabase } from "@/lib/employee-auth";
+import { getClientIp, isRateLimitedAny, rateLimitedResponse } from "@/lib/security";
+import { asEmployeeId, asPassword, readJsonObject } from "@/lib/input-validation";
+import { jsonPublicError } from "@/lib/api-errors";
 
 function validatePassword(password: string) {
   return password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password);
 }
 
 export async function POST(request: NextRequest) {
-  let body: any;
+  const ip = getClientIp(request);
+  const ipLimit = isRateLimitedAny([`auth:ip:${ip}`], 8, 60_000);
+  if (ipLimit.limited) {
+    return rateLimitedResponse(ipLimit, "Too many attempts. Please try again later.");
+  }
 
-  try {
-    body = await request.json();
-  } catch (error) {
-    console.error("Employee set-password route JSON parse error:", error);
-    return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+  const parsed = await readJsonObject(request);
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
 
   try {
-    const employee_id = String(body.employee_id ?? "").trim();
-    const password = String(body.password ?? "");
+    const employee_id = asEmployeeId(parsed.body.employee_id);
+    const password = asPassword(parsed.body.password);
 
     if (!employee_id) {
       return NextResponse.json({ error: "Employee ID is required" }, { status: 400 });
     }
-    if (!validatePassword(password)) {
+    if (!password || !validatePassword(password)) {
       return NextResponse.json({ error: "Password does not meet the strength requirements" }, { status: 400 });
+    }
+
+    const accountLimit = isRateLimitedAny([`auth:acct:${employee_id.toUpperCase()}`], 5, 60_000);
+    if (accountLimit.limited) {
+      return rateLimitedResponse(accountLimit, "Too many attempts. Please try again later.");
     }
 
     let employee = getEmployeeAccount(employee_id);
@@ -60,7 +70,6 @@ export async function POST(request: NextRequest) {
     await syncEmployeeToSupabase(employee);
     return NextResponse.json({ status: "ok", token, employee: { employee_id: employee.employee_id, full_name: employee.full_name } });
   } catch (e) {
-    console.error("Employee set-password route error:", e);
-    return NextResponse.json({ error: "Unable to set password" }, { status: 500 });
+    return jsonPublicError(e, "Unable to set password");
   }
 }

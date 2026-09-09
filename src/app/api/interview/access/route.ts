@@ -3,15 +3,32 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { sessionService } from '@/services/session-service';
 import { resumeService } from '@/services/resume-service';
+import { getClientIp, isRateLimitedAny, rateLimitedResponse } from '@/lib/security';
+import { asEmail, readJsonObject } from '@/lib/input-validation';
+import { logServerError } from '@/lib/api-errors';
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  const ipLimit = isRateLimitedAny([`public:ip:${ip}`], 30, 60_000);
+  if (ipLimit.limited) {
+    return rateLimitedResponse(ipLimit, "Too many attempts. Please try again later.");
+  }
+
   try {
-    const { email } = await request.json();
-    if (!email || typeof email !== 'string') {
+    const parsed = await readJsonObject(request);
+    if (!parsed.ok) {
+      return NextResponse.json({ success: false, message: parsed.error }, { status: 400 });
+    }
+    const cleanEmail = asEmail(parsed.body.email);
+    if (!cleanEmail) {
       return NextResponse.json({ success: false, message: 'Email address is required' }, { status: 400 });
     }
 
-    const cleanEmail = email.toLowerCase().trim();
+    const accountLimit = isRateLimitedAny([`public:acct:${cleanEmail}`], 15, 60_000);
+    if (accountLimit.limited) {
+      return rateLimitedResponse(accountLimit, "Too many attempts. Please try again later.");
+    }
+
     const session = await sessionService.getSessionByEmail(cleanEmail);
 
     if (!session) {
@@ -43,8 +60,8 @@ export async function POST(request: NextRequest) {
       success: true,
       resumeId: session.resumeId
     });
-  } catch (error: any) {
-    console.error('Access check error:', error);
-    return NextResponse.json({ success: false, message: error.message || 'Verification failed' }, { status: 500 });
+  } catch (error: unknown) {
+    logServerError("interview/access", error);
+    return NextResponse.json({ success: false, message: "Verification failed" }, { status: 500 });
   }
 }

@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { join } from 'path';
 import { writeFile } from 'fs/promises';
 import { authenticateAdminRequest } from '@/lib/employee-auth';
-import { checkCsrf } from '@/lib/security';
+import { checkCsrf, getClientIp, inspectUpload, isRateLimitedAny, rateLimitedResponse, UPLOAD_ALLOWED_EXTS } from '@/lib/security';
+import { jsonPublicError } from '@/lib/api-errors';
+import { asEmail } from '@/lib/input-validation';
 import { writeDocFile, type DocCategory } from '@/lib/docs-storage';
 import { 
   refreshRequirements, 
@@ -64,6 +66,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const ip = getClientIp(request);
+  const uploadLimit = isRateLimitedAny([`upload:ip:${ip}`], 60, 60 * 60_000);
+  if (uploadLimit.limited) {
+    return rateLimitedResponse(uploadLimit, "Too many uploads. Please try again later.");
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
@@ -75,17 +83,24 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    if (isPortalCredentialsFileName(file.name)) {
+    const inspected = inspectUpload(buffer, file.name, {
+      maxBytes: 25 * 1024 * 1024,
+      allowedExts: UPLOAD_ALLOWED_EXTS,
+    });
+    if (!inspected.ok) {
+      return NextResponse.json({ error: inspected.error }, { status: 400 });
+    }
+    if (isPortalCredentialsFileName(file.name) || isPortalCredentialsFileName(inspected.safeName)) {
       return NextResponse.json(
         { error: "Credential workbooks are not uploaded. Use Resource_Question_Mapping.xlsx only." },
         { status: 400 }
       );
     }
 
-    let category = inferUploadCategory(file.name, selectedCategory);
+    let category = inferUploadCategory(inspected.safeName, selectedCategory);
     if (
       category !== "portal-mapping" &&
-      /\.(xlsx|xls)$/i.test(file.name) &&
+      /\.(xlsx|xls)$/i.test(inspected.safeName) &&
       (await excelLooksLikePortalMapping(buffer))
     ) {
       category = "portal-mapping";
@@ -96,7 +111,7 @@ export async function POST(request: NextRequest) {
       category !== "br" &&
       category !== "jd" &&
       category !== "portal-mapping" &&
-      /\.(xlsx|xls)$/i.test(file.name) &&
+      /\.(xlsx|xls)$/i.test(inspected.safeName) &&
       (await excelLooksLikeCorpPoolRoster(buffer))
     ) {
       category = "employee";
@@ -106,11 +121,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid upload category" }, { status: 400 });
     }
     const filename = mapping.docCategory === "Corp Pool"
-      ? sanitizeCorpPoolFileName(file.name)
+      ? sanitizeCorpPoolFileName(inspected.safeName)
       : mapping.docCategory === "Portal Mapping"
         ? PORTAL_MAPPING_STORED_NAME
-        : file.name;
-    const actorEmail = String(formData.get("actorEmail") || formData.get("adminEmail") || "").trim().toLowerCase();
+        : inspected.safeName;
+    const actorEmail = asEmail(formData.get("actorEmail") || formData.get("adminEmail")) || "";
 
     if (category === 'interview') {
       const csvPath = join(getUploadsRoot(), "candidate_interview_data.csv");
@@ -159,8 +174,7 @@ export async function POST(request: NextRequest) {
       refreshResult 
     });
 
-  } catch (error: any) {
-    console.error("Unified upload error:", error);
-    return NextResponse.json({ error: error.message || "Upload processing failed" }, { status: 500 });
+  } catch (error: unknown) {
+    return jsonPublicError(error, "Upload processing failed");
   }
 }

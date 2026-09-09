@@ -1,0 +1,9 @@
+Job Title: Test Automation
+
+Mandatory Skills: Playwright, Selenium, Python, Shell Script
+
+Primary Skills: RHEL, Platform Security, Jenkins, Azure, Docker, Kubernetes, Cursor, Claude, Gemini
+
+Optional Skills: C++, Java
+
+We are looking for a Test Automation engineer for Playwright, Selenium, Python and Shell Script on RHEL with platform security. Build and infrastructure cover Jenkins, Azure, Docker and Kubernetes. Daily work includes AI tools such as Cursor, Claude and Gemini. C++ and Java are optional.

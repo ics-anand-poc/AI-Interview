@@ -7,6 +7,7 @@ import {
   refreshInterviews,
   syncSelectedRequirementToMaster,
 } from '@/services/automation-service';
+import { jsonPublicError } from '@/lib/api-errors';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -40,8 +41,7 @@ export async function POST(request: NextRequest) {
     } else {
       return NextResponse.json({ error: 'Invalid refresh type specified' }, { status: 400 });
     }
-  } catch (error: any) {
-    console.error(`Refresh ${type} failed:`, error);
-    return NextResponse.json({ error: error.message || 'Refresh failed' }, { status: 500 });
+  } catch (error: unknown) {
+    return jsonPublicError(error, "Refresh failed");
   }
 }

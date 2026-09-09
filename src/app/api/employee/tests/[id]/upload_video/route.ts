@@ -15,6 +15,8 @@ import {
 import { markProctorVideoUploaded, normalizeProctoring } from "@/lib/employee-proctoring";
 import { syncLocalTestStateToSupabase } from "@/services/employee-test-supabase-sync";
 import { supabaseServer } from "@/lib/db";
+import { jsonPublicError } from "@/lib/api-errors";
+import { asPathId } from "@/lib/input-validation";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -45,7 +47,11 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: testId } = await params;
+    const { id } = await params;
+    const testId = asPathId(id);
+    if (!testId) {
+      return NextResponse.json({ error: "Invalid test id" }, { status: 400 });
+    }
     const auth = await authenticateRequestAsync(request);
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -115,6 +121,9 @@ export async function POST(
     if (!buffer.length) {
       return NextResponse.json({ error: "Recording file is empty" }, { status: 400 });
     }
+    if (buffer.length > 120 * 1024 * 1024) {
+      return NextResponse.json({ error: "File too large (max 120MB)" }, { status: 400 });
+    }
 
     const saved = await saveEmployeeTestVideoLenient(testId, buffer);
     if (!saved) {
@@ -123,8 +132,7 @@ export async function POST(
 
     const videoUrl = await markVideoReady(testId, auth.employee);
     return NextResponse.json({ success: true, videoUrl });
-  } catch (error: any) {
-    console.error("Employee test video upload failed:", error);
-    return NextResponse.json({ error: error.message || "Upload failed" }, { status: 500 });
+  } catch (error: unknown) {
+    return jsonPublicError(error, "Upload failed");
   }
 }

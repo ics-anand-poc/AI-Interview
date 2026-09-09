@@ -9,12 +9,13 @@ import { localTestsDb, LocalTestsDb } from '@/services/local-tests-db';
 import { allowLocalTestsFallback } from '@/lib/db-mode';
 import { formatProductDisplayName, formatTopicTitleForDisplay } from '@/lib/product-display-name';
 import { readPersistedJson, writePersistedJson, getRuntimeUploadsRoot } from '@/lib/runtime-data';
-import { calculateSkillMatch, employeeMatchText } from '@/lib/skill-match';
+import { calculateSkillMatch, employeeMatchText, scoreOverrideForJd } from '@/lib/skill-match';
 import { cacheStore } from '@/lib/cache-store';
 import { deleteDocFile, listDocFiles } from '@/lib/docs-storage';
 import { isCorpPoolDeleted, loadDeletedCorpPool, markCorpPoolDeleted } from '@/lib/deleted-corp-pool';
 import { loadCorpPoolRoster, saveCorpPoolRoster } from '@/lib/corp-pool-store';
 import { getAdminAccess } from '@/lib/admin-accounts-server';
+import { jsonPublicError } from '@/lib/api-errors';
 import {
   buildResourcePortalEmployees,
   loadEmployeeTestManifest,
@@ -209,7 +210,7 @@ export async function GET(request: NextRequest) {
         const matchResult = calculateSkillMatch(employeeMatchText(emp), jdText);
         return {
           ...emp,
-          score: typeof emp.score_override === "number" ? emp.score_override : matchResult.score,
+          score: scoreOverrideForJd(emp, activeJdId) ?? matchResult.score,
           matchingSkills: matchResult.matchingSkills,
         };
       });
@@ -728,7 +729,7 @@ export async function POST(request: NextRequest) {
       });
   } catch (error: any) {
     await writeLog('employee', 'SHORTLIST_EMPLOYEE_FAILED', 'failed', `Failed to toggle shortlist for employee ID ${employeeId || 'unknown'}: ${error.message}`);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return jsonPublicError(error, "Failed to update shortlist");
   }
 }
 
@@ -800,6 +801,10 @@ export async function PATCH(request: NextRequest) {
       const clamped = Math.max(0, Math.min(100, Math.round(parsed)));
       matched.score = clamped;
       matched.score_override = clamped;
+      if (updates.score_override_jd_id !== undefined) {
+        const jdId = String(updates.score_override_jd_id || "").trim();
+        matched.score_override_jd_id = jdId || null;
+      }
     }
 
     matched.employee_id = nextId;
@@ -826,7 +831,7 @@ export async function PATCH(request: NextRequest) {
       "failed",
       `Failed to update Corp Pool employee ${employeeId || "unknown"}: ${error.message}`
     );
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return jsonPublicError(error, "Failed to update employee");
   }
 }
 
@@ -924,6 +929,6 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true, deleted: removed.length, employees: remaining });
   } catch (error: any) {
     await writeLog('employee', 'DELETE_EMPLOYEE_FAILED', 'failed', `Failed to delete employees: ${error.message}`);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return jsonPublicError(error, "Failed to delete employees");
   }
 }

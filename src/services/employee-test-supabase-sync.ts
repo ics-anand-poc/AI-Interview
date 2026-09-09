@@ -1,6 +1,8 @@
+import { randomUUID } from "crypto";
 import { supabase } from "@/lib/db";
 import { useSupabasePrimary } from "@/lib/db-mode";
 import type { EmployeeAccount } from "@/lib/employee-auth";
+import { PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID } from "@/lib/employee-auth";
 import { readPersistedJson, writePersistedJson } from "@/lib/runtime-data";
 import {
   localTestsDb,
@@ -331,8 +333,76 @@ export async function syncSubmitToSupabase(
   await syncAttemptsToSupabase(testId, employeeUuid, attempts, true);
 }
 
+/** Copy a finished attempt aside so admin reset does not erase employee history. */
+export async function archiveTestAsHistory(testId: string): Promise<string | null> {
+  const { data: test, error } = await supabase.from("tests").select("*").eq("id", testId).maybeSingle();
+  if (error || !test) return null;
+  if (String(test.topic_id || "") === PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID) return null;
+
+  const { data: attempts } = await supabase.from("test_attempts").select("*").eq("test_id", testId);
+  const attemptRows = attempts || [];
+  const hasResult =
+    String(test.status || "") === "completed" ||
+    test.score_percent != null ||
+    Boolean(test.completed_at) ||
+    attemptRows.length > 0;
+  if (!hasResult) return null;
+
+  const { data: questions } = await supabase
+    .from("test_questions")
+    .select("*")
+    .eq("test_id", testId)
+    .order("question_index");
+  const questionRows = questions || [];
+
+  const historyId = randomUUID();
+  const title = String(test.topic_title || "Product Assessment").replace(/\s*\(previous(?: attempt)?\)\s*$/i, "");
+  const { id: _id, created_at: _created, ...rest } = test as Record<string, unknown> & {
+    id: string;
+    created_at?: string;
+  };
+
+  const { error: insErr } = await supabase.from("tests").insert({
+    ...rest,
+    id: historyId,
+    topic_id: PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID,
+    topic_title: `${title} (previous)`,
+    status: "completed",
+    completed_at: test.completed_at || new Date().toISOString(),
+  });
+  if (insErr) {
+    console.warn("archiveTestAsHistory insert failed:", insErr.message);
+    return null;
+  }
+
+  const qIdMap = new Map<string, string>();
+  if (questionRows.length) {
+    const copied = questionRows.map((q: { id: string }) => {
+      const newId = randomUUID();
+      qIdMap.set(String(q.id), newId);
+      return { ...q, id: newId, test_id: historyId };
+    });
+    const { error: qErr } = await supabase.from("test_questions").insert(copied);
+    if (qErr) console.warn("archiveTestAsHistory questions failed:", qErr.message);
+  }
+
+  if (attemptRows.length) {
+    const copiedAttempts = attemptRows.map((a: { id?: string; question_id: string }) => ({
+      ...a,
+      id: randomUUID(),
+      test_id: historyId,
+      question_id: qIdMap.get(String(a.question_id)) || a.question_id,
+    }));
+    const { error: aErr } = await supabase.from("test_attempts").insert(copiedAttempts);
+    if (aErr) console.warn("archiveTestAsHistory attempts failed:", aErr.message);
+  }
+
+  return historyId;
+}
+
 /** Reset a test row in Postgres (admin reset). */
 export async function resetTestInSupabase(testId: string): Promise<void> {
+  await archiveTestAsHistory(testId);
   const { error: attErr } = await supabase.from("test_attempts").delete().eq("test_id", testId);
   if (attErr) throw attErr;
 

@@ -52,6 +52,10 @@ build.log
 # Scratch scripts and sub-projects
 scratch/
 
+# Local GGUF weights (do not commit)
+*.gguf
+AI/*.gguf
+
 # Kilo audit tool directory
 .kilo/
 

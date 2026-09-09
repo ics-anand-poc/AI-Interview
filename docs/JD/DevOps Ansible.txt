@@ -1,0 +1,11 @@
+Job Title: DevOps + Ansible
+
+Mandatory Skills: DevOps, Ansible, Jenkins, Groovy, Azure, Docker
+
+Primary Skills: Python, Selenium, Java, Copilot, Gemini, RHEL, KVM, RHEL Containers, Podman, Platform Security, Security Compliances, Postgres, MySQL, Cassandra, Mongo, WebServices, Tomcat, Celery
+
+Secondary Skills: RHEL, KVM, RHEL Containers, Podman, Platform Security, Security Compliances
+
+Optional Skills: Python, Selenium, Java, Copilot, Gemini, Postgres, MySQL, Cassandra, Mongo, WebServices, Tomcat, Celery
+
+We are looking for a DevOps engineer with Ansible. Build work uses Jenkins, Groovy and Ansible. Infrastructure is Azure and Docker. Python, Selenium, Java and AI tools (Copilot, Gemini) are useful extras, not the core of this seat. Secondary platform skills cover RHEL/KVM, RHEL containers with Podman, platform security and compliance.

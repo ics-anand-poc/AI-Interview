@@ -4,6 +4,7 @@ import { mkdir, readdir, readFile, writeFile } from "fs/promises";
 import { supabaseServer } from "@/lib/db";
 import { getRuntimeUploadsRoot } from "@/lib/runtime-data";
 import { isCloudDeployment } from "@/lib/container-runtime";
+import { safeStorageFileName } from "@/lib/security";
 
 export type DocCategory = "BR" | "JD" | "Resumes" | "Corp Pool" | "Portal Mapping";
 
@@ -30,11 +31,13 @@ function localDir(category: DocCategory): string {
 }
 
 function cloudObjectPath(category: DocCategory, filename: string): string {
-  return `${LOCAL_DIRS[category]}/${filename}`;
+  const safe = safeStorageFileName(filename) || "file";
+  return `${LOCAL_DIRS[category]}/${safe}`;
 }
 
 function cachePath(category: DocCategory, filename: string): string {
-  return join(getRuntimeUploadsRoot(), "docs-cache", LOCAL_DIRS[category], filename);
+  const safe = safeStorageFileName(filename) || "file";
+  return join(getRuntimeUploadsRoot(), "docs-cache", LOCAL_DIRS[category], safe);
 }
 
 async function ensureLocalDir(category: DocCategory): Promise<void> {
@@ -174,6 +177,11 @@ export async function writeDocFile(
   filename: string,
   buffer: Buffer
 ): Promise<void> {
+  const safeName = safeStorageFileName(filename);
+  if (!safeName) {
+    throw new Error("Invalid file name");
+  }
+  filename = safeName;
   if (useCloudDocsStorage()) {
     await ensureDocsBucket();
     const objectPath = cloudObjectPath(category, filename);

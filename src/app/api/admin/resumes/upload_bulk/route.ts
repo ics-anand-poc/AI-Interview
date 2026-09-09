@@ -12,6 +12,7 @@ import { cacheStore } from '@/lib/cache-store';
 import { checkCsrf, isRateLimited, validateFileSignature, getClientIp } from '@/lib/security';
 import { auditLogService } from '@/services/audit-log-service';
 import { writeLog } from '@/lib/structured-logger';
+import { jsonPublicError } from '@/lib/api-errors';
 
 const getUploadsRoot = () => {
   return process.env.VERCEL === "1" ? "/tmp" : join(process.cwd(), "uploads");
@@ -149,9 +150,14 @@ export async function POST(request: NextRequest) {
       const processedResumes = [];
 
       for (const entry of zipEntries) {
-        if (entry.isDirectory) continue;
-
-        const entryName = entry.entryName;
+        const entryName = entry.entryName.replace(/\\/g, "/");
+        if (
+          entryName.includes("..") ||
+          entryName.startsWith("/") ||
+          entry.isDirectory
+        ) {
+          continue;
+        }
         
         // Skip hidden and system files/dirs
         if (
@@ -264,15 +270,8 @@ export async function POST(request: NextRequest) {
       success: true,
       resume
     });
-  } catch (error: any) {
-    console.error('Bulk upload route error:', error);
-    await writeLog('candidate-processing', 'UPLOAD_ROUTE_ERROR', 'failed', `Bulk upload route error: ${error.message}`);
-    return NextResponse.json(
-      { 
-        success: false,
-        error: error.message || 'Upload and parsing failed' 
-      },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    await writeLog('candidate-processing', 'UPLOAD_ROUTE_ERROR', 'failed', `Bulk upload route error`);
+    return jsonPublicError(error, "Upload and parsing failed", 500, { success: false });
   }
 }

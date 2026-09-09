@@ -1,0 +1,9 @@
+Job Title: Linux Developer
+
+Mandatory Skills: RHEL, Shell Script, Qualys, VMware, Python
+
+Primary Skills: RHEL Security, RHEL CVEs, JITC, MUDG, FIPS, Nexus, JFrog Scanner, Jenkins, Azure, Docker, Kubernetes, Cursor, Claude, Gemini
+
+Optional Skills: C++, Java
+
+We are looking for a Linux Developer with strong Red Hat Enterprise Linux experience, including platform security (RHEL CVEs, JITC, MUDG, FIPS). The role uses Qualys, Nexus and JFrog Scanner, plus Python, Shell Script and VMware. Build and infrastructure cover Jenkins, Azure, Docker and Kubernetes. Daily work includes AI tools such as Cursor, Claude and Gemini. C++ and Java are optional.

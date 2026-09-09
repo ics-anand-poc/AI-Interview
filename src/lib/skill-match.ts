@@ -65,10 +65,18 @@ const CANONICAL_ALIASES: Record<string, string> = {
   github: "github",
   gitlab: "gitlab",
   linux: "linux",
+  rhel: "linux",
+  "red hat": "linux",
+  groovy: "groovy",
+  qualys: "qualys",
+  podman: "podman",
+  vmware: "vmware",
   unix: "unix",
   windows: "windows",
   bash: "bash",
   shell: "bash",
+  "shell script": "bash",
+  "shell scripting": "bash",
   powershell: "powershell",
   splunk: "splunk",
   datadog: "datadog",
@@ -196,6 +204,23 @@ const TELECOM_CORE = new Set([
 const CLOUD_CORE = new Set([
   "kubernetes", "openshift", "openstack", "aws", "azure", "gcp", "docker", "helm", "istio",
   "cnf", "vnf", "caas",
+]);
+
+const DEVOPS_CORE = new Set([
+  "devops", "ansible", "jenkins", "docker", "kubernetes", "linux", "terraform", "groovy",
+  "podman", "rhel",
+]);
+const DEVOPS_NOISE = new Set([
+  "selenium", "copilot", "gemini", "java", "c++", "playwright", "react", "angular",
+]);
+const LINUX_CORE = new Set(["linux", "bash", "vmware", "qualys", "podman"]);
+const LINUX_NOISE = new Set([
+  "java", "c++", "gemini", "claude", "cursor", "copilot", "selenium", "playwright", "react", "angular",
+]);
+const QA_CORE = new Set(["playwright", "selenium", "cypress", "robot framework", "python"]);
+const QA_NOISE = new Set([
+  "kubernetes", "azure", "docker", "java", "c++", "gemini", "claude", "cursor", "copilot",
+  "react", "angular", "ansible",
 ]);
 
 const STOP_WORDS = new Set([
@@ -361,8 +386,8 @@ export function parseJdRequirements(jdText: string): {
   mandatoryRaw: string[];
   required: string[];
 } {
-  const text = String(jdText || "").trim();
-  const titleMatch = text.match(/Job Title:\s*(.+?)(?:\n|Mandatory Skills:|$)/i);
+  const text = String(jdText || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+  const titleMatch = text.match(/Job Title:\s*(.+?)(?:\n|Mandatory Skills:|Primary Skills:|$)/i);
   const title = titleMatch?.[1]?.replace(/\s+/g, " ").trim() || "";
 
   const mandLines = [...text.matchAll(/Mandatory Skills:\s*([^\n]+)/gi)].map((m) =>
@@ -566,15 +591,11 @@ function prettySkill(s: string): string {
   return s.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
 
-export function extractJdDisplaySkills(jdText: string): string[] {
-  const { mandatoryRaw, required } = parseJdRequirements(jdText);
-  const labels =
-    mandatoryRaw.length > 0
-      ? mandatoryRaw.map((s) => prettySkill(canonicalizeToken(s) || s.toLowerCase()))
-      : required.map(prettySkill);
+function uniquePrettySkills(raw: string[]): string[] {
   const seen = new Set<string>();
   const unique: string[] = [];
-  for (const label of labels) {
+  for (const item of raw) {
+    const label = prettySkill(canonicalizeToken(item) || item.toLowerCase());
     const key = label.toLowerCase();
     if (!key || seen.has(key)) continue;
     seen.add(key);
@@ -583,8 +604,52 @@ export function extractJdDisplaySkills(jdText: string): string[] {
   return unique;
 }
 
+function labeledSkillValues(jdText: string, label: string): string[] {
+  const re = new RegExp(`${label}:\\s*([^\\n]+)`, "gi");
+  const raw: string[] = [];
+  for (const match of String(jdText || "").matchAll(re)) {
+    raw.push(...splitSkillList(match[1]));
+  }
+  return uniquePrettySkills(raw);
+}
+
+export function extractJdDisplaySkills(jdText: string): string[] {
+  const { mandatoryRaw, required } = parseJdRequirements(jdText);
+  const labels =
+    mandatoryRaw.length > 0
+      ? mandatoryRaw.map((s) => prettySkill(canonicalizeToken(s) || s.toLowerCase()))
+      : required.map(prettySkill);
+  return uniquePrettySkills(labels);
+}
+
+export function extractJdMandatorySkills(jdText: string): string[] {
+  return labeledSkillValues(jdText, "Mandatory Skills");
+}
+
+export function extractJdPrimarySkills(jdText: string): string[] {
+  const combined = [
+    ...labeledSkillValues(jdText, "Primary Skills"),
+    ...labeledSkillValues(jdText, "Secondary Skills"),
+    ...labeledSkillValues(jdText, "Optional Skills"),
+  ];
+  if (combined.length) return uniquePrettySkills(combined);
+  return extractJdDisplaySkills(jdText);
+}
+
 /** Recruiter fit at or above this is treated as qualified / suitable. */
 export const QUALIFIED_COVERAGE_PERCENT = 60;
+
+/** Manual score override applies only to the JD it was saved against. */
+export function scoreOverrideForJd(
+  emp: { score_override?: number | null; score_override_jd_id?: string | null },
+  selectedJdId: string | null | undefined
+): number | null {
+  if (typeof emp.score_override !== "number") return null;
+  const jd = String(emp.score_override_jd_id || "").trim();
+  const selected = String(selectedJdId || "").trim();
+  if (!jd || !selected || selected === "all" || selected.includes("@")) return null;
+  return jd === selected ? Number(emp.score_override) : null;
+}
 
 export function employeeMatchText(emp: {
   skills?: string | null;
@@ -664,11 +729,26 @@ function inferJobFamily(text: string, title = ""): JobFamily {
   ) {
     return "manager";
   }
+  if (/\b(technical lead|tech lead)\b/.test(titleLower) && !/\btest/.test(titleLower)) {
+    return "engineering";
+  }
+  if (/\b(linux developer|linux admin|rhel)\b/.test(titleLower)) {
+    return "devops";
+  }
+  if (/\b(devops|ansible|sre|site reliability|platform engineer|cloud engineer)\b/.test(titleLower)) {
+    return "devops";
+  }
   if (/\b(java developer|python developer|software engineer)\b/.test(titleLower) && !/\btest/.test(titleLower)) {
     return "backend";
   }
   if (/\b(azure admin|cloud admin)\b/.test(titleLower)) return "devops";
-  if (/\b(ims testing|automation testing|test engineer|python automation)\b/.test(titleLower)) return "qa";
+  if (
+    /\b(test automation|automation testing|test engineer|sdet|qa automation|ims testing|python automation)\b/.test(
+      titleLower
+    )
+  ) {
+    return "qa";
+  }
   if (
     /\b(pcrf|ntas|cfx|sbc|sdm deployment|ims deployment|subscriber data)\b/.test(titleLower)
   ) {
@@ -719,7 +799,7 @@ function inferJobFamily(text: string, title = ""): JobFamily {
   const frontendPhrase = /\b(frontend|front-end|ui developer|react developer)\b/.test(blob);
   const backendPhrase = /\b(backend|back-end|java developer|spring boot)\b/.test(blob);
   const aiPhrase = /\b(agentic|genai|gen ai|generative ai|langchain|langgraph|llm|machine learning)\b/.test(blob);
-  const devopsPhrase = /\b(devops|sre\b|kubernetes|site reliability)\b/.test(blob);
+  const devopsPhrase = /\b(devops|ansible|sre\b|kubernetes|site reliability|terraform)\b/.test(blob);
 
   const icBuilder =
     /\b(software engineer|full[\s-]*stack|frontend|front-end|backend|developer)\b/.test(blob)
@@ -730,9 +810,9 @@ function inferJobFamily(text: string, title = ""): JobFamily {
   if (hasFe && hasBe) return "engineering";
   if (aiPhrase && !hasFe && !backendPhrase && !fullstackPhrase) return "ai";
   if (frontendPhrase || (hasFe && !hasBe) || (hasFe && nodeOnlyBe)) return "frontend";
+  if (devopsPhrase && !hasFe) return "devops";
   if (backendPhrase || (hasBe && !hasFe)) return "backend";
   if (aiPhrase) return "ai";
-  if (devopsPhrase && !hasFe) return "devops";
   if (/\b(software engineer|developer|technical lead|tech lead)\b/.test(blob)) return "engineering";
   return "other";
 }
@@ -773,6 +853,8 @@ function familyAlignment(jdFamily: JobFamily, personFamily: JobFamily): { score:
       : (jdFamily === "fullstack" && personFamily === "engineering") ? 86
       : (jdFamily === "devops" && personFamily === "telecom") ? 78
       : (jdFamily === "telecom" && personFamily === "devops") ? 76
+      : (jdFamily === "devops" && (personFamily === "backend" || personFamily === "engineering")) ? 56
+      : (jdFamily === "qa" && (personFamily === "backend" || personFamily === "engineering" || personFamily === "devops")) ? 56
       : (jdFamily === "telecom" && (personFamily === "backend" || personFamily === "engineering")) ? 70
       : 72;
     return { score, relation: "adjacent" };
@@ -858,10 +940,23 @@ function pickCoreSkills(title: string, required: string[]): { core: string[]; ex
     const titleIsAppDev = /\b(java|python|\.net|react|angular)\b/.test(titleBlob);
     const titleIsTelecom = /\b(pcrf|sdm|ims|ntas|cfx|sbc|hss|hlr)\b/.test(titleBlob);
     const titleIsAzure = /\bazure\b/.test(titleBlob);
-    if (CLOUD_CORE.has(canon)) weight += titleIsTelecom ? 6 : 12;
+    const titleIsDevops = /\b(devops|ansible|sre|site reliability)\b/.test(titleBlob);
+    const titleIsLinux = /\b(linux|rhel)\b/.test(titleBlob);
+    const titleIsQa = /\b(test|qa|sdet|automation|playwright|selenium)\b/.test(titleBlob);
+    if (CLOUD_CORE.has(canon)) {
+      weight += titleIsTelecom ? 6 : titleIsLinux || titleIsQa ? -8 : 12;
+    }
     if (TELECOM_CORE.has(canon)) weight += titleIsAppDev ? -10 : 14;
     if (titleIsAzure && ["kubernetes", "linux", "helm", "azure", "openshift"].includes(canon)) weight += 16;
     if (titleIsAzure && canon === "openstack") weight -= 8;
+    if (titleIsDevops && DEVOPS_CORE.has(canon)) weight += 32;
+    if (titleIsDevops && DEVOPS_NOISE.has(canon)) weight -= 28;
+    if (titleIsDevops && canon === "python") weight -= 10;
+    if (titleIsLinux && LINUX_CORE.has(canon)) weight += 32;
+    if (titleIsLinux && LINUX_NOISE.has(canon)) weight -= 28;
+    if (titleIsQa && QA_CORE.has(canon)) weight += 32;
+    if (titleIsQa && QA_NOISE.has(canon)) weight -= 28;
+    if (titleIsQa && canon === "python") weight += 12;
     if (TABLE_STAKES_SKILLS.has(canon) || WEAK_BODY_SKILLS.has(canon)) weight -= 20;
     return { skill: canon, weight };
   });
@@ -877,6 +972,13 @@ function pickCoreSkills(title: string, required: string[]): { core: string[]; ex
   }
   const extra = required.filter((skill) => !seen.has(canonicalizeToken(skill) || skill));
   return { core, extra };
+}
+
+export function decisionFromScore(score: number): MatchDecision {
+  if (score >= 75) return "interview";
+  if (score >= QUALIFIED_COVERAGE_PERCENT) return "screen";
+  if (score >= 30) return "hold";
+  return "reject";
 }
 
 function decide(score: number, relation: FamilyRelation, coveragePct: number, stack: number, jdFamily: JobFamily): MatchDecision {
@@ -940,17 +1042,41 @@ export function calculateSkillMatch(
     score = Math.min(score, 72);
     if (years != null && years < 3) score = Math.min(score, 58);
   }
+
+  const titleCritical = scoredSkills.filter((skill) => {
+    const canon = canonicalizeToken(skill) || skill;
+    if (hasPhrase(parsed.title.toLowerCase(), canon) || hasPhrase(parsed.title.toLowerCase(), skill)) {
+      return true;
+    }
+    return (
+      (jdFamily === "devops" && (DEVOPS_CORE.has(canon) || LINUX_CORE.has(canon))) ||
+      (jdFamily === "qa" && QA_CORE.has(canon))
+    );
+  });
+  const titleCoverage = titleCritical.length ? avgCredit(titleCritical) : 1;
+
   const solidHits = scoredSkills.filter((skill) => (credits.get(skill) || 0) >= 0.5).length;
-  if (solidHits >= 2) score = Math.max(score, 58);
-  else if (solidHits >= 1) score = Math.max(score, 48);
-  if (corePct >= 70) {
-    score = Math.max(score, 64);
+  if (titleCoverage >= 0.5) {
+    if (solidHits >= 2) score = Math.max(score, 58);
+    else if (solidHits >= 1) score = Math.max(score, 48);
+    if (corePct >= 70) score = Math.max(score, 64);
+    if (alignment.relation === "match" && corePct >= 50) score = Math.max(score, 60);
+  } else if (solidHits >= 1) {
+    score = Math.max(score, 36);
   }
-  if (alignment.relation === "match" && corePct >= 50) {
+
+  if (titleCritical.length > 0 && titleCoverage < 0.35) {
+    score = Math.min(score, 48);
+  }
+  if ((jdFamily === "devops" || jdFamily === "qa") && titleCoverage < 0.45) {
+    score = Math.min(score, 50);
+  }
+
+  const titleSkills = scoredSkills.filter((skill) => hasPhrase(parsed.title.toLowerCase(), skill));
+  if (jdFamily !== "devops" && jdFamily !== "qa" && titleSkills.length > 0 && avgCredit(titleSkills) >= 0.5) {
     score = Math.max(score, 60);
   }
-  const titleSkills = scoredSkills.filter((skill) => hasPhrase(parsed.title.toLowerCase(), skill));
-  if (titleSkills.length > 0 && avgCredit(titleSkills) >= 0.5) {
+  if ((jdFamily === "devops" || jdFamily === "qa") && titleCoverage >= 0.5) {
     score = Math.max(score, 60);
   }
 

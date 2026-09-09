@@ -1,36 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEmployeeAccountAsync, hasPassword, verifyPassword, signToken, syncEmployeeToSupabase } from "@/lib/employee-auth";
 import { cacheEmployeeAccount } from "@/services/employee-account-store";
-import { isRateLimited, getClientIp } from "@/lib/security";
+import { getClientIp, isRateLimitedAny, rateLimitedResponse } from "@/lib/security";
 import { auditLogService } from "@/services/audit-log-service";
+import { asEmployeeId, asPassword, readJsonObject } from "@/lib/input-validation";
+import { jsonPublicError } from "@/lib/api-errors";
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
-  
-  // Rate limit: 10 attempts per minute
-  const limitCheck = isRateLimited(`employee_login_${ip}`, 10, 60000);
-  if (limitCheck.limited) {
-    return NextResponse.json(
-      { error: "Too many login attempts. Please try again after a minute." },
-      { status: 429 }
+
+  const ipLimit = isRateLimitedAny([`auth:ip:${ip}`], 10, 60_000);
+  if (ipLimit.limited) {
+    return rateLimitedResponse(ipLimit, "Too many login attempts. Please try again later.");
+  }
+
+  const parsed = await readJsonObject(request);
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
+  }
+
+  try {
+    const employee_id = asEmployeeId(parsed.body.employee_id);
+    const password = asPassword(
+      typeof parsed.body.password === "string" ? parsed.body.password.trim() : parsed.body.password,
+      { allowEmpty: true }
     );
-  }
-
-  let body: any;
-
-  try {
-    body = await request.json();
-  } catch (error) {
-    console.error("Employee login route JSON parse error:", error);
-    return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
-  }
-
-  try {
-    const employee_id = String(body.employee_id ?? "").trim();
-    const password = String(body.password ?? "").trim();
 
     if (!employee_id) {
       return NextResponse.json({ error: "Employee ID is required" }, { status: 400 });
+    }
+    if (password === null) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
+    const accountLimit = isRateLimitedAny([`auth:acct:${employee_id.toUpperCase()}`], 8, 60_000);
+    if (accountLimit.limited) {
+      return rateLimitedResponse(accountLimit, "Too many login attempts. Please try again later.");
     }
 
     const employee = await getEmployeeAccountAsync(employee_id);
@@ -85,7 +90,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ status: "ok", token, employee: { employee_id: employee.employee_id, full_name: employee.full_name } });
   } catch (e) {
-    console.error("Employee login route error:", e);
-    return NextResponse.json({ error: "Unable to verify credentials" }, { status: 500 });
+    return jsonPublicError(e, "Unable to verify credentials");
   }
 }

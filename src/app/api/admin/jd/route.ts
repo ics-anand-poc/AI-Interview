@@ -7,7 +7,8 @@ import { resumeService } from '@/services/resume-service';
 import { supabase } from '@/lib/db';
 import crypto from 'crypto';
 import { authenticateAdminRequest } from '@/lib/employee-auth';
-import { checkCsrf, getClientIp } from '@/lib/security';
+import { checkCsrf, getClientIp, inspectUpload } from '@/lib/security';
+import { jsonPublicError } from '@/lib/api-errors';
 import { auditLogService } from '@/services/audit-log-service';
 import { writeLog } from '@/lib/structured-logger';
 import { allowLocalDataFallback } from '@/lib/db-mode';
@@ -20,6 +21,7 @@ import {
 } from '@/lib/deleted-requirements';
 import { eraseDeletedRequirementsFromMaster } from '@/services/automation-service';
 import { adminCanViewOrgScreeningData } from '@/lib/admin-accounts-server';
+import { readPersistedJson, writePersistedJson } from '@/lib/runtime-data';
 
 const getUploadsRoot = () => {
   return process.env.VERCEL === "1" ? "/tmp" : join(process.cwd(), "uploads");
@@ -32,6 +34,25 @@ const getJdsJsonPath = () => {
 const getJdPath = () => {
   return join(getUploadsRoot(), "job_description.txt");
 };
+
+async function loadJdUploadBatches(): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  const ingest = (list: any[]) => {
+    for (const row of list || []) {
+      const id = String(row?.id || "").trim();
+      const batch = String(row?.uploadBatch || row?.upload_batch || "").trim();
+      if (id && batch && !map.has(id)) map.set(id, batch);
+    }
+  };
+  try {
+    const persisted = await readPersistedJson("job_descriptions.json");
+    if (persisted) ingest(JSON.parse(persisted));
+  } catch {}
+  try {
+    ingest(await ensureJdsJson());
+  } catch {}
+  return map;
+}
 
 function parseRequirementCreatedAt(raw: string, fallback: string): string {
   const value = String(raw || "").trim();
@@ -98,6 +119,7 @@ export async function GET(request: NextRequest) {
       
     if (!dbError && dbJds) {
       const deleted = await loadDeletedRequirements({ fresh: true });
+      const uploadBatches = await loadJdUploadBatches();
       jds = dbJds
         .filter((row: any) => !isRequirementDeleted(deleted, {
           id: row.id,
@@ -109,7 +131,8 @@ export async function GET(request: NextRequest) {
         jdText: row.jd_text,
         rmEmail: row.rm_email,
         fileName: row.file_name || "Pasted Job Description",
-        createdAt: row.created_at
+        createdAt: row.created_at,
+        uploadBatch: row.upload_batch || uploadBatches.get(row.id)
       }));
     } else if (dbError) {
       console.warn("Supabase JD fetch failed, falling back to file storage:", dbError.message);
@@ -233,8 +256,15 @@ export async function POST(request: NextRequest) {
       }
 
       const buffer = Buffer.from(await file.arrayBuffer());
-      const extractedText = await resumeService.extractTextFromBuffer(buffer, file.name);
-      fileName = file.name;
+      const inspected = inspectUpload(buffer, file.name, {
+        maxBytes: 10 * 1024 * 1024,
+        allowedExts: ["pdf", "doc", "docx", "txt", "html", "htm"],
+      });
+      if (!inspected.ok) {
+        return NextResponse.json({ error: inspected.error }, { status: 400 });
+      }
+      const extractedText = await resumeService.extractTextFromBuffer(buffer, inspected.safeName);
+      fileName = inspected.safeName;
       jdText = extractedText;
     } else {
       const body = await request.json();
@@ -322,10 +352,13 @@ export async function POST(request: NextRequest) {
           jdText: jdText.trim(), 
           rmEmail: rmEmail.toLowerCase().trim(), 
           fileName, 
-          createdAt 
+          createdAt,
+          uploadBatch: createdAt,
         });
       }
-      await writeFile(getJdsJsonPath(), JSON.stringify(localJds, null, 2), "utf8");
+      const serialized = JSON.stringify(localJds, null, 2);
+      await writeFile(getJdsJsonPath(), serialized, "utf8");
+      await writePersistedJson("job_descriptions.json", serialized).catch(() => {});
       await writeFile(getJdPath(), jdText.trim(), "utf8");
     } catch (localErr) {
       console.error("Failed to write local JD backup files:", localErr);
@@ -348,13 +381,13 @@ export async function POST(request: NextRequest) {
         jdText: jdText.trim(),
         rmEmail: rmEmail.toLowerCase().trim(),
         fileName,
-        createdAt
+        createdAt,
+        uploadBatch: isUpdate ? undefined : createdAt,
       } 
     });
-  } catch (error: any) {
-    console.error("Failed to save JD:", error);
-    await writeLog('requirements', 'SAVE_JD_FAILED', 'failed', `Failed to save Job Description: ${error.message}`);
-    return NextResponse.json({ error: error.message || "Failed to save Job Description" }, { status: 500 });
+  } catch (error: unknown) {
+    await writeLog('requirements', 'SAVE_JD_FAILED', 'failed', 'Failed to save Job Description');
+    return jsonPublicError(error, "Failed to save Job Description");
   }
 }
 
@@ -456,9 +489,13 @@ export async function DELETE(request: NextRequest) {
     );
 
     return NextResponse.json({ success: true, deletedCount: ids.length });
-  } catch (error: any) {
-    console.error("Failed to delete JD:", error);
-    await writeLog('requirements', 'DELETE_JD_FAILED', 'failed', `Failed to delete Job Description ID ${ids.join(", ")}: ${error.message}`);
-    return NextResponse.json({ error: error.message || "Failed to delete Job Description" }, { status: 500 });
+  } catch (error: unknown) {
+    await writeLog(
+      'requirements',
+      'DELETE_JD_FAILED',
+      'failed',
+      `Failed to delete Job Description ID ${ids.join(", ")}`
+    );
+    return jsonPublicError(error, "Failed to delete Job Description");
   }
 }

@@ -36,6 +36,7 @@ import {
   Layers,
   KeyRound,
   Check,
+  Percent,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { formatPortalTimestamp } from "@/lib/portal-format";
@@ -65,7 +66,7 @@ import {
 } from "@/lib/portal-test-status";
 import { formatProductDisplayName } from "@/lib/product-display-name";
 import { getPortalPrimaryProctoring } from "@/lib/portal-proctor-display";
-import { calculateSkillMatch, candidateMatchText, employeeMatchText, extractJdDisplaySkills, QUALIFIED_COVERAGE_PERCENT, type SkillBreakdownItem, type ScoreParts } from "@/lib/skill-match";
+import { calculateSkillMatch, candidateMatchText, decisionFromScore, employeeMatchText, extractJdMandatorySkills, extractJdPrimarySkills, QUALIFIED_COVERAGE_PERCENT, scoreOverrideForJd, type SkillBreakdownItem, type ScoreParts } from "@/lib/skill-match";
 import { clearAdminAccessFlags, readAdminAccessFlags, storeAdminAccessFlags } from "@/lib/admin-accounts";
 import { isPortalMappingFileName } from "@/lib/portal-mapping-file";
 
@@ -77,6 +78,146 @@ function portalEmployeeName(account: { full_name?: string | null; employee_id?: 
 
 function portalEmployeeId(account: { employee_id?: string | null }): string {
   return account.employee_id?.trim() || "—";
+}
+
+const CORP_POOL_EARLIER_BATCH = "__earlier__";
+
+function uploadGroupKey(item: {
+  upload_batch?: string;
+  uploadBatch?: string;
+  uploaded_at?: string;
+  createdAt?: string;
+}): string {
+  const stamped = String(item.upload_batch || item.uploadBatch || item.uploaded_at || "").trim();
+  if (stamped) return stamped;
+  const created = String(item.createdAt || "").trim();
+  if (created) {
+    const day = requirementCreatedDayKey(created);
+    if (day) return `day:${day}`;
+  }
+  return CORP_POOL_EARLIER_BATCH;
+}
+
+function formatDayKeyLabel(dayKey: string): string {
+  const [y, m, d] = dayKey.split("-").map(Number);
+  if (!y || !m || !d) return dayKey;
+  return new Date(y, m - 1, d, 12).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatCorpPoolBatchDay(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatCorpPoolBatchTime(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+function uploadGroupDayLabel(key: string): string {
+  if (key === CORP_POOL_EARLIER_BATCH) {
+    return formatCorpPoolBatchDay(new Date().toISOString()) || formatDayKeyLabel(
+      new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" })
+    );
+  }
+  if (key.startsWith("day:")) return formatDayKeyLabel(key.slice(4));
+  return formatCorpPoolBatchDay(key) || formatCorpPoolBatchDay(new Date().toISOString());
+}
+
+function uploadGroupSortTime(key: string): number {
+  if (key === CORP_POOL_EARLIER_BATCH) return 0;
+  if (key.startsWith("day:")) return new Date(`${key.slice(4)}T00:00:00`).getTime();
+  const time = new Date(key).getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function labelUploadGroups(keys: string[]): Map<string, string> {
+  const dayHits = new Map<string, number>();
+  for (const key of keys) {
+    const day = uploadGroupDayLabel(key);
+    dayHits.set(day, (dayHits.get(day) || 0) + 1);
+  }
+  const labels = new Map<string, string>();
+  for (const key of keys) {
+    const day = uploadGroupDayLabel(key);
+    const time = key === CORP_POOL_EARLIER_BATCH || key.startsWith("day:")
+      ? ""
+      : formatCorpPoolBatchTime(key);
+    labels.set(key, (dayHits.get(day) || 0) > 1 && time ? `${day} · ${time}` : day);
+  }
+  return labels;
+}
+
+function toggleIdGroup(selected: string[], groupIds: string[]): string[] {
+  const allSelected = groupIds.length > 0 && groupIds.every((id) => selected.includes(id));
+  if (allSelected) return selected.filter((id) => !groupIds.includes(id));
+  return Array.from(new Set([...selected, ...groupIds]));
+}
+
+function UploadDateHeaderRow({
+  label,
+  colSpan,
+  showDivider,
+  groupIds,
+  selectedIds,
+  onToggleGroup,
+}: {
+  label: string;
+  colSpan: number;
+  showDivider: boolean;
+  groupIds: string[];
+  selectedIds: string[];
+  onToggleGroup: () => void;
+}) {
+  const allSelected = groupIds.length > 0 && groupIds.every((id) => selectedIds.includes(id));
+  const someSelected = groupIds.some((id) => selectedIds.includes(id));
+  return (
+    <>
+      {showDivider && (
+        <tr>
+          <td colSpan={colSpan} className="p-0">
+            <div className="h-px bg-slate-300 dark:bg-slate-600" />
+          </td>
+        </tr>
+      )}
+      <tr>
+        <td colSpan={colSpan} className="px-3 py-3">
+          <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={allSelected}
+              ref={(el) => {
+                if (el) el.indeterminate = someSelected && !allSelected;
+              }}
+              onChange={onToggleGroup}
+              className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-700 cursor-pointer"
+              title={`Select everyone under ${label}`}
+              aria-label={`Select all under ${label}`}
+            />
+            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+              {label}
+            </span>
+          </label>
+        </td>
+      </tr>
+    </>
+  );
 }
 
 function personSkillChips(emp: { skills?: string | null; matchingSkills?: string[] | null }): string[] {
@@ -511,22 +652,125 @@ function isPortalSettingsPayload(data: any): boolean {
   return !data.error && Object.keys(data).length > 0;
 }
 
-function extractSkillsFromText(text: string): string[] {
-  return extractJdDisplaySkills(text);
-}
-
 function extractJobTitleFromJd(text: string, fallback = "Untitled requirement"): string {
   const raw = String(text || "").trim();
   if (!raw) return fallback;
-  const labeled = raw.match(/Job Title:\s*(.+?)(?:\n|Mandatory Skills:|$)/i);
+  const labeled = raw.match(/Job Title:\s*(.+?)(?:\n|Mandatory Skills:|Primary Skills:|$)/i);
   if (labeled?.[1]) {
     return labeled[1].replace(/\s+/g, " ").trim() || fallback;
   }
   const firstLine = raw.split(/\r?\n/).map((l) => l.trim()).find(Boolean) || "";
-  if (firstLine && !firstLine.toLowerCase().startsWith("mandatory skills:")) {
+  if (
+    firstLine &&
+    !firstLine.toLowerCase().startsWith("mandatory skills:") &&
+    !firstLine.toLowerCase().startsWith("primary skills:")
+  ) {
     return firstLine.replace(/\s+/g, " ").slice(0, 120);
   }
   return fallback;
+}
+
+function applyLabeledSkillsToJd(
+  text: string,
+  label: "Mandatory Skills" | "Primary Skills",
+  skills: string
+): string {
+  const line = skills.trim() ? `${label}: ${skills.trim()}` : "";
+  const re = new RegExp(`^${label}:\\s*.+$`, "im");
+  const raw = String(text || "").trim();
+  if (re.test(raw)) {
+    if (!line) return raw.replace(re, "").replace(/\n{3,}/g, "\n\n").trim();
+    return raw.replace(re, line);
+  }
+  if (!line) return raw;
+  if (/^Job Title:\s*.+$/im.test(raw)) {
+    return raw.replace(/^(Job Title:\s*.+)$/im, `$1\n\n${line}`);
+  }
+  if (label === "Primary Skills" && /^Mandatory Skills:\s*.+$/im.test(raw)) {
+    return raw.replace(/^(Mandatory Skills:\s*.+)$/im, `$1\n\n${line}`);
+  }
+  return `${line}\n\n${raw}`.trim();
+}
+
+function RequirementSkillChips({
+  skills,
+  emptyLabel,
+  isEditing,
+  editingValue,
+  onEditingChange,
+  onEdit,
+  onSave,
+  onCancel,
+  chipClassName,
+}: {
+  skills: string[];
+  emptyLabel: string;
+  isEditing: boolean;
+  editingValue: string;
+  onEditingChange: (value: string) => void;
+  onEdit: () => void;
+  onSave: () => void;
+  onCancel: () => void;
+  chipClassName: string;
+}) {
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-1">
+        <input
+          type="text"
+          value={editingValue}
+          onChange={(e) => onEditingChange(e.target.value)}
+          className="w-44 p-1 text-[10px] font-bold rounded border border-indigo-200 bg-white text-slate-800 outline-none focus:ring-1 focus:ring-indigo-400 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200"
+          placeholder="comma-separated skills"
+          autoFocus
+        />
+        <button
+          type="button"
+          onClick={onSave}
+          className="p-1 rounded text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+          title="Save"
+        >
+          <CheckCircle2 className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="p-1 rounded text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+          title="Cancel"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1 group">
+      <div className="flex flex-wrap gap-1 max-w-[180px]">
+        {skills.length > 0 ? (
+          skills.slice(0, 4).map((s, i) => (
+            <Badge key={`${s}-${i}`} className={chipClassName}>
+              {s}
+            </Badge>
+          ))
+        ) : (
+          <span className="text-slate-400 italic text-[10px]">{emptyLabel}</span>
+        )}
+        {skills.length > 4 && (
+          <span className="text-slate-400 text-[9px] font-extrabold self-center">
+            +{skills.length - 4} more
+          </span>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onEdit}
+        className="p-0.5 rounded text-slate-400 hover:text-indigo-650 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+        title="Edit skills"
+      >
+        <Edit2 className="w-3 h-3" />
+      </button>
+    </div>
+  );
 }
 
 function applyJobTitleToJd(text: string, newTitle: string): string {
@@ -571,15 +815,25 @@ function composeRequirementFileName(brNo: string, filename: string): string {
   return `${br} | ${file}`;
 }
 
-function interviewExportFileName(jdFileName?: string): string {
-  const { brNo, filename } = requirementFileParts(jdFileName);
-  const raw = brNo !== "N/A" ? brNo : filename;
-  const cleaned = raw
+function sanitizeExportFilePart(value: string): string {
+  return value
     .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-")
     .replace(/\s+/g, " ")
     .replace(/[. ]+$/g, "")
     .trim();
-  return `${cleaned || "corp_pool_shortlisted"}.xlsx`;
+}
+
+function interviewExportFileName(jdFileName?: string, jdText?: string): string {
+  const { brNo, filename } = requirementFileParts(jdFileName);
+  const fromTitle = extractJobTitleFromJd(jdText || "", "");
+  const fromFile = filename
+    .replace(/\.(txt|xlsx|xls|docx|pdf|html|htm)$/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const roleName = sanitizeExportFilePart(fromTitle || fromFile);
+  const br = brNo !== "N/A" ? sanitizeExportFilePart(brNo) : "";
+  const combined = br && roleName ? `${br} - ${roleName}` : br || roleName;
+  return `${combined || "corp_pool_shortlisted"}.xlsx`;
 }
 
 function dateInputToCreatedAt(dateStr: string, previous?: string): string {
@@ -803,6 +1057,7 @@ export default function AdminDashboard() {
   const [editingDateId, setEditingDateId] = useState<string | null>(null);
   const [editingDateValue, setEditingDateValue] = useState<string>("");
   const [editingSkillsId, setEditingSkillsId] = useState<string | null>(null);
+  const [editingSkillsField, setEditingSkillsField] = useState<"mandatory" | "primary">("primary");
   const [editingSkillsValue, setEditingSkillsValue] = useState<string>("");
   const [editingEmployeeKey, setEditingEmployeeKey] = useState<string | null>(null);
   const [editingEmployeeValue, setEditingEmployeeValue] = useState<string>("");
@@ -863,6 +1118,8 @@ export default function AdminDashboard() {
   // Bulk Upload states
   const fileInputRef = useRef<HTMLInputElement>(null);
   const unifiedFileInputRef = useRef<HTMLInputElement>(null);
+  const matchScoreInputRef = useRef<HTMLInputElement>(null);
+  const [isImportingMatchScores, setIsImportingMatchScores] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadQueue, setUploadQueue] = useState<UploadFileStatus[]>([]);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
@@ -872,6 +1129,13 @@ export default function AdminDashboard() {
   const [resetLogs, setResetLogs] = useState<ResetLog[]>([]);
   const [isLogsLoading, setIsLogsLoading] = useState(false);
   const [showClearLogsModal, setShowClearLogsModal] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    title: string;
+    message: string;
+    confirmLabel: string;
+    onConfirm: () => void | Promise<void>;
+    onCancel?: () => void;
+  } | null>(null);
 
   // Tab state
   const [activeTab, setActiveTab] = useState<"employee" | "suitable" | "unsuitable" | "outbox" | "requirements" | "logs" | "employee-portal">("requirements");
@@ -1848,16 +2112,24 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDeleteEmployeeVideo = async (
+  const handleDeleteEmployeeVideo = (
     testId: string,
     employeeId: string,
     employeeName: string
   ) => {
-    const confirmed = window.confirm(
-      `Delete proctoring video only for ${employeeName || employeeId}?\n\nThis removes the recording from storage. Test score, status, and answers will NOT be changed.`
-    );
-    if (!confirmed) return;
+    setConfirmDialog({
+      title: "Delete Proctoring Video",
+      message: `Delete the proctoring video only for ${employeeName || employeeId}? This removes the recording from storage. Test score, status, and answers will not be changed.`,
+      confirmLabel: "Delete Video",
+      onConfirm: () => performDeleteEmployeeVideo(testId, employeeId, employeeName),
+    });
+  };
 
+  const performDeleteEmployeeVideo = async (
+    testId: string,
+    employeeId: string,
+    employeeName: string
+  ) => {
     setDeletingVideoTestId(testId);
     setActionError(null);
     try {
@@ -2369,7 +2641,8 @@ export default function AdminDashboard() {
   };
 
   const ingestUnifiedFile = async (file: File) => {
-    const category = inferUnifiedCategory(file, uploadCategory);
+    let category = inferUnifiedCategory(file, uploadCategory);
+
     if (category === "employee" && uploadCategory !== "employee") {
       setUploadCategory("employee");
     }
@@ -2557,6 +2830,9 @@ export default function AdminDashboard() {
         return;
       }
       updates.score = parsed;
+      if (selectedJdId && selectedJdId !== "all" && !selectedJdId.includes("@")) {
+        updates.score_override_jd_id = selectedJdId;
+      }
     } else {
       updates[field] = value.trim();
       if (field !== "skills" && field !== "department" && !updates[field]) {
@@ -2599,6 +2875,40 @@ export default function AdminDashboard() {
     const jdQuery = `&activeJdId=${encodeURIComponent(sendJdId)}`;
     const token = typeof window !== "undefined" ? window.sessionStorage.getItem("admin_token") || "" : "";
     window.location.href = `/api/admin/employees?export=true${jdQuery}&token=${encodeURIComponent(token)}`;
+  };
+
+  const handleUploadMatchScores = async (files: File[]) => {
+    const picked = files.filter((f) => f && f.size > 0);
+    if (!picked.length) return;
+    setIsImportingMatchScores(true);
+    setActionError(null);
+    try {
+      const body = new FormData();
+      for (const file of picked) body.append("files", file);
+      const res = await adminFetch("/api/admin/employees/percentage-matching", { method: "POST", body });
+      const contentType = res.headers.get("content-type") || "";
+      if (!res.ok || contentType.includes("application/json")) {
+        const result = await res.json().catch(() => ({}));
+        throw new Error(result.error || "Failed to build Percentage summary.");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Percentage summary.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setActionSuccess(`Built Percentage summary from ${picked.length} JD/BR match file${picked.length === 1 ? "" : "s"}.`);
+      setTimeout(() => setActionSuccess(null), 6000);
+    } catch (err: any) {
+      setActionError(err.message || "Failed to build Percentage summary.");
+      setTimeout(() => setActionError(null), 5000);
+    } finally {
+      setIsImportingMatchScores(false);
+      if (matchScoreInputRef.current) matchScoreInputRef.current.value = "";
+    }
   };
 
   const handleDispatchEmployeeMails = async () => {
@@ -2667,7 +2977,7 @@ export default function AdminDashboard() {
           ? selectedJdId
           : pickDefaultJd(jds)?.id;
       const currentJd = jds.find((j) => j.id === activeId);
-      const exportFileName = interviewExportFileName(currentJd?.fileName);
+      const exportFileName = interviewExportFileName(currentJd?.fileName, currentJd?.jdText);
 
       const res = await fetch("/api/admin/employees/export-shortlisted", {
         method: "POST",
@@ -2713,8 +3023,16 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleClearSystemLogs = async () => {
-    if (!confirm("Are you sure you want to clear all system logs? This cannot be undone.")) return;
+  const handleClearSystemLogs = () => {
+    setConfirmDialog({
+      title: "Clear System Logs",
+      message: "Are you sure you want to clear all system logs? This cannot be undone.",
+      confirmLabel: "Clear Logs",
+      onConfirm: () => performClearSystemLogs(),
+    });
+  };
+
+  const performClearSystemLogs = async () => {
     try {
       const res = await fetch("/api/admin/logs", {
         method: "DELETE"
@@ -2944,13 +3262,17 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDeleteJd = async (id: string) => {
+  const handleDeleteJd = (id: string) => {
     if (!id) return;
-    const confirm = typeof window !== "undefined"
-      ? window.confirm("Are you sure you want to delete this Job Description?")
-      : false;
-    if (!confirm) return;
+    setConfirmDialog({
+      title: "Delete Job Description",
+      message: "Are you sure you want to delete this Job Description?",
+      confirmLabel: "Delete",
+      onConfirm: () => performDeleteJd(id),
+    });
+  };
 
+  const performDeleteJd = async (id: string) => {
     setIsJdLoading(true);
     setActionError(null);
     try {
@@ -3162,19 +3484,16 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleUpdateSkills = async (jdId: string, currentJdText: string, currentFileName: string, newSkillsString: string, currentRmEmail: string) => {
-    // Strip old Skills: ... prefix if it exists
-    let rawJd = currentJdText;
-    const skillsPrefixRegex = /^Skills: (.*?)\n\n([\s\S]*)$/i;
-    const match = currentJdText.match(skillsPrefixRegex);
-    if (match) {
-      rawJd = match[2];
-    }
-    
-    // Prepend new skills
-    const updatedJdText = newSkillsString.trim() 
-      ? `Skills: ${newSkillsString.trim()}\n\n${rawJd}`
-      : rawJd;
+  const handleUpdateSkills = async (
+    jdId: string,
+    currentJdText: string,
+    currentFileName: string,
+    newSkillsString: string,
+    currentRmEmail: string,
+    field: "mandatory" | "primary" = "primary"
+  ) => {
+    const label = field === "mandatory" ? "Mandatory Skills" : "Primary Skills";
+    const updatedJdText = applyLabeledSkillsToJd(currentJdText, label, newSkillsString);
       
     setIsJdLoading(true);
     try {
@@ -4162,7 +4481,10 @@ export default function AdminDashboard() {
       }
 
       if (requirementSkillFilter !== "all") {
-        const skills = extractSkillsFromText(j.jdText).map((s) => s.toLowerCase());
+        const skills = [
+          ...extractJdMandatorySkills(j.jdText),
+          ...extractJdPrimarySkills(j.jdText),
+        ].map((s) => s.toLowerCase());
         if (!skills.includes(requirementSkillFilter.toLowerCase())) return false;
       }
 
@@ -4198,8 +4520,8 @@ export default function AdminDashboard() {
       const bTime = new Date(b.createdAt || 0).getTime();
       if (bTime !== aTime) return bTime - aTime;
 
-      const aSkills = extractSkillsFromText(a.jdText).length;
-      const bSkills = extractSkillsFromText(b.jdText).length;
+      const aSkills = extractJdMandatorySkills(a.jdText).length + extractJdPrimarySkills(a.jdText).length;
+      const bSkills = extractJdMandatorySkills(b.jdText).length + extractJdPrimarySkills(b.jdText).length;
       if (aSkills === 0 && bSkills > 0) return 1;
       if (bSkills === 0 && aSkills > 0) return -1;
       return bSkills - aSkills;
@@ -4219,6 +4541,23 @@ export default function AdminDashboard() {
   }, [filteredJds, requirementSearch, requirementDateFilter, requirementSkillFilter, pinnedJdId]);
 
   const visibleRequirementIds = visibleRequirementRows.map((row) => row.jd.id);
+
+  const requirementUploadGroups = useMemo(() => {
+    const groups = new Map<string, typeof visibleRequirementRows>();
+    for (const row of visibleRequirementRows) {
+      const key = uploadGroupKey(row.isDuplicate && row.ogJd ? row.ogJd : row.jd);
+      const list = groups.get(key) || [];
+      list.push(row);
+      groups.set(key, list);
+    }
+    const keys = Array.from(groups.keys()).sort((a, b) => uploadGroupSortTime(b) - uploadGroupSortTime(a));
+    const labels = labelUploadGroups(keys);
+    return keys.map((key) => ({
+      key,
+      label: labels.get(key) || uploadGroupDayLabel(key),
+      rows: groups.get(key) || [],
+    }));
+  }, [visibleRequirementRows]);
 
   const handleToggleJdSelect = (id: string) => {
     setSelectedJdIds((prev) =>
@@ -4250,7 +4589,7 @@ export default function AdminDashboard() {
     for (const j of filteredJds) {
       const dayKey = requirementCreatedDayKey(j.createdAt);
       if (dayKey) dates.set(dayKey, formatRequirementDayLabel(dayKey));
-      for (const skill of extractSkillsFromText(j.jdText)) {
+      for (const skill of [...extractJdMandatorySkills(j.jdText), ...extractJdPrimarySkills(j.jdText)]) {
         const label = String(skill || "").trim();
         if (!label) continue;
         const key = label.toLowerCase();
@@ -4354,15 +4693,19 @@ export default function AdminDashboard() {
     return employees.map((emp) => {
       const result = calculateSkillMatch(employeeMatchText(emp), jdText);
       const computed = Number(result.score) || 0;
-      const score = typeof emp.score_override === "number" ? emp.score_override : computed;
+      const override = scoreOverrideForJd(emp, selectedJdId);
+      const overridden = override != null;
+      const score = overridden ? override : computed;
       return {
         ...emp,
         score,
         matchingSkills: result.matchingSkills,
         matchedCount: result.matchedCount,
         requiredCount: result.requiredCount,
-        matchDecision: result.decision,
-        matchRationale: result.rationale,
+        matchDecision: overridden ? decisionFromScore(score) : result.decision,
+        matchRationale: overridden
+          ? `${emp.llm_rationale || result.rationale}${emp.llm_best_jd ? ` Best seat: ${emp.llm_best_jd}.` : ""}`
+          : result.rationale,
         familyRelation: result.familyRelation,
       };
     });
@@ -4409,14 +4752,19 @@ export default function AdminDashboard() {
     const missing = result.skillBreakdown
       .filter((row) => row.scoring && (row.status === "missing" || row.status === "weak"))
       .map((row) => row.skill);
+    const overriddenScore = scoreOverrideForJd(activeEmployee, selectedJdId);
+    const overridden = overriddenScore != null;
+    const score = overridden ? overriddenScore : Number(result.score) || 0;
     return {
       personSkills,
       matched,
       missing,
       required,
-      score: Number(result.score) || 0,
-      decision: result.decision,
-      rationale: result.rationale,
+      score,
+      decision: overridden ? decisionFromScore(score) : result.decision,
+      rationale: overridden
+        ? `Admin score ${score}%. ${result.rationale}`
+        : result.rationale,
       matchedCount: result.matchedCount,
       requiredCount: result.requiredCount,
       familyRelation: result.familyRelation,
@@ -4449,6 +4797,23 @@ export default function AdminDashboard() {
       if (matchDelta !== 0) return matchDelta;
       return String(a.full_name || "").localeCompare(String(b.full_name || ""));
     });
+
+  const corpPoolEmployeeGroups = useMemo(() => {
+    const groups = new Map<string, typeof filteredEmployees>();
+    for (const emp of filteredEmployees) {
+      const key = uploadGroupKey(emp);
+      const list = groups.get(key) || [];
+      list.push(emp);
+      groups.set(key, list);
+    }
+    const keys = Array.from(groups.keys()).sort((a, b) => uploadGroupSortTime(b) - uploadGroupSortTime(a));
+    const labels = labelUploadGroups(keys);
+    return keys.map((key) => ({
+      key,
+      label: labels.get(key) || uploadGroupDayLabel(key),
+      employees: groups.get(key) || [],
+    }));
+  }, [filteredEmployees]);
 
   const shortlistedCount = scoredEmployees.filter((emp) => emp.shortlisted).length;
   const qualifiedUnshortlistedIds = scoredEmployees
@@ -4774,20 +5139,39 @@ export default function AdminDashboard() {
                               </th>
                               <th className="p-3 w-8"></th>
                               <th className="p-3 w-20">BR ID</th>
-                              <th className="p-3 w-1/4">Requirement / File</th>
-                              <th className="p-3 w-1/4">Extracted Skills</th>
+                              <th className="p-3 w-1/5">Requirement / File</th>
+                              <th className="p-3 w-1/5">Mandatory Skills</th>
+                              <th className="p-3 w-1/5">Primary Skills</th>
                               <th className="p-3 w-40">Creator / RM</th>
                               <th className="p-3 w-28">Created Date</th>
                               <th className="p-3 w-40 text-center">Actions</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-indigo-50/50 dark:divide-slate-800/50">
-                            {visibleRequirementRows.map(({ jd: j, isDuplicate, ogJd }) => {
+                            {requirementUploadGroups.map((group, groupIndex) => (
+                              <React.Fragment key={group.key}>
+                                {group.rows.length > 0 && (
+                                  <UploadDateHeaderRow
+                                    label={group.label}
+                                    colSpan={9}
+                                    showDivider={groupIndex > 0}
+                                    groupIds={group.rows.map((row) => row.jd.id)}
+                                    selectedIds={selectedJdIds}
+                                    onToggleGroup={() =>
+                                      setSelectedJdIds((prev) =>
+                                        toggleIdGroup(prev, group.rows.map((row) => row.jd.id))
+                                      )
+                                    }
+                                  />
+                                )}
+                                {group.rows.map(({ jd: j, isDuplicate, ogJd }) => {
                                 const { brNo, filename } = requirementFileParts(j.fileName);
                                 const jobTitle = extractJobTitleFromJd(j.jdText, filename);
                                 const isActive = activeJdIdForHighlight === j.id;
                                 const isExpanded = expandedJdId === j.id;
-                                const skills = extractSkillsFromText(j.jdText);
+                                const mandatorySkills = extractJdMandatorySkills(j.jdText);
+                                const primarySkills = extractJdPrimarySkills(j.jdText);
+                                const skills = [...mandatorySkills, ...primarySkills];
                                 const createdDayKey = requirementCreatedDayKey(j.createdAt);
                                 const createdDateLabel = createdDayKey ? formatRequirementDayLabel(createdDayKey) : "—";
                                 const creatorEmail = String(j.rmEmail || "").trim() || "—";
@@ -4907,61 +5291,56 @@ export default function AdminDashboard() {
                                         )}
                                       </td>
                                       <td className="p-3">
-                                        {editingSkillsId === j.id ? (
-                                          <div className="flex items-center gap-1">
-                                            <input
-                                              type="text"
-                                              value={editingSkillsValue}
-                                              onChange={(e) => setEditingSkillsValue(e.target.value)}
-                                              className="w-48 p-1 text-[10px] font-bold rounded border border-indigo-200 bg-white text-slate-800 outline-none focus:ring-1 focus:ring-indigo-400 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200"
-                                              placeholder="comma-separated skills"
-                                              autoFocus
-                                            />
-                                            <button
-                                              onClick={() => handleUpdateSkills(j.id, j.jdText, j.fileName, editingSkillsValue, j.rmEmail)}
-                                              className="p-1 rounded text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
-                                              title="Save"
-                                            >
-                                              <CheckCircle2 className="w-3.5 h-3.5" />
-                                            </button>
-                                            <button
-                                              onClick={() => setEditingSkillsId(null)}
-                                              className="p-1 rounded text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                                              title="Cancel"
-                                            >
-                                              <X className="w-3.5 h-3.5" />
-                                            </button>
-                                          </div>
-                                        ) : (
-                                          <div className="flex items-center gap-1 group">
-                                            <div className="flex flex-wrap gap-1 max-w-[200px]">
-                                              {skills.length > 0 ? (
-                                                skills.slice(0, 4).map((s, i) => (
-                                                  <Badge key={`${s}-${i}`} className="bg-secondary border-0 text-muted-foreground text-[9px] px-1.5 py-0 font-bold">
-                                                    {s}
-                                                  </Badge>
-                                                ))
-                                              ) : (
-                                                <span className="text-slate-400 italic text-[10px]">No skills extracted</span>
-                                              )}
-                                              {skills.length > 4 && (
-                                                <span className="text-slate-400 text-[9px] font-extrabold self-center">
-                                                  +{skills.length - 4} more
-                                                </span>
-                                              )}
-                                            </div>
-                                            <button
-                                              onClick={() => {
-                                                setEditingSkillsId(j.id);
-                                                setEditingSkillsValue(skills.join(", "));
-                                              }}
-                                              className="p-0.5 rounded text-slate-400 hover:text-indigo-650 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-                                              title="Edit Skills"
-                                            >
-                                              <Edit2 className="w-3 h-3" />
-                                            </button>
-                                          </div>
-                                        )}
+                                        <RequirementSkillChips
+                                          skills={mandatorySkills}
+                                          emptyLabel="No mandatory skills"
+                                          isEditing={editingSkillsId === j.id && editingSkillsField === "mandatory"}
+                                          editingValue={editingSkillsValue}
+                                          onEditingChange={setEditingSkillsValue}
+                                          onEdit={() => {
+                                            setEditingSkillsId(j.id);
+                                            setEditingSkillsField("mandatory");
+                                            setEditingSkillsValue(mandatorySkills.join(", "));
+                                          }}
+                                          onSave={() =>
+                                            handleUpdateSkills(
+                                              j.id,
+                                              j.jdText,
+                                              j.fileName,
+                                              editingSkillsValue,
+                                              j.rmEmail,
+                                              "mandatory"
+                                            )
+                                          }
+                                          onCancel={() => setEditingSkillsId(null)}
+                                          chipClassName="bg-indigo-100 dark:bg-indigo-950/50 border-0 text-indigo-800 dark:text-indigo-200 text-[9px] px-1.5 py-0 font-bold"
+                                        />
+                                      </td>
+                                      <td className="p-3">
+                                        <RequirementSkillChips
+                                          skills={primarySkills}
+                                          emptyLabel="No primary skills"
+                                          isEditing={editingSkillsId === j.id && editingSkillsField === "primary"}
+                                          editingValue={editingSkillsValue}
+                                          onEditingChange={setEditingSkillsValue}
+                                          onEdit={() => {
+                                            setEditingSkillsId(j.id);
+                                            setEditingSkillsField("primary");
+                                            setEditingSkillsValue(primarySkills.join(", "));
+                                          }}
+                                          onSave={() =>
+                                            handleUpdateSkills(
+                                              j.id,
+                                              j.jdText,
+                                              j.fileName,
+                                              editingSkillsValue,
+                                              j.rmEmail,
+                                              "primary"
+                                            )
+                                          }
+                                          onCancel={() => setEditingSkillsId(null)}
+                                          chipClassName="bg-secondary border-0 text-muted-foreground text-[9px] px-1.5 py-0 font-bold"
+                                        />
                                       </td>
                                       <td className="p-3">
                                         {editingJdId === j.id ? (
@@ -5095,7 +5474,7 @@ export default function AdminDashboard() {
                                     </tr>
                                     {isExpanded && (
                                       <tr className="bg-slate-50/40 dark:bg-slate-900/10">
-                                        <td colSpan={8} className="p-4 border-t border-border/50 animate-fade-in">
+                                        <td colSpan={9} className="p-4 border-t border-border/50 animate-fade-in">
                                           <div className="space-y-3 max-w-4xl mx-auto">
                                             <div>
                                               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Full Job Description</h4>
@@ -5103,12 +5482,24 @@ export default function AdminDashboard() {
                                                 {j.jdText}
                                               </pre>
                                             </div>
-                                            {skills.length > 0 && (
+                                            {mandatorySkills.length > 0 && (
                                               <div>
-                                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">All Detected Technical Skills ({skills.length})</h4>
+                                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Mandatory Skills ({mandatorySkills.length})</h4>
                                                 <div className="flex flex-wrap gap-1.5">
-                                                  {skills.map((s, i) => (
-                                                    <Badge key={`${s}-${i}`} className="bg-secondary border-0 text-indigo-700 dark:text-indigo-300 text-[10px] px-2.5 py-0.5 font-bold">
+                                                  {mandatorySkills.map((s, i) => (
+                                                    <Badge key={`mand-${s}-${i}`} className="bg-indigo-100 dark:bg-indigo-950/50 border-0 text-indigo-800 dark:text-indigo-200 text-[10px] px-2.5 py-0.5 font-bold">
+                                                      {s}
+                                                    </Badge>
+                                                  ))}
+                                                </div>
+                                              </div>
+                                            )}
+                                            {primarySkills.length > 0 && (
+                                              <div>
+                                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Primary Skills ({primarySkills.length})</h4>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                  {primarySkills.map((s, i) => (
+                                                    <Badge key={`prim-${s}-${i}`} className="bg-secondary border-0 text-indigo-700 dark:text-indigo-300 text-[10px] px-2.5 py-0.5 font-bold">
                                                       {s}
                                                     </Badge>
                                                   ))}
@@ -5121,10 +5512,12 @@ export default function AdminDashboard() {
                                     )}
                                   </React.Fragment>
                                 );
-                              })}
+                                })}
+                              </React.Fragment>
+                            ))}
                             {visibleRequirementRows.length === 0 && (
                               <tr>
-                                <td colSpan={8} className="text-center py-12 text-slate-400 italic">
+                                <td colSpan={9} className="text-center py-12 text-slate-400 italic">
                                   No Job Descriptions / BRs uploaded or scanned yet.
                                 </td>
                               </tr>
@@ -5318,7 +5711,26 @@ export default function AdminDashboard() {
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-indigo-50/50 dark:divide-slate-800/50">
-                              {filteredEmployees.map(emp => {
+                              {corpPoolEmployeeGroups.map((group, groupIndex) => (
+                                <React.Fragment key={group.key}>
+                                  {group.employees.length > 0 && (
+                                    <UploadDateHeaderRow
+                                      label={group.label}
+                                      colSpan={8}
+                                      showDivider={groupIndex > 0}
+                                      groupIds={group.employees.map((emp) => emp.employee_id)}
+                                      selectedIds={selectedEmployeeIds}
+                                      onToggleGroup={() =>
+                                        setSelectedEmployeeIds((prev) =>
+                                          toggleIdGroup(
+                                            prev,
+                                            group.employees.map((emp) => emp.employee_id)
+                                          )
+                                        )
+                                      }
+                                    />
+                                  )}
+                                  {group.employees.map(emp => {
                                 const skillChips = personSkillChips(emp);
                                 return (
                                   <tr key={emp.employee_id} className={`hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors duration-150 ${
@@ -5550,7 +5962,9 @@ export default function AdminDashboard() {
                                     </td>
                                   </tr>
                                 );
-                              })}
+                                  })}
+                                </React.Fragment>
+                              ))}
                               {filteredEmployees.length === 0 && (
                                 <tr>
                                   <td colSpan={8} className="text-center py-12 text-slate-400 italic">
@@ -7346,9 +7760,53 @@ export default function AdminDashboard() {
             </div>
           </Card>
 
-          <div className="flex flex-col gap-6 h-full">
+          <div className="flex flex-col gap-4 h-full">
+          {/* PERCENTAGE MATCHING */}
+          <Card className="p-5 border-border shadow-md bg-card rounded-3xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-500 to-indigo-500" />
+
+            <div className="flex items-center gap-2.5 pb-4 border-b border-border mb-4">
+              <div className="w-9 h-9 rounded-xl bg-cyan-100 dark:bg-cyan-950/40 flex items-center justify-center shrink-0">
+                <Percent className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-slate-855 dark:text-slate-100 leading-none">Percentage matching</h3>
+                <p className="text-[10px] text-slate-400 font-semibold mt-1">
+                  Upload one or more JD/BR vs Corp Pool score files. Bucket counts are taken from each file’s Match Score column. Demand is left blank.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={() => matchScoreInputRef.current?.click()}
+                disabled={isImportingMatchScores}
+                className="w-full h-10 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-md shadow-indigo-500/20 flex items-center justify-center gap-2 text-xs"
+              >
+                {isImportingMatchScores ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Upload className="w-3.5 h-3.5" />
+                )}
+                {isImportingMatchScores ? "Uploading…" : "Upload"}
+              </Button>
+              <input
+                type="file"
+                ref={matchScoreInputRef}
+                className="hidden"
+                multiple
+                accept=".xlsx,.xls,.csv"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length) void handleUploadMatchScores(files);
+                }}
+              />
+            </div>
+          </Card>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 items-stretch">
           {/* RESET CANDIDATE SESSION CARD */}
-          <Card className="p-5 border-border shadow-md bg-card rounded-3xl relative overflow-hidden flex flex-col flex-1">
+          <Card className="p-5 border-border shadow-md bg-card rounded-3xl relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-500 to-orange-500" />
 
             <div className="flex items-center gap-2.5 pb-4 border-b border-border mb-4">
@@ -7356,7 +7814,7 @@ export default function AdminDashboard() {
                 <RefreshCcw className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <h3 className="text-sm font-black text-slate-855 dark:text-slate-100 leading-none">Reset Candidate Session</h3>
+                <h3 className="text-sm font-black text-slate-855 dark:text-slate-100 leading-none">Reset Candidate</h3>
                 <p className="text-[10px] text-slate-400 font-semibold mt-1">Clear interview progress for a candidate</p>
               </div>
             </div>
@@ -7395,7 +7853,7 @@ export default function AdminDashboard() {
           </Card>
 
           {/* PORTAL TAB CONFIGURATION CARD */}
-          <Card className="p-5 border-border shadow-md bg-card rounded-3xl relative overflow-hidden flex flex-col flex-1">
+          <Card className="p-5 border-border shadow-md bg-card rounded-3xl relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-violet-500 to-indigo-500" />
 
             <div className="flex items-center gap-2.5 pb-4 border-b border-border mb-4">
@@ -7403,7 +7861,7 @@ export default function AdminDashboard() {
                 <Settings className="w-4 h-4 text-violet-600 dark:text-violet-400" />
               </div>
               <div>
-                <h3 className="text-sm font-black text-slate-855 dark:text-slate-100 leading-none">Portal Configuration</h3>
+                <h3 className="text-sm font-black text-slate-855 dark:text-slate-100 leading-none">Portal Config</h3>
                 <p className="text-[10px] text-slate-400 font-semibold mt-1">Employee portal feature toggles</p>
               </div>
             </div>
@@ -7429,6 +7887,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Card>
+          </div>
           </div>
           </div>
         </div>
@@ -7712,6 +8171,56 @@ export default function AdminDashboard() {
                 className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md shadow-indigo-500/20"
               >
                 Close Preview
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {confirmDialog && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in text-foreground">
+          <Card className="w-full max-w-md bg-card border border-indigo-150 dark:border-slate-800 shadow-2xl rounded-3xl overflow-hidden animate-scale-up">
+            <div className="bg-gradient-to-r from-red-600 to-rose-600 text-white px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Trash2 className="w-5 h-5 text-white" />
+                <span className="font-bold text-sm tracking-wide">{confirmDialog.title}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  confirmDialog.onCancel?.();
+                  setConfirmDialog(null);
+                }}
+                className="text-white/80 hover:text-white font-bold"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-xs text-muted-foreground font-semibold leading-relaxed whitespace-pre-wrap">
+                {confirmDialog.message}
+              </p>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-950/20 border-t border-slate-100 dark:border-slate-800 px-6 py-4 flex justify-end gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  confirmDialog.onCancel?.();
+                  setConfirmDialog(null);
+                }}
+                className="rounded-xl font-bold text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  const action = confirmDialog.onConfirm;
+                  setConfirmDialog(null);
+                  void action();
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-md shadow-red-500/20 text-xs"
+              >
+                {confirmDialog.confirmLabel}
               </Button>
             </div>
           </Card>

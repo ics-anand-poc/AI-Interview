@@ -11,15 +11,16 @@ import { authenticateAdminRequest } from '@/lib/employee-auth';
 import { checkCsrf, getClientIp } from '@/lib/security';
 import { auditLogService } from '@/services/audit-log-service';
 import { writeLog } from '@/lib/structured-logger';
+import { jsonPublicError } from '@/lib/api-errors';
 
 const getTransporter = () => {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = parseInt(process.env.SMTP_PORT || '465');
   const secure = port === 465;
-  const user = process.env.SMTP_USER || 'aryan.collageid@gmail.com';
+  const user = process.env.SMTP_USER || '';
   const pass = process.env.SMTP_PASS;
 
-  if (!pass) {
+  if (!user || !pass) {
     return null;
   }
 
@@ -193,7 +194,7 @@ export async function POST(
 
     if (transporter) {
       try {
-        const from = process.env.SMTP_FROM || `"BizX HR Team" <${process.env.SMTP_USER || 'aryan.collageid@gmail.com'}>`;
+        const from = process.env.SMTP_FROM || (process.env.SMTP_USER ? `"BizX HR Team" <${process.env.SMTP_USER}>` : "");
         await transporter.sendMail({
           from,
           to: email,
@@ -251,9 +252,8 @@ export async function POST(
       status,
       error: realDispatchError
     });
-  } catch (error: any) {
-    console.error('Send candidate invite session error:', error);
-    await writeLog('email', 'INVITE_CANDIDATE_FAILED', 'failed', `Failed to send invite email to candidate ID ${id}: ${error.message}`);
-    return NextResponse.json({ error: error.message || 'Invitation failed' }, { status: 500 });
+  } catch (error: unknown) {
+    await writeLog('email', 'INVITE_CANDIDATE_FAILED', 'failed', `Failed to send invite email to candidate ID ${id}`);
+    return jsonPublicError(error, "Invitation failed");
   }
 }

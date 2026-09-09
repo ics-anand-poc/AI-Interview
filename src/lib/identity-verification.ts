@@ -1,10 +1,7 @@
 /**
  * Production identity verification: document-type check + biometric face match.
- * Primary path: Gemini multimodal (works on Vercel/Azure).
- * Optional boost: local FaceNet when Python runtime is available.
+ * ID photos use FaceNet / browser face-api.
  */
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import {
   getIdTypeLabel,
   isGovernmentIdType,
@@ -196,108 +193,9 @@ async function runLocalFaceNet(
       reason: parsed.reason || "Local FaceNet match complete.",
     };
   } catch (err) {
-    console.warn("Local FaceNet unavailable, will use cloud vision:", err);
+    console.warn("Local FaceNet unavailable, using face-api descriptors when provided:", err);
     return null;
   }
-}
-
-async function runGeminiIdentityCheck(input: {
-  idImageBase64: string;
-  selfieImageBase64: string;
-  selectedIdType: GovernmentIdType;
-}): Promise<{
-  detectedIdTypeRaw: string;
-  idTypeMatched: boolean;
-  faceVisibleOnId: boolean;
-  faceVisibleOnSelfie: boolean;
-  faceMatched: boolean;
-  confidence: number;
-  qualityOk: boolean;
-  spoofSuspected: boolean;
-  reason: string;
-}> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not configured for identity verification.");
-  }
-
-  const ai = new GoogleGenerativeAI(apiKey);
-  const model = ai.getGenerativeModel({
-    model: process.env.GEMINI_IDENTITY_MODEL || "gemini-2.0-flash",
-  });
-
-  const idPart = stripDataUrl(input.idImageBase64);
-  const selfiePart = stripDataUrl(input.selfieImageBase64);
-  const selectedLabel = getIdTypeLabel(input.selectedIdType);
-
-  const prompt = `
-You are a production-grade Indian government ID verification and biometric face-matching engine.
-
-Candidate selected ID type: "${selectedLabel}" (code: ${input.selectedIdType})
-
-You are given TWO images:
-1) IMAGE_1 = Government ID document (photo/scan)
-2) IMAGE_2 = Live selfie of the candidate
-
-Tasks (be strict and objective):
-A. Document classification
-   - Classify IMAGE_1 as one of: aadhaar | driving_license | pan | voter_id | other | unreadable
-   - Indian Aadhaar: usually 12-digit UID cues, "Aadhaar"/UIDAI branding, bilingual text.
-   - PAN: "Permanent Account Number" / Income Tax Department, 10-char PAN pattern cues.
-   - Driving License: RTO / "Driving Licence" / DL number cues.
-   - Voter ID: Election Commission / EPIC cues.
-B. Document quality
-   - qualityOk=false if blurry, truncated, too dark, glare, or text/face unreadable.
-C. Spoof heuristics
-   - spoofSuspected=true if IMAGE_1 or IMAGE_2 looks like a screen photo, printed paper of a face, mask, or deepfake-like artifact.
-D. Face presence
-   - faceVisibleOnId: is there a clear human face photo printed on the ID?
-   - faceVisibleOnSelfie: is there a clear live human face in IMAGE_2?
-E. Face match
-   - Compare the face printed on the ID with the selfie.
-   - faceMatched=true only if they are clearly the same person.
-   - confidence: integer 0-100 for biometric similarity (not document classification).
-F. idTypeMatched
-   - true only if detected document class matches the selected type (${input.selectedIdType}).
-   - Treat aadhaar/aadhar as the same.
-   - If unreadable/other → false.
-
-Return ONLY raw JSON (no markdown):
-{
-  "detectedIdType": "aadhaar|driving_license|pan|voter_id|other|unreadable",
-  "idTypeMatched": true,
-  "faceVisibleOnId": true,
-  "faceVisibleOnSelfie": true,
-  "faceMatched": true,
-  "confidence": 85,
-  "qualityOk": true,
-  "spoofSuspected": false,
-  "reason": "One short sentence explaining the decision"
-}
-`;
-
-  const result = await model.generateContent([
-    { text: prompt },
-    { text: "IMAGE_1 (Government ID):" },
-    { inlineData: { mimeType: idPart.mimeType, data: idPart.data } },
-    { text: "IMAGE_2 (Live selfie):" },
-    { inlineData: { mimeType: selfiePart.mimeType, data: selfiePart.data } },
-  ]);
-
-  const text = result.response?.text?.() ?? "";
-  const parsed = parseJsonFromModel(text);
-
-  return {
-    detectedIdTypeRaw: String(parsed.detectedIdType || "unreadable"),
-    idTypeMatched: Boolean(parsed.idTypeMatched),
-    faceVisibleOnId: Boolean(parsed.faceVisibleOnId),
-    faceVisibleOnSelfie: Boolean(parsed.faceVisibleOnSelfie),
-    faceMatched: Boolean(parsed.faceMatched),
-    confidence: Math.max(0, Math.min(100, Number(parsed.confidence) || 0)),
-    qualityOk: parsed.qualityOk !== false,
-    spoofSuspected: Boolean(parsed.spoofSuspected),
-    reason: String(parsed.reason || "Identity check complete."),
-  };
 }
 
 /**
@@ -308,33 +206,9 @@ export async function verifyFaceBiometricsOnly(
   selfieImageBase64: string
 ): Promise<{ matched: boolean; confidence: number; reason: string }> {
   try {
-    // Reuse Gemini with a neutral selected type but ignore type mismatch for this helper
-    const apiKey = process.env.GEMINI_API_KEY;
     const localFace = await runLocalFaceNet(idImageBase64, selfieImageBase64);
-
-    if (apiKey) {
-      const gemini = await runGeminiIdentityCheck({
-        idImageBase64,
-        selfieImageBase64,
-        selectedIdType: "aadhaar",
-      });
-      let faceMatched = gemini.faceMatched && gemini.faceVisibleOnId && gemini.faceVisibleOnSelfie;
-      let confidence = gemini.confidence;
-      if (localFace) {
-        faceMatched = faceMatched && localFace.matched;
-        confidence = Math.round((confidence + localFace.confidence) / 2);
-      }
-      const MIN_CONFIDENCE = Number(process.env.IDENTITY_MIN_CONFIDENCE || 70);
-      if (faceMatched && confidence < MIN_CONFIDENCE) faceMatched = false;
-      return {
-        matched: faceMatched,
-        confidence,
-        reason: gemini.reason,
-      };
-    }
-
     if (localFace) return localFace;
-    throw new Error("No biometric engine available (set GEMINI_API_KEY or install local FaceNet).");
+    throw new Error("No biometric engine available (local FaceNet or browser face-api).");
   } catch (err: any) {
     throw new Error(err?.message || "Face biometric verification failed");
   }
@@ -381,22 +255,8 @@ export async function verifyCandidateIdentity(input: {
     input.selfieImageBase64
   );
 
-  let geminiResult: Awaited<ReturnType<typeof runGeminiIdentityCheck>> | null = null;
-  let geminiError: string | null = null;
-
-  // Gemini is optional — ID type / spoof assist when quota allows.
-  if (process.env.GEMINI_API_KEY) {
-    try {
-      geminiResult = await runGeminiIdentityCheck({
-        idImageBase64: input.idImageBase64,
-        selfieImageBase64: input.selfieImageBase64,
-        selectedIdType,
-      });
-    } catch (err: any) {
-      geminiError = err?.message || String(err);
-      console.error("Gemini identity verification failed:", geminiError);
-    }
-  }
+  const geminiResult = null;
+  const geminiError: string | null = null;
 
   const localFace =
     remoteFace == null

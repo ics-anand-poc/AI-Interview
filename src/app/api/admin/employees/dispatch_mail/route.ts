@@ -9,6 +9,7 @@ import nodemailer from 'nodemailer';
 import { auditLogService } from '@/services/audit-log-service';
 import { writeLog } from '@/lib/structured-logger';
 import { checkCsrf, getClientIp } from '@/lib/security';
+import { jsonPublicError } from '@/lib/api-errors';
 
 export const runtime = 'nodejs';
 
@@ -39,10 +40,10 @@ const getTransporter = () => {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = parseInt(process.env.SMTP_PORT || '465');
   const secure = port === 465;
-  const user = process.env.SMTP_USER || 'aryan.collageid@gmail.com';
+  const user = process.env.SMTP_USER || '';
   const pass = process.env.SMTP_PASS;
 
-  if (!pass) return null;
+  if (!user || !pass) return null;
 
   return nodemailer.createTransport({
     host,
@@ -275,7 +276,7 @@ export async function POST(request: NextRequest) {
       let status = 'simulated';
       if (transporter) {
         try {
-          const from = process.env.SMTP_FROM || `"BizX HR Team" <${process.env.SMTP_USER || 'aryan.collageid@gmail.com'}>`;
+          const from = process.env.SMTP_FROM || (process.env.SMTP_USER ? `"BizX HR Team" <${process.env.SMTP_USER}>` : "");
           await transporter.sendMail({
             from,
             to: emp.email,
@@ -319,9 +320,8 @@ export async function POST(request: NextRequest) {
       `Successfully dispatched assessment invitations to ${dispatched.length} employees.`
     );
     return NextResponse.json({ success: true, count: dispatched.length, dispatched });
-  } catch (error: any) {
-    console.error("Failed to dispatch internal emails:", error);
-    await writeLog('employee', 'DISPATCH_EMPLOYEE_MAILS_FAILED', 'failed', `Failed to dispatch internal emails: ${error.message}`);
-    return NextResponse.json({ error: error.message || "Failed to dispatch emails" }, { status: 500 });
+  } catch (error: unknown) {
+    await writeLog('employee', 'DISPATCH_EMPLOYEE_MAILS_FAILED', 'failed', 'Failed to dispatch internal emails');
+    return jsonPublicError(error, "Failed to dispatch emails");
   }
 }

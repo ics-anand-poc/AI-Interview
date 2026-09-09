@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateAdminRequest } from "@/lib/employee-auth";
-import { getClientIp, isRateLimited } from "@/lib/security";
+import { getClientIp, isRateLimited, rateLimitedResponse } from "@/lib/security";
+import { asEmail, asPassword, readJsonObject } from "@/lib/input-validation";
 import { auditLogService } from "@/services/audit-log-service";
 import { adminCanChangePassword, changeNamedAdminPassword } from "@/lib/admin-accounts-server";
 
@@ -12,17 +13,26 @@ export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
   const limitCheck = isRateLimited(`admin_change_password_${ip}`, 5, 60000);
   if (limitCheck.limited) {
-    return NextResponse.json(
-      { error: "Too many attempts. Please try again after a minute." },
-      { status: 429 }
-    );
+    return rateLimitedResponse(limitCheck, "Too many attempts. Please try again later.");
   }
 
   try {
-    const body = await request.json();
-    const email = String(body.email ?? "").trim().toLowerCase();
-    const currentPassword = String(body.currentPassword ?? "");
-    const newPassword = String(body.newPassword ?? "");
+    const parsed = await readJsonObject(request);
+    if (!parsed.ok) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
+    const email = asEmail(parsed.body.email) || "";
+    const currentPassword = asPassword(
+      typeof parsed.body.currentPassword === "string" ? parsed.body.currentPassword : "",
+      { allowEmpty: true }
+    );
+    const newPassword = asPassword(
+      typeof parsed.body.newPassword === "string" ? parsed.body.newPassword : "",
+      { allowEmpty: true }
+    );
+    if (currentPassword === null || newPassword === null) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
 
     if (!(await adminCanChangePassword(email))) {
       await auditLogService.addLog({

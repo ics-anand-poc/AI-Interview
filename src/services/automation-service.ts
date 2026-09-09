@@ -49,8 +49,14 @@ export interface EmployeeRecord {
   score: number;
   matchingSkills: string[];
   source_file?: string;
+  /** First time this person was added to Corp Pool. */
+  uploaded_at?: string;
+  /** Same ISO stamp for everyone added in one Corp Pool upload. */
+  upload_batch?: string;
   /** Admin-set match score; wins over JD auto-match until cleared. */
   score_override?: number | null;
+  /** JD this override belongs to. Blank/old overrides do not apply to other reqs. */
+  score_override_jd_id?: string | null;
   /** When true, a later Corp Pool scan keeps these edited profile fields. */
   manually_edited?: boolean;
 }
@@ -874,7 +880,8 @@ async function persistMasterRequirements(
   filename: string,
   localJds: any[],
   keepIds: Set<string> = new Set(),
-  actorEmail = ""
+  actorEmail = "",
+  uploadBatchAt = ""
 ): Promise<number> {
   // BR/JD ingest only writes job_descriptions. Never delete employees, tests,
   // test_questions, or test_attempts — Employee Portal data is independent.
@@ -904,7 +911,8 @@ async function persistMasterRequirements(
       jdText: row.composedText,
       rmEmail: preferRmEmail("", row.rmEmail, actorEmail, true),
       fileName: `${row.autoReqId} | ${filename}`,
-      createdAt: new Date().toISOString(),
+      createdAt: uploadBatchAt || new Date().toISOString(),
+      ...(uploadBatchAt ? { uploadBatch: uploadBatchAt } : {}),
     };
     const existingIdx = localJds.findIndex((j: any) => j.id === jdUuid);
     if (existingIdx !== -1) {
@@ -917,6 +925,7 @@ async function persistMasterRequirements(
         rmEmail: preferRmEmail(existing.rmEmail, row.rmEmail, actorEmail),
         fileName: keepJdDoc ? existing.fileName : newLocalJd.fileName,
         createdAt: existing.createdAt || newLocalJd.createdAt,
+        uploadBatch: existing.uploadBatch,
       };
     } else {
       localJds.push(newLocalJd);
@@ -1120,6 +1129,7 @@ export async function refreshRequirements(opts?: {
   let processedBRs = 0;
   let convertedJDs = 0;
   let incomingBrRows = 0;
+  const uploadBatchAt = new Date().toISOString();
   const keepIds = new Set<string>();
   const restoredIncoming: Array<{
     id: string;
@@ -1312,7 +1322,7 @@ export async function refreshRequirements(opts?: {
           incomingJd.has(file.toLowerCase())
         ),
         file_name: `${autoReqId} | ${file}`,
-        created_at: existingJd?.createdAt || new Date().toISOString(),
+        created_at: existingJd?.createdAt || uploadBatchAt,
       });
       await writeLog(
         "requirements",
@@ -1335,7 +1345,14 @@ export async function refreshRequirements(opts?: {
     );
   }
   await saveMasterBrWorkbook(masterWorkbook, masterFilename);
-  processedBRs = await persistMasterRequirements(masterWorkbook, masterFilename, localJds, keepIds, actorEmail);
+  processedBRs = await persistMasterRequirements(
+    masterWorkbook,
+    masterFilename,
+    localJds,
+    keepIds,
+    actorEmail,
+    uploadBatchAt
+  );
 
   const deletedAfterIngest = await loadDeletedRequirements({ fresh: true });
   const liveRestored = restoredIncoming.filter((row) =>
@@ -1353,13 +1370,16 @@ export async function refreshRequirements(opts?: {
       processedBRs = Math.max(processedBRs, liveRestored.length);
       for (const row of liveRestored) {
         const existingIdx = localJds.findIndex((j: any) => j.id === row.id);
-        const local = {
+        const existing = existingIdx !== -1 ? localJds[existingIdx] : undefined;
+        const local: Record<string, unknown> = {
           id: row.id,
           jdText: row.jd_text,
           rmEmail: row.rm_email,
           fileName: row.file_name,
           createdAt: row.created_at,
         };
+        const batch = existing?.uploadBatch || (existingIdx === -1 ? uploadBatchAt : undefined);
+        if (batch) local.uploadBatch = batch;
         if (existingIdx !== -1) localJds[existingIdx] = { ...localJds[existingIdx], ...local };
         else localJds.push(local);
       }
@@ -2060,6 +2080,7 @@ export async function refreshEmployees(
 
   let added = 0;
   let updated = 0;
+  const uploadBatchAt = new Date().toISOString();
   for (const parsed of uniqueParsedEmployees) {
     const email = String(parsed.email || "").trim().toLowerCase();
     const existingId = byId.has(parsed.employee_id)
@@ -2079,7 +2100,10 @@ export async function refreshEmployees(
         employee_id: keepId,
         shortlisted: previous.shortlisted,
         score_override: previous.score_override,
+        score_override_jd_id: previous.score_override_jd_id,
         manually_edited: previous.manually_edited,
+        uploaded_at: previous.uploaded_at || (incomingUpload ? uploadBatchAt : previous.uploaded_at),
+        upload_batch: incomingUpload ? uploadBatchAt : previous.upload_batch,
         ...(previous.manually_edited
           ? {
               full_name: previous.full_name,
@@ -2100,7 +2124,11 @@ export async function refreshEmployees(
       if (email) byEmail.set(email, keepId);
       updated++;
     } else {
-      byId.set(parsed.employee_id, parsed);
+      byId.set(parsed.employee_id, {
+        ...parsed,
+        uploaded_at: uploadBatchAt,
+        upload_batch: uploadBatchAt,
+      });
       if (email) byEmail.set(email, parsed.employee_id);
       added++;
     }

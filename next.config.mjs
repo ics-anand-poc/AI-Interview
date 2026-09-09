@@ -4,6 +4,21 @@ import path from 'path';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Trigger dev server restart to clear global HMR and singleton cache
+const supabaseConnect = (() => {
+  try {
+    const raw = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+    return raw.startsWith("http") ? new URL(raw).origin : "";
+  } catch {
+    return "";
+  }
+})();
+
+const connectSrc = [
+  "'self'",
+  "https://*.supabase.co",
+  supabaseConnect,
+].filter(Boolean).join(" ");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
@@ -40,7 +55,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cfqpdjpvzgkvpipainzp.supabase.co; frame-ancestors 'none';"
+            value: `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src ${connectSrc}; frame-ancestors 'none';`
           },
           {
             key: 'X-Frame-Options',
@@ -76,7 +91,7 @@ const nextConfig = {
       config.cache = { type: "memory" };
       config.watchOptions = {
         ...config.watchOptions,
-        ignored: /node_modules|\.git|\.next|uploads/,
+        ignored: /node_modules|\.git|\.next|uploads|[\\/]AI[\\/]/,
       };
     }
     return config;

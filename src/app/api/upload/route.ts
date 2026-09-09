@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resumeService } from '@/services/resume-service';
 import { sessionService } from '@/services/session-service';
-import { checkCsrf, isRateLimited, validateFileSignature, getClientIp } from '@/lib/security';
+import { checkCsrf, isRateLimited, getClientIp, inspectUpload } from '@/lib/security';
+import { jsonPublicError } from '@/lib/api-errors';
 import { auditLogService } from '@/services/audit-log-service';
 
 export async function POST(request: NextRequest) {
@@ -56,13 +57,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File too large (max 10MB)' }, { status: 400 });
     }
 
-    // 3. Deep Magic Byte Signature Validation
     const buffer = Buffer.from(await file.arrayBuffer());
-    if (!validateFileSignature(buffer, file.name)) {
-      return NextResponse.json(
-        { error: 'File verification failed: magic signature mismatch (tampered file content)' },
-        { status: 400 }
-      );
+    const inspected = inspectUpload(buffer, file.name, {
+      maxBytes: 10 * 1024 * 1024,
+      allowedExts: ["pdf", "doc", "docx"],
+    });
+    if (!inspected.ok) {
+      return NextResponse.json({ error: inspected.error }, { status: 400 });
     }
 
     const resume = await resumeService.queueResumeProcessing(file);
@@ -84,14 +85,7 @@ export async function POST(request: NextRequest) {
       processing: resume.status === "processing",
       filename: file.name,
     });
-  } catch (error: any) {
-    console.error('Upload error:', error);
-    return NextResponse.json(
-      { 
-        success: false,
-        error: error.message || 'Upload failed' 
-      },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return jsonPublicError(error, "Upload failed", 500, { success: false });
   }
 }

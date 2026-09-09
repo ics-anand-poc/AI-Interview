@@ -5,6 +5,9 @@ import { join } from 'path';
 import { writeFile, mkdir } from 'fs/promises';
 import { resumeService } from '@/services/resume-service';
 import { supabaseServer } from '@/lib/db';
+import { inspectUpload } from '@/lib/security';
+import { asPathId } from '@/lib/input-validation';
+import { jsonPublicError } from '@/lib/api-errors';
 
 function getUploadsRoot() {
   return process.env.VERCEL === "1" ? "/tmp" : join(process.cwd(), "uploads");
@@ -23,7 +26,11 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id: rawId } = await params;
+    const id = asPathId(rawId);
+    if (!id) {
+      return NextResponse.json({ error: "Invalid interview id" }, { status: 400 });
+    }
     console.log(`📹 [UPLOAD_VIDEO] Starting upload for interview ${id}`);
     
     const formData = await request.formData();
@@ -38,6 +45,14 @@ export async function POST(
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+    const uploadName = /\.webm$/i.test(file.name || "") ? file.name : `${id}.webm`;
+    const inspected = inspectUpload(buffer, uploadName, {
+      maxBytes: 120 * 1024 * 1024,
+      allowedExts: ["webm"],
+    });
+    if (!inspected.ok) {
+      return NextResponse.json({ error: inspected.error }, { status: 400 });
+    }
 
     // 1. Try Supabase Storage first, fallback to local storage
     try {
@@ -117,12 +132,7 @@ export async function POST(
 
     console.log(`✅ [UPLOAD_VIDEO] Successfully uploaded video for ${id}`);
     return NextResponse.json({ success: true, videoUrl: resume.report.videoUrl });
-  } catch (error: any) {
-    console.error('❌ [UPLOAD_VIDEO] Upload video error:', JSON.stringify({
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    }));
-    return NextResponse.json({ error: error.message || error.toString() || 'Upload video failed' }, { status: 500 });
+  } catch (error: unknown) {
+    return jsonPublicError(error, "Upload video failed");
   }
 }
