@@ -18250,5 +18250,44 @@
       "What is the key purpose of ATP testing for CMG?"
     ],
     "assigned_question_count": 25
+  },
+  {
+    "employee_id": "1035294",
+    "full_name": "Swethasri R",
+    "role": "employee",
+    "domain": "PACO",
+    "product": "CMG",
+    "email": "Swethasri.Ravikumar@infinite.com",
+    "ddh": "",
+    "emp_status": "Confirmed",
+    "remarks": "PACO CMG portal credentials",
+    "assigned_questions": [
+      "In a CMG ATP plan, which test most directly verifies end-user data service?",
+      "Which outcome indicates a successful CMG onboarding and integration cycle?",
+      "CMG is best described as:",
+      "What is the key purpose of ATP testing for CMG?",
+      "What is a major functional benefit of CMG in packet core?",
+      "Which ATP case is useful for validating CMG resilience?",
+      "CMG supports evolution toward which major core direction?",
+      "Which aspect is most important during CMG onboarding?",
+      "What is a practical ATP objective for CMG interworking?",
+      "Why is CMG considered operationally flexible?",
+      "If attach succeeds but data service fails, which CMG area should be checked first?",
+      "In onboarding, which item is usually validated first?",
+      "Which ATP check best confirms attach-related functionality?",
+      "Which is a common integration point for CMG in EPC?",
+      "Which statement best reflects CMG architecture?",
+      "CMG is part of which Nokia family?",
+      "CMG can support which access evolution model?",
+      "In 4G EPC, CMG is most closely associated with which gateway role?",
+      "Which protocol family is most relevant to CMG integration with EPC nodes?",
+      "Which is most likely to be verified in CMG acceptance for 4G?",
+      "In a 4G ATP scenario, what does successful bearer establishment mainly confirm?",
+      "Which deployment characteristic is strongly associated with CMG?",
+      "Which scenario best tests CMG under mobility conditions?",
+      "Which symptom during ATP most likely indicates a control-plane integration problem?",
+      "What is the primary role of Nokia Cloud Mobile Gateway (CMG) in packet core?"
+    ],
+    "assigned_question_count": 25
   }
 ]

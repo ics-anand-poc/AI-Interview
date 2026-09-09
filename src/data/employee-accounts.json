@@ -12128,19 +12128,19 @@
     {
       "employee_id": "1035294",
       "full_name": "Swethasri R",
-      "email": "swethasri.ravikumar.ext@nokia.com",
-      "department": "PaCo",
-      "role": "Engineer",
+      "email": "Swethasri.Ravikumar@infinite.com",
+      "department": "PACO",
+      "role": "employee",
       "is_first_login": true,
-      "password_hash": "I51g+DVDRe2sgBCt8vMDXRqi8c59huW9wEN8VZ2PpvuuLRZbxt4/rlwiPOGceJdj5wmoQxXAegR7dC34isnyGQ==",
-      "password_salt": "16ICLCLfCGero0biIPvSJA==",
+      "password_hash": "Pvsgzn2oSarb2v6XcXAUrffYHIgF0b4DxRqFfQMMBQtul595BWzSvLAT8NrHYyAy3fFEWnqoMftwDrU+g/cbMg==",
+      "password_salt": "Iq+P7kfvY9XnX/am1klxzA==",
       "xp_points": 0,
       "streak_days": 0,
       "skill_level": "beginner",
       "ai_readiness_score": 0,
       "product": "CMG",
-      "assessment_only": false,
-      "product_qb_eligible": false
+      "assessment_only": true,
+      "product_qb_eligible": true
     },
     {
       "employee_id": "1035377",
