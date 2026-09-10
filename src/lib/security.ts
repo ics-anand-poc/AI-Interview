@@ -99,3 +99,17 @@ export function getClientIp(request: NextRequest): string {
   }
   return (request as any).ip || "127.0.0.1";
 }
+
+// 5. Storage-safe file name (used by docs-storage for Corp Pool / BR / JD ingest)
+const MAX_STORAGE_FILENAME_LENGTH = 200;
+
+export function safeStorageFileName(name: string): string {
+  const base = String(name || "").split(/[/\\]/).pop() || "";
+  const cleaned = base.replace(/\0/g, "").trim();
+  if (!cleaned || cleaned === "." || cleaned === ".." || cleaned.includes("..")) {
+    return "";
+  }
+  if (cleaned.length <= MAX_STORAGE_FILENAME_LENGTH) return cleaned;
+  const ext = cleaned.includes(".") ? cleaned.slice(cleaned.lastIndexOf(".")) : "";
+  return `${cleaned.slice(0, Math.max(1, MAX_STORAGE_FILENAME_LENGTH - ext.length))}${ext}`;
+}

@@ -830,6 +830,8 @@ export default function AdminDashboard() {
   const [isEmployeesLoading, setIsEmployeesLoading] = useState(false);
   const [isExportingPortal, setIsExportingPortal] = useState(false);
   const [isDispatchingMails, setIsDispatchingMails] = useState(false);
+  const [isImportingMatchScores, setIsImportingMatchScores] = useState(false);
+  const matchScoreInputRef = useRef<HTMLInputElement | null>(null);
   const [isBulkDispatchingMails, setIsBulkDispatchingMails] = useState(false);
   const [portalMailSendingId, setPortalMailSendingId] = useState<string | null>(null);
   const [isBulkPortalMailing, setIsBulkPortalMailing] = useState(false);
@@ -2223,6 +2225,138 @@ export default function AdminDashboard() {
     const jdQuery = `&activeJdId=${encodeURIComponent(sendJdId)}`;
     const token = typeof window !== "undefined" ? window.sessionStorage.getItem("admin_token") || "" : "";
     window.location.href = `/api/admin/employees?export=true${jdQuery}&token=${encodeURIComponent(token)}`;
+  };
+
+  const handleBulkShortlistQualified = async () => {
+    const currentJd = jds.find((j: any) => j.id === selectedJdId);
+    if (!selectedJdId || selectedJdId === "all" || String(selectedJdId).includes("@") || !currentJd) {
+      setActionError("Pick a requirement (JD) first to bulk-shortlist qualified people.");
+      setTimeout(() => setActionError(null), 4000);
+      return;
+    }
+    const qualifiedIds = employees
+      .filter((e) => !e.shortlisted && typeof e.score === "number" && e.score >= 60)
+      .map((e) => e.employee_id);
+    if (!qualifiedIds.length) {
+      setActionError("No unshortlisted people at 60%+ match for this requirement.");
+      setTimeout(() => setActionError(null), 4000);
+      return;
+    }
+    try {
+      const res = await adminFetch("/api/admin/employees", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ employeeIds: qualifiedIds, shortlisted: true }),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) throw new Error(result.error || "Failed to bulk shortlist");
+      setEmployees((prev) =>
+        prev.map((e) => (qualifiedIds.includes(e.employee_id) ? { ...e, shortlisted: true } : e))
+      );
+      setActionSuccess(`Shortlisted ${qualifiedIds.length} ${qualifiedIds.length === 1 ? "person" : "people"} at 60%+ match.`);
+      setTimeout(() => setActionSuccess(null), 3000);
+    } catch (err: any) {
+      setActionError(err.message || "Failed to bulk shortlist");
+      setTimeout(() => setActionError(null), 4000);
+    }
+  };
+
+  const corpPoolExportFileName = (jdFileName?: string): string => {
+    const raw = String(jdFileName || "").trim();
+    let brNo = "";
+    let namePart = raw;
+    if (raw.includes(" | ")) {
+      const idx = raw.indexOf(" | ");
+      brNo = raw.slice(0, idx).trim();
+      namePart = raw.slice(idx + 3).trim();
+    }
+    const sanitize = (v: string) => v.replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-").replace(/\s+/g, " ").trim();
+    const cleanName = sanitize(namePart.replace(/\.(txt|xlsx|xls|docx|pdf|html|htm)$/i, ""));
+    const cleanBr = brNo && brNo.toUpperCase() !== "N/A" ? sanitize(brNo) : "";
+    const combined = cleanBr && cleanName ? `${cleanBr} - ${cleanName}` : cleanBr || cleanName;
+    return `${combined || "corp_pool_shortlisted"}.xlsx`;
+  };
+
+  const handleExportShortlistedInterviews = async () => {
+    const shortlisted = employees.filter((emp) => emp.shortlisted);
+    if (!shortlisted.length) {
+      setActionError("Shortlist at least one Corp Pool person before exporting.");
+      setTimeout(() => setActionError(null), 4000);
+      return;
+    }
+    try {
+      const currentJd = jds.find((j: any) => j.id === selectedJdId);
+      const exportFileName = corpPoolExportFileName(currentJd?.fileName);
+      const res = await fetch("/api/admin/employees/export-shortlisted", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: exportFileName,
+          employees: shortlisted.map((emp) => ({
+            employee_id: emp.employee_id,
+            full_name: emp.full_name,
+            email: emp.email,
+            designation: emp.designation,
+            department: emp.department,
+            grade: emp.grade,
+            skills: emp.skills,
+            score: emp.score,
+            matchingSkills: emp.matchingSkills,
+            status: emp.status,
+          })),
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Export failed");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = exportFileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      setActionError(err.message || "Failed to export shortlisted people");
+      setTimeout(() => setActionError(null), 4000);
+    }
+  };
+
+  const handleUploadMatchScores = async (files: File[]) => {
+    const picked = files.filter((f) => f && f.size > 0);
+    if (!picked.length) return;
+    setIsImportingMatchScores(true);
+    setActionError(null);
+    try {
+      const body = new FormData();
+      for (const file of picked) body.append("files", file);
+      const res = await adminFetch("/api/admin/employees/percentage-matching", { method: "POST", body });
+      const contentType = res.headers.get("content-type") || "";
+      if (!res.ok || contentType.includes("application/json")) {
+        const result = await res.json().catch(() => ({}));
+        throw new Error(result.error || "Failed to build Percentage summary.");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Percentage summary.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setActionSuccess(`Built Percentage summary from ${picked.length} JD/BR match file${picked.length === 1 ? "" : "s"}.`);
+      setTimeout(() => setActionSuccess(null), 6000);
+    } catch (err: any) {
+      setActionError(err.message || "Failed to build Percentage summary.");
+      setTimeout(() => setActionError(null), 5000);
+    } finally {
+      setIsImportingMatchScores(false);
+      if (matchScoreInputRef.current) matchScoreInputRef.current.value = "";
+    }
   };
 
   const handleDispatchEmployeeMails = async () => {
@@ -4477,6 +4611,53 @@ export default function AdminDashboard() {
                               Send Mail
                             </Button>
                           )}
+                          <Button
+                            onClick={handleBulkShortlistQualified}
+                            variant="outline"
+                            size="sm"
+                            title="Shortlist everyone at 60%+ recruiter fit for the selected requirement"
+                            className="flex-1 sm:flex-none rounded-xl border-border text-primary hover:bg-secondary gap-1.5 font-bold text-xs"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Shortlist 60%+
+                          </Button>
+                          {employees.filter(e => e.shortlisted).length > 0 && (
+                            <Button
+                              onClick={handleExportShortlistedInterviews}
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 sm:flex-none rounded-xl border-border text-primary hover:bg-secondary gap-1.5 font-bold text-xs"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              Export Shortlisted
+                            </Button>
+                          )}
+                          <input
+                            ref={matchScoreInputRef}
+                            type="file"
+                            accept=".xlsx,.xls"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              if (files.length) handleUploadMatchScores(files);
+                            }}
+                          />
+                          <Button
+                            onClick={() => matchScoreInputRef.current?.click()}
+                            disabled={isImportingMatchScores}
+                            variant="outline"
+                            size="sm"
+                            title="Upload exported JD/BR vs Corp Pool score workbook(s) to build a Percentage summary"
+                            className="flex-1 sm:flex-none rounded-xl border-border text-primary hover:bg-secondary gap-1.5 font-bold text-xs"
+                          >
+                            {isImportingMatchScores ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Upload className="w-3.5 h-3.5" />
+                            )}
+                            Percentage Matching
+                          </Button>
                           <Button
                             onClick={handleExportEmployees}
                             variant="outline"

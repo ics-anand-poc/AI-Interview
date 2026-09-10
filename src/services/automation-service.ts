@@ -2,12 +2,29 @@ import { join, basename } from 'path';
 import { mkdir, readdir, readFile, writeFile } from 'fs/promises';
 import { createHash } from 'crypto';
 import ExcelJS from 'exceljs';
+import AdmZip from 'adm-zip';
 import { supabase } from '@/lib/db';
 import { resumeService } from '@/services/resume-service';
 import { extractJdDetails } from '@/lib/jd-to-br/aiService';
 import { writeLog } from '@/lib/structured-logger';
 import { interviewCSVService } from '@/services/interview-csv-service';
 import { generateAIText } from '@/lib/ai-providers';
+import {
+  ensureDocsStorage,
+  listDocFiles,
+  readDocFileBuffer,
+  writeDocFile,
+  deleteDocFile,
+} from '@/lib/docs-storage';
+import { writePersistedJson, readPersistedJson } from '@/lib/runtime-data';
+import { loadCorpPoolRoster, saveCorpPoolRoster } from '@/lib/corp-pool-store';
+import { cacheStore } from '@/lib/cache-store';
+import { calculateSkillMatch, employeeMatchText } from '@/lib/skill-match';
+import { isCorpPoolDeleted, loadDeletedCorpPool, unmarkCorpPoolDeleted } from '@/lib/deleted-corp-pool';
+
+// Re-exported so existing callers (employees/route.ts, employees/rerank/route.ts) that
+// import calculateSkillMatch from this module keep working unchanged.
+export { calculateSkillMatch };
 
 const getUploadsRoot = () => {
   return process.env.VERCEL === "1" ? "/tmp" : join(process.cwd(), "uploads");
@@ -19,12 +36,24 @@ export interface EmployeeRecord {
   email: string;
   department: string;
   skills: string;
+  product?: string;
   grade: string;
   designation: string;
   status: string;
   shortlisted: boolean;
   score: number;
   matchingSkills: string[];
+  source_file?: string;
+  /** First time this person was added to Corp Pool. */
+  uploaded_at?: string;
+  /** Same ISO stamp for everyone added in one Corp Pool upload. */
+  upload_batch?: string;
+  /** Admin-set match score; wins over JD auto-match until cleared. */
+  score_override?: number | null;
+  /** JD this override belongs to. Blank/old overrides do not apply to other reqs. */
+  score_override_jd_id?: string | null;
+  /** When true, a later Corp Pool scan keeps these edited profile fields. */
+  manually_edited?: boolean;
 }
 
 /**
@@ -42,119 +71,6 @@ export async function ensureDocsDirectories() {
   for (const dir of dirs) {
     await mkdir(dir, { recursive: true });
   }
-}
-
-/**
- * Helper to calculate skill match score based on keyword overlap
- */
-export function calculateSkillMatch(employeeSkills: string, jdSkills: string): { score: number; matchingSkills: string[] } {
-  if (!employeeSkills || !jdSkills) {
-    return { score: 0, matchingSkills: [] };
-  }
-
-  // Common technical skills catalog
-  const COMMON_TECH_SKILLS = [
-    // Languages
-    "javascript", "typescript", "python", "java", "c++", "c#", "c", "ruby", "golang", "php", "rust", "swift", "kotlin", "perl", "r", "scala",
-    // Web / Frontend / Backend
-    "react", "angular", "vue", "next.js", "nextjs", "nuxt", "node.js", "nodejs", "express", "django", "flask", "spring", "springboot", "asp.net", "laravel", "rails",
-    // Databases / Data Store
-    "sql", "postgresql", "postgres", "oracle", "mysql", "sql server", "sqlite", "mongodb", "mongo", "redis", "cassandra", "dynamodb", "mariadb", "couchdb", "neo4j",
-    // Cloud / DevOps
-    "aws", "amazon web services", "azure", "gcp", "google cloud", "docker", "kubernetes", "k8s", "jenkins", "ansible", "terraform", "ci/cd", "cicd", "git", "github", "gitlab",
-    // System / OS / Admin
-    "linux", "windows", "unix", "ubuntu", "centos", "redhat", "red hat", "debian", "macos", "shell", "bash", "powershell",
-    // Monitoring / Logging / Tools
-    "splunk", "datadog", "dynatrace", "appdynamics", "new relic", "prometheus", "grafana", "elk", "elasticsearch", "logstash", "kibana", "service now", "servicenow", "jira", "confluence",
-    // QA / Testing / Tools
-    "manual testing", "manual", "automation", "selenium", "postman", "jmeter", "cucumber", "testing",
-    // Architecture / Concepts
-    "microservices", "api", "apis", "rest", "graphql", "soap", "kafka", "rabbitmq", "mq", "activemq", "architecture", "architect", "estimation", "rca", "incident management", "problem management", "change management"
-  ];
-
-  const extractSkills = (text: string) => {
-    const lower = text.toLowerCase();
-    const found = new Set<string>();
-    for (const skill of COMMON_TECH_SKILLS) {
-      const escaped = skill.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      const regex = new RegExp(`(^|[^a-zA-Z0-9_#+])(${escaped})([^a-zA-Z0-9_#+]|$)`, 'i');
-      if (regex.test(lower)) {
-        // Normalize synonyms
-        if (skill === "postgres") found.add("postgresql");
-        else if (skill === "nodejs") found.add("node.js");
-        else if (skill === "nextjs") found.add("next.js");
-        else if (skill === "amazon web services") found.add("aws");
-        else if (skill === "google cloud") found.add("gcp");
-        else if (skill === "servicenow") found.add("service now");
-        else if (skill === "red hat") found.add("redhat");
-        else if (skill === "apis") found.add("api");
-        else found.add(skill);
-      }
-    }
-    return Array.from(found);
-  };
-
-  const empSkills = extractSkills(employeeSkills);
-  const jdSkillsList = extractSkills(jdSkills);
-
-  if (empSkills.length === 0 || jdSkillsList.length === 0) {
-    // Fallback to basic word boundary matching if no standard keywords found
-    const STOP_WORDS = new Set(["to", "and", "the", "for", "in", "of", "on", "with", "at", "by", "from", "an", "is", "as", "end", "be", "or", "exp", "year", "years", "total", "skills", "basics", "basic", "etc", "ex", "eg"]);
-    const cleanSkills = (str: string) => {
-      return str.toLowerCase()
-        .split(/[,;+\n/|]/)
-        .map(s => s.trim())
-        .flatMap(s => {
-          if (s === "end-to-end" || s === "ci-cd" || s === "ci/cd") return [s];
-          return s.split(/\s*-\s*/); // Split on hyphens with surrounding spaces (like "api - postman")
-        })
-        .map(s => s.trim())
-        .filter(s => s.length > 1 && !STOP_WORDS.has(s));
-    };
-    
-    const empSkillsList = cleanSkills(employeeSkills);
-    if (empSkillsList.length === 0) {
-      return { score: 0, matchingSkills: [] };
-    }
-    
-    const lowercaseJd = jdSkills.toLowerCase();
-    const matchingSkills: string[] = [];
-    
-    for (const empSkill of empSkillsList) {
-      const skillLower = empSkill.toLowerCase();
-      const escaped = skillLower.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      const regex = new RegExp(`(^|[^a-zA-Z0-9_#+])(${escaped})([^a-zA-Z0-9_#+]|$)`, 'i');
-      if (regex.test(lowercaseJd)) {
-        matchingSkills.push(empSkill);
-      }
-    }
-    const uniqueMatches = Array.from(new Set(matchingSkills));
-    const score = Math.min(100, Math.round((uniqueMatches.length / empSkillsList.length) * 100));
-    
-    // Map matches back to pretty uppercase format
-    const prettyMatches = uniqueMatches.map(s => {
-      return s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-    });
-    
-    return { score, matchingSkills: prettyMatches };
-  }
-
-  // Intersection of keywords
-  const matchingSkills = empSkills.filter(skill => jdSkillsList.includes(skill));
-  
-  // Calculate a match score based on how many of the JD required skills the employee has. Capped at a divisor of 8.
-  const divisor = Math.min(8, jdSkillsList.length);
-  const score = Math.min(100, Math.round((matchingSkills.length / divisor) * 100));
-
-  // Map normalized skills back to their pretty counterparts
-  const prettyMatches = matchingSkills.map(s => {
-    return s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  });
-
-  return {
-    score,
-    matchingSkills: prettyMatches
-  };
 }
 
 /**
@@ -658,13 +574,490 @@ export async function refreshCandidates(activeJdId?: string): Promise<{ success:
   return { success: true, processed, duplicates };
 }
 
+function cellText(value: unknown): string {
+  if (value == null) return "";
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number" || typeof value === "boolean") return String(value).trim();
+  if (typeof value === "object" && value && "text" in (value as any)) {
+    return String((value as any).text || "").trim();
+  }
+  if (typeof value === "object" && value && "richText" in (value as any)) {
+    return ((value as any).richText || []).map((t: any) => t.text || "").join("").trim();
+  }
+  return String(value).trim();
+}
+
+function decodeSpreadsheetText(buffer: Buffer): string {
+  if (buffer.length >= 2 && buffer[0] === 0xff && buffer[1] === 0xfe) {
+    return buffer.slice(2).toString("utf16le");
+  }
+  if (buffer.length >= 2 && buffer[0] === 0xfe && buffer[1] === 0xff) {
+    const swapped = Buffer.alloc(buffer.length - 2);
+    for (let i = 2; i + 1 < buffer.length; i += 2) {
+      swapped[i - 2] = buffer[i + 1];
+      swapped[i - 1] = buffer[i];
+    }
+    return swapped.toString("utf16le");
+  }
+  let text = buffer.toString("utf8");
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+  return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+}
+
+function parseCsvLine(line: string, delimiter: string): string[] {
+  const cells: string[] = [];
+  let cur = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === delimiter && !inQuotes) {
+      cells.push(cur.trim());
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  cells.push(cur.trim());
+  return cells.map((cell) => cell.replace(/^"|"$/g, "").trim());
+}
+
+function detectCsvDelimiter(headerLine: string): string {
+  const candidates: Array<[string, number]> = [
+    [",", (headerLine.match(/,/g) || []).length],
+    [";", (headerLine.match(/;/g) || []).length],
+    ["\t", (headerLine.match(/\t/g) || []).length],
+  ];
+  candidates.sort((a, b) => b[1] - a[1]);
+  return candidates[0][1] > 0 ? candidates[0][0] : ",";
+}
+
+function parseCorpPoolCsv(buffer: Buffer): string[][] {
+  const text = decodeSpreadsheetText(buffer);
+  const rawLines = text.split("\n").map((line) => line.trimEnd()).filter((line) => line.trim());
+  if (rawLines.length === 0) return [];
+  const delimiter = detectCsvDelimiter(rawLines[0]);
+  return rawLines.map((line) => parseCsvLine(line, delimiter));
+}
+
+function isLikelyPhoneNumber(value: string): boolean {
+  const digits = String(value || "").replace(/\D/g, "");
+  return digits.length === 10 || digits.length === 11 || digits.length === 12;
+}
+
+function isGeneratedCorpPoolId(value: string): boolean {
+  return /^CV[a-f0-9]{8,}$/i.test(String(value || "").trim());
+}
+
+function isLikelyYear(value: string): boolean {
+  const digits = String(value || "").replace(/\D/g, "");
+  if (digits.length !== 4) return false;
+  const year = Number(digits);
+  return year >= 1970 && year <= 2035;
+}
+
+function isPlausibleEmployeeId(value: string): boolean {
+  const id = String(value || "").trim();
+  if (!/^[A-Za-z]?\d{4,12}$/.test(id)) return false;
+  if (isLikelyPhoneNumber(id) || isLikelyYear(id)) return false;
+  return true;
+}
+
+function extractEmployeeIdFromCv(text: string, file: string): string {
+  const normalized = String(text || "").replace(/\u00a0/g, " ");
+  const patterns = [
+    /employee\s*(?:id|code|number|no)\s*[:#.\-|]*\s*([A-Za-z]?\d{4,12})\b/i,
+    /emp(?:loyee)?\s*(?:id|no|code|number)\s*[:#.\-|]*\s*([A-Za-z]?\d{4,12})\b/i,
+    /staff\s*(?:id|code|no)\s*[:#.\-|]*\s*([A-Za-z]?\d{4,12})\b/i,
+  ];
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
+    if (match?.[1] && isPlausibleEmployeeId(match[1])) return match[1].trim();
+  }
+
+  const lines = normalized.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  for (let i = 0; i < Math.min(lines.length - 1, 20); i++) {
+    if (/^(employee\s*(?:id|code|number|no)|emp(?:loyee)?\s*(?:id|no)|staff\s*id)\s*[:#.\-]*$/i.test(lines[i])) {
+      const next = lines[i + 1].match(/^([A-Za-z]?\d{4,12})\b/);
+      if (next?.[1] && isPlausibleEmployeeId(next[1])) return next[1];
+    }
+  }
+
+  const nearby = normalized.match(/employee\s*id[\s\S]{0,120}?(\d{5,10})/i);
+  if (nearby?.[1] && isPlausibleEmployeeId(nearby[1])) return nearby[1];
+
+  const fromFile = String(file || "").match(/\b([A-Za-z]?\d{5,10})\b/);
+  if (fromFile?.[1] && isPlausibleEmployeeId(fromFile[1])) return fromFile[1];
+
+  // Infinite CVs often start with "1033925 Jithender" and never say "Employee ID".
+  for (const line of lines.slice(0, 12)) {
+    const leading = line.match(/^([A-Za-z]?\d{5,8})(?:\s+[A-Za-z].*)?$/);
+    if (leading?.[1] && isPlausibleEmployeeId(leading[1])) return leading[1];
+  }
+  return "";
+}
+
+const CV_NAME_BLOCKLIST =
+  /^(career objectives?|objective|summary|professional summary|profile|experience|work experience|education|skills|technical skills|contact|contacts|declaration|projects|certifications?|about me|resume|curriculum vitae|personal details|employment history|key skills|highlights|achievements?)$/i;
+
+function stripLeadingEmployeeId(value: string): { id: string; rest: string } {
+  const match = String(value || "").trim().match(/^([A-Za-z]?\d{5,12})\s+(.+)$/);
+  if (match?.[1] && isPlausibleEmployeeId(match[1])) {
+    return { id: match[1], rest: match[2].trim() };
+  }
+  return { id: "", rest: String(value || "").trim() };
+}
+
+function looksLikePersonName(line: string): boolean {
+  const raw = String(line || "").replace(/\s+/g, " ").trim();
+  const text = stripLeadingEmployeeId(raw).rest.replace(/[!|]+/g, " ").replace(/\s+/g, " ").trim();
+  if (!text || CV_NAME_BLOCKLIST.test(text)) return false;
+  if (text.length < 3 || text.length > 50) return false;
+  if (/@|https?:|www\./i.test(text)) return false;
+  if (/[|]/.test(raw)) return false;
+  if (/^(successfully|experienced|worked|developed|led|responsible|managed|supporting)\b/i.test(text)) return false;
+  const words = text.split(" ").filter(Boolean);
+  if (words.length < 1 || words.length > 5) return false;
+  if (words.length === 1 && words[0].length < 3) return false;
+  if (words.some((word) => /^20\d{2}$/.test(word) || /^infinite$/i.test(word))) return false;
+  if (!/^[A-Za-z][A-Za-z .'-]*$/.test(text)) return false;
+  const titleCaseWords = words.filter((word) => /^[A-Z][a-zA-Z'.-]*$/.test(word) || /^[A-Z]\.?$/.test(word));
+  return titleCaseWords.length >= Math.ceil(words.length / 2);
+}
+
+const CV_SKILL_CATALOG = [
+  "typescript", "javascript", "python", "java", "sql", "ms sql", "mysql", "postgresql",
+  "windows", "linux", "unix", "protractor", "selenium", "cypress", "playwright",
+  "jira", "git", "jenkins", "agile", "scrum", "waterfall", "stlc", "sdlc",
+  "html", "css", "react", "angular", "node.js", "aws", "azure", "docker",
+  "rest", "api", "postman", "manual testing", "automation testing",
+];
+
+function skillsFromCvText(text: string): string[] {
+  const lower = ` ${String(text || "").toLowerCase()} `;
+  const found: string[] = [];
+  for (const skill of CV_SKILL_CATALOG) {
+    const needle = skill.replace(".", "\\.");
+    if (new RegExp(`[^a-z0-9]${needle}[^a-z0-9]`, "i").test(lower) && !found.includes(skill)) {
+      found.push(skill);
+    }
+  }
+  return found;
+}
+
+function labeledCvValue(text: string, labels: string[]): string {
+  const joined = labels.map((label) => label.replace(/\s+/g, "\\s*")).join("|");
+  const match = text.match(new RegExp(`(?:^|[\\n\\r])\\s*(?:${joined})\\s*[:|#]\\s*([^\\n\\r]{2,80})`, "i"));
+  return match?.[1]?.trim() || "";
+}
+
+function corpPoolProfileFromCv(file: string, text: string): {
+  name: string;
+  designation: string;
+  email: string;
+  employeeId: string;
+} {
+  const base = file.replace(/\.[^/.]+$/, "");
+  const designationFromFile =
+    base.match(/\b(SDET|QA|Quality\s*Analyst|Developer|Engineer|Lead|Manager|Architect|Analyst|Consultant|Tester)\b/i)?.[0] ||
+    "";
+  const fromFileRaw = base
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\d+\s*(yoe|yrs?|years?)\b/gi, "")
+    .replace(/\b(SDET|QA|resume|cv|curriculum vitae|infinite)\b/gi, "")
+    .replace(/\b20\d{2}\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const fromFile = stripLeadingEmployeeId(fromFileRaw);
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const labeledName = stripLeadingEmployeeId(
+    labeledCvValue(text, ["name", "candidate name", "employee name"]).replace(/employee\s*id.*/i, "")
+  );
+  const nameFromLine = lines.slice(0, 15).find((line) => looksLikePersonName(line));
+  const nameFromLineClean = nameFromLine ? stripLeadingEmployeeId(nameFromLine) : { id: "", rest: "" };
+  const labeledTitle = labeledCvValue(text, ["title", "designation", "role", "position"]);
+  const titleLine = lines.find(
+    (line) =>
+      line.length < 60 &&
+      !/[|]/.test(line) &&
+      /\b(SDET|engineer|developer|lead|manager|analyst|architect|tester)\b/i.test(line) &&
+      !/employee\s*id|years? of|successfully|interoperability/i.test(line) &&
+      !looksLikePersonName(line)
+  );
+  const email =
+    labeledCvValue(text, ["email id", "email", "mail id", "e-mail"]) ||
+    text.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0] ||
+    "";
+  const cleanEmail = email.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0] || "";
+  const employeeId =
+    extractEmployeeIdFromCv(text, file) ||
+    labeledName.id ||
+    nameFromLineClean.id ||
+    fromFile.id;
+  const name =
+    (looksLikePersonName(labeledName.rest) ? labeledName.rest : "") ||
+    nameFromLineClean.rest ||
+    (looksLikePersonName(fromFile.rest) ? fromFile.rest : "") ||
+    "Unknown";
+  return {
+    name,
+    designation: labeledTitle || designationFromFile || titleLine || "Engineer",
+    email: cleanEmail,
+    employeeId,
+  };
+}
+
+export function sanitizeCorpPoolFileName(name: string): string {
+  const base = String(name || "").split(/[/\\]/).pop() || "resume";
+  const cleaned = base
+    .replace(/\u00a0/g, " ")
+    .replace(/[^\w.\- ()[\]]+/g, "_")
+    .replace(/\s+/g, " ")
+    .replace(/_+/g, "_")
+    .trim();
+  const fallback = cleaned || "resume";
+  if (fallback.length <= 180) return fallback;
+  const ext = fallback.includes(".") ? fallback.slice(fallback.lastIndexOf(".")) : "";
+  return `${fallback.slice(0, Math.max(1, 180 - ext.length))}${ext}`;
+}
+
+export function isCorpPoolRosterFileName(name: string): boolean {
+  const n = String(name || "")
+    .toLowerCase()
+    .replace(/[_'`’]/g, " ");
+  if (!/\.(xlsx|xls|csv)$/i.test(n)) return false;
+  return n.includes("corp pool") || n.includes("active list") || n.includes("employee list");
+}
+
+function looksLikeCorpPoolHeaderCell(value: unknown): boolean {
+  const str = cellText(value).toLowerCase();
+  return (
+    str.includes("emp no") ||
+    str.includes("emp_no") ||
+    str.includes("employee id") ||
+    str.includes("emp id") ||
+    str.includes("emp name") ||
+    str.includes("employee name")
+  );
+}
+
+export async function excelLooksLikeCorpPoolRoster(buffer: Buffer): Promise<boolean> {
+  try {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer as any);
+    for (const ws of workbook.worksheets) {
+      const last = Math.min(10, Math.max(ws.rowCount || 0, ws.actualRowCount || 0, 1));
+      for (let n = 1; n <= last; n++) {
+        const values = ((ws.getRow(n).values as any[]) || []);
+        if (values.some(looksLikeCorpPoolHeaderCell)) return true;
+      }
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+export async function reclaimMisfiledCorpPoolRosters(): Promise<string[]> {
+  await ensureDocsStorage();
+  const moved: string[] = [];
+  const resumeFiles = await listDocFiles("Resumes");
+  for (const file of resumeFiles) {
+    if (!isCorpPoolRosterFileName(file)) continue;
+    try {
+      const buffer = await readDocFileBuffer("Resumes", file);
+      const stored = sanitizeCorpPoolFileName(file);
+      await writeDocFile("Corp Pool", stored, buffer);
+      await deleteDocFile("Resumes", file);
+      moved.push(stored);
+      await writeLog(
+        "employee",
+        "RECLAIMED_CORP_POOL_ROSTER",
+        "success",
+        `Moved ${file} from Resumes to Corp Pool as ${stored}`
+      );
+    } catch (err: any) {
+      await writeLog(
+        "employee",
+        "RECLAIM_CORP_POOL_FAILED",
+        "failed",
+        `Could not move ${file} out of Resumes: ${err?.message || "unknown error"}`
+      );
+    }
+  }
+  return moved;
+}
+
+function corpPoolFileKey(name: string): string {
+  return sanitizeCorpPoolFileName(name).toLowerCase();
+}
+
+function uniqueCorpPoolFileName(name: string, used: Set<string>): string {
+  const safe = sanitizeCorpPoolFileName(name);
+  const lower = safe.toLowerCase();
+  if (!used.has(lower)) {
+    used.add(lower);
+    return safe;
+  }
+  const extIdx = safe.lastIndexOf(".");
+  const stem = extIdx >= 0 ? safe.slice(0, extIdx) : safe;
+  const ext = extIdx >= 0 ? safe.slice(extIdx) : "";
+  let i = 2;
+  let next = `${stem}_${i}${ext}`;
+  while (used.has(next.toLowerCase())) {
+    i += 1;
+    next = `${stem}_${i}${ext}`;
+  }
+  used.add(next.toLowerCase());
+  return next;
+}
+
 /**
  * 3. Employee Pool Refresh: Scans /docs/Corp Pool
  */
-export async function refreshEmployees(activeJdId?: string): Promise<{ success: boolean; loaded: number }> {
-  await ensureDocsDirectories();
-  const dirPath = join(process.cwd(), "docs", "Corp Pool");
-  const files = await readdir(dirPath);
+function looksLikeExcelBuffer(buffer: Buffer): boolean {
+  return Boolean(buffer?.length >= 4 && buffer[0] === 0x50 && buffer[1] === 0x4b);
+}
+
+export async function refreshEmployees(
+  activeJdId?: string,
+  opts?: {
+    incomingCorpPoolFiles?: string[];
+    incomingFileBuffers?: Array<{ filename: string; buffer: Buffer }>;
+  }
+): Promise<{
+  success: boolean;
+  loaded: number;
+  added?: number;
+  updated?: number;
+  skippedDeleted?: number;
+  employees?: EmployeeRecord[];
+}> {
+  await ensureDocsStorage();
+  const reclaimed = await reclaimMisfiledCorpPoolRosters();
+  const incomingSet = new Set(
+    (opts?.incomingCorpPoolFiles || []).map((f) => corpPoolFileKey(f))
+  );
+  const fileBuffers = new Map<string, Buffer>();
+  for (const item of opts?.incomingFileBuffers || []) {
+    const stored = sanitizeCorpPoolFileName(item.filename);
+    fileBuffers.set(stored, item.buffer);
+    incomingSet.add(corpPoolFileKey(stored));
+  }
+  if (incomingSet.size > 0) {
+    for (const file of reclaimed) incomingSet.add(corpPoolFileKey(file));
+  }
+  let files = await listDocFiles("Corp Pool");
+  if (incomingSet.size > 0) {
+    files = files.filter((f) => incomingSet.has(corpPoolFileKey(f)));
+  }
+  for (const stored of fileBuffers.keys()) {
+    if (!files.some((f) => corpPoolFileKey(f) === corpPoolFileKey(stored))) {
+      files.push(stored);
+    }
+  }
+
+  const expandedFiles: string[] = [];
+  const usedZipNames = new Set<string>();
+  for (const file of files) {
+    if (!/\.zip$/i.test(file)) {
+      expandedFiles.push(file);
+      continue;
+    }
+    let extracted = 0;
+    let skipped = 0;
+    try {
+      const zipBuffer = fileBuffers.get(file) || await readDocFileBuffer("Corp Pool", file);
+      const zip = new AdmZip(zipBuffer);
+      for (const entry of zip.getEntries()) {
+        try {
+          if (entry.isDirectory) continue;
+          const entryName = String(entry.entryName || "").replace(/\\/g, "/");
+          if (
+            entryName.startsWith("__MACOSX") ||
+            entryName.split("/").some((part) => part.startsWith("."))
+          ) {
+            skipped++;
+            continue;
+          }
+          const baseName = entryName.split("/").pop() || "";
+          if (!/\.(pdf|docx|doc|txt|csv|xlsx|xls)$/i.test(baseName)) {
+            skipped++;
+            continue;
+          }
+          let data: Buffer;
+          try {
+            data = entry.getData();
+          } catch (entryErr: any) {
+            skipped++;
+            await writeLog(
+              "employee",
+              "UNZIP_ENTRY_FAILED",
+              "failed",
+              `Skipped ZIP entry ${baseName}: ${entryErr?.message || "unreadable"}`
+            );
+            continue;
+          }
+          if (!data?.length) {
+            skipped++;
+            continue;
+          }
+          const storedName = uniqueCorpPoolFileName(baseName, usedZipNames);
+          try {
+            await writeDocFile("Corp Pool", storedName, data);
+          } catch (writeErr: any) {
+            await writeLog(
+              "employee",
+              "UNZIP_STORE_FAILED",
+              "failed",
+              `Parsed ${storedName} in memory after storage failed: ${writeErr?.message || "write error"}`
+            );
+          }
+          fileBuffers.set(storedName, data);
+          expandedFiles.push(storedName);
+          extracted++;
+        } catch (entryErr: any) {
+          skipped++;
+          await writeLog(
+            "employee",
+            "UNZIP_ENTRY_FAILED",
+            "failed",
+            `Skipped ZIP entry: ${entryErr?.message || "unknown error"}`
+          );
+        }
+      }
+      await writeLog(
+        "employee",
+        "UNZIPPED_CORP_POOL",
+        extracted > 0 ? "success" : "failed",
+        extracted > 0
+          ? `Extracted ${extracted} file(s) from ${file}${skipped ? ` (skipped ${skipped})` : ""}`
+          : `ZIP ${file} had no resume/Excel/CSV files inside`
+      );
+    } catch (err: any) {
+      await writeLog(
+        "employee",
+        "UNZIP_CORP_POOL_FAILED",
+        "failed",
+        `Failed reading ZIP ${file}: ${err.message}`
+      );
+    }
+  }
+  files = Array.from(new Set(expandedFiles));
+  if (incomingSet.size > 0 && files.length === 0) {
+    const zipUpload = Array.from(incomingSet).some((name) => name.endsWith(".zip"));
+    throw new Error(
+      zipUpload
+        ? "The ZIP had no resume PDF/DOCX or employee Excel/CSV files inside. Put those files in the ZIP and upload again."
+        : "The uploaded Corp Pool file could not be read after storage. Try renaming it (avoid apostrophes) and upload again."
+    );
+  }
   
   let loaded = 0;
   const parsedEmployees: EmployeeRecord[] = [];
@@ -683,95 +1076,98 @@ export async function refreshEmployees(activeJdId?: string): Promise<{ success: 
     if (dbJd) jdSkills = dbJd.jd_text;
   }
   
-  const csvFiles = files.filter(f => f.endsWith(".csv"));
-  const xlsxFiles = files.filter(f => f.endsWith(".xlsx") || f.endsWith(".xls"));
-  
-  // Helper to sync record to Supabase
-  const syncToSupabase = async (emp: EmployeeRecord) => {
-    try {
-      await supabase.from('employees').upsert({
-        employee_id: emp.employee_id,
-        email: emp.email || `${emp.employee_id}@example.com`,
-        full_name: emp.full_name,
-        department: emp.department || 'engineering',
-        role: 'employee',
-        skill_level: emp.score >= 70 ? 'advanced' : (emp.score >= 40 ? 'intermediate' : 'beginner'),
-        ai_readiness_score: emp.score || 0,
-        is_first_login: false,
-        updated_at: new Date().toISOString()
-      });
-    } catch (e) {}
+  const bufferFor = (file: string): Buffer | undefined => {
+    const direct = fileBuffers.get(file);
+    if (direct) return direct;
+    const key = corpPoolFileKey(file);
+    for (const [name, buf] of fileBuffers) {
+      if (corpPoolFileKey(name) === key) return buf;
+    }
+    return undefined;
   };
-  
+
+  const csvFiles = files.filter((f) => f.toLowerCase().endsWith(".csv"));
+  const xlsxFiles = files.filter((f) => {
+    const name = f.toLowerCase();
+    if (name.endsWith(".xlsx") || name.endsWith(".xls")) return true;
+    const buf = bufferFor(f);
+    return Boolean(buf && looksLikeExcelBuffer(buf) && !/\.(pdf|docx|doc|txt|csv)$/i.test(name));
+  });
+  const cvFiles = files.filter((f) => /\.(pdf|docx|doc|txt)$/i.test(f));
+
   // A. Process Excel files
   for (const file of xlsxFiles) {
     try {
-      const filePath = join(dirPath, file);
-      const buffer = await readFile(filePath);
+      const buffer = bufferFor(file) || await readDocFileBuffer("Corp Pool", file);
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.load(buffer as any);
-      
-      let sheet = workbook.worksheets[0];
+
       let rows: any[][] = [];
       let headerRow: any[] = [];
       let headerRowIdx = -1;
-      
-      // Find a worksheet that has headers resembling employee columns
-      for (const ws of workbook.worksheets) {
-        const tempRows: any[][] = [];
-        ws.eachRow((row) => {
-          tempRows.push(row.values as any[]);
+
+      const collectSheetRows = (ws: ExcelJS.Worksheet): any[][] => {
+        const last = Math.max(ws.rowCount || 0, ws.actualRowCount || 0, 1);
+        const collected: any[][] = [];
+        for (let n = 1; n <= last; n++) {
+          const row = ws.getRow(n);
+          if (n > 1 && !row.hasValues) {
+            collected.push([]);
+            continue;
+          }
+          collected.push((row.values as any[]) || []);
+        }
+        return collected;
+      };
+
+      const looksLikeEmpHeader = (r: any[]) =>
+        Array.isArray(r) &&
+        r.some((h) => {
+          const str = cellText(h).toLowerCase();
+          return (
+            str.includes("emp no") ||
+            str.includes("emp_no") ||
+            str.includes("employee id") ||
+            str.includes("emp id") ||
+            str.includes("emp name") ||
+            str.includes("employee name")
+          );
         });
-        
-        if (tempRows.length > 0) {
-          let foundIdx = -1;
-          const maxRowsToCheck = Math.min(10, tempRows.length);
-          for (let i = 0; i < maxRowsToCheck; i++) {
-            const r = tempRows[i];
-            if (Array.isArray(r)) {
-              const hasHeaders = r.some(h => {
-                if (!h) return false;
-                const str = String(h).trim().toLowerCase();
-                return str.includes("emp no") || str.includes("emp_no") || str.includes("employee id") || str.includes("emp name") || str.includes("employee name");
-              });
-              if (hasHeaders) {
-                foundIdx = i;
-                break;
-              }
-            }
-          }
-          
-          if (foundIdx !== -1) {
-            sheet = ws;
-            rows = tempRows;
-            headerRowIdx = foundIdx;
-            headerRow = tempRows[foundIdx];
-            break;
-          }
+
+      for (const ws of workbook.worksheets) {
+        const tempRows = collectSheetRows(ws);
+        const foundIdx = tempRows.findIndex((r, i) => i < 10 && looksLikeEmpHeader(r));
+        if (foundIdx !== -1) {
+          rows = tempRows;
+          headerRowIdx = foundIdx;
+          headerRow = tempRows[foundIdx];
+          break;
         }
       }
-      
+
       if (headerRowIdx === -1 && workbook.worksheets.length > 0) {
-        sheet = workbook.worksheets[0];
-        rows = [];
-        sheet.eachRow((row) => {
-          rows.push(row.values as any[]);
-        });
+        rows = collectSheetRows(workbook.worksheets[0]);
         headerRowIdx = 0;
         headerRow = rows[0] || [];
       }
-      
+
       if (rows.length <= headerRowIdx + 1) continue;
-      
+
+      const normalizeHeader = (value: unknown) =>
+        cellText(value).toLowerCase().replace(/[_-]/g, " ").replace(/\.+$/, "").replace(/\s+/g, " ").trim();
+
       const getIdx = (names: string[]) => {
-        const normalizedNames = names.map(n => n.trim().toLowerCase().replace(/[_-]/g, ' '));
+        const normalizedNames = names.map((n) => n.trim().toLowerCase().replace(/[_-]/g, " "));
         return headerRow.findIndex((h: any) => {
-          if (!h) return false;
-          const normalizedH = String(h).trim().toLowerCase().replace(/[_-]/g, ' ');
-          return normalizedNames.includes(normalizedH);
+          const normalizedH = normalizeHeader(h);
+          if (!normalizedH) return false;
+          return normalizedNames.some((name) => {
+            if (name.length <= 3) return normalizedH === name;
+            return normalizedH === name || normalizedH.includes(name);
+          });
         });
       };
-      
+
       const findColumnIdx = (namesInOrderOfPriority: string[]) => {
         for (const name of namesInOrderOfPriority) {
           const idx = getIdx([name]);
@@ -779,49 +1175,65 @@ export async function refreshEmployees(activeJdId?: string): Promise<{ success: 
         }
         return -1;
       };
-      
-      const idIdx = findColumnIdx(["emp no", "employee id", "emp id", "id"]);
-      const nameIdx = findColumnIdx(["emp name", "employee name", "name"]);
+
+      const idIdx = findColumnIdx(["emp no", "employee id", "emp id", "employee code"]);
+      const nameIdx = findColumnIdx(["emp name", "employee name", "full name", "name"]);
       const deptIdx = findColumnIdx(["business unit", "sbu", "bu", "department", "dept"]);
       const skillsIdx = findColumnIdx(["detailed skills", "skills bucket", "top 3 skills", "skills"]);
       const statusIdx = findColumnIdx(["status", "availability"]);
       const gradeIdx = findColumnIdx(["grade", "level"]);
-      const mailIdx = findColumnIdx(["official mail id", "email", "mail id"]);
+      const mailIdx = findColumnIdx(["official mail id", "official email", "email", "mail id"]);
       const roleIdx = findColumnIdx(["designation", "role", "position"]);
-      
+
+      let kept = 0;
+      let skippedBlank = 0;
       for (let r = headerRowIdx + 1; r < rows.length; r++) {
         const row = rows[r];
         if (!row) continue;
-        
-        const empNo = idIdx !== -1 && row[idIdx] ? String(row[idIdx]).trim() : `EMP${Math.floor(1000 + Math.random()*9000)}`;
-        const empName = nameIdx !== -1 && row[nameIdx] ? String(row[nameIdx]).trim() : "Unknown Employee";
-        const department = deptIdx !== -1 && row[deptIdx] ? String(row[deptIdx]).trim() : "Engineering";
-        const skills = skillsIdx !== -1 && row[skillsIdx] ? String(row[skillsIdx]).trim() : "";
-        const status = statusIdx !== -1 && row[statusIdx] ? String(row[statusIdx]).trim() : "Active";
-        const grade = gradeIdx !== -1 && row[gradeIdx] ? String(row[gradeIdx]).trim() : "E1";
-        const email = mailIdx !== -1 && row[mailIdx] ? String(row[mailIdx]).trim() : "";
-        const designation = roleIdx !== -1 && row[roleIdx] ? String(row[roleIdx]).trim() : "Support Engineer";
-        
-        const matchResult = calculateSkillMatch(skills, jdSkills);
-        
-        const record: EmployeeRecord = {
-          employee_id: empNo,
-          full_name: empName,
-          email: email || `${empNo}@example.com`,
-          department,
+
+        const empNo = idIdx !== -1 ? cellText(row[idIdx]) : "";
+        const empName = nameIdx !== -1 ? cellText(row[nameIdx]) : "";
+        if (!empNo && !empName) {
+          skippedBlank++;
+          continue;
+        }
+
+        const department = deptIdx !== -1 ? cellText(row[deptIdx]) : "Engineering";
+        const skills = skillsIdx !== -1 ? cellText(row[skillsIdx]) : "";
+        const status = statusIdx !== -1 ? cellText(row[statusIdx]) : "Active";
+        const grade = gradeIdx !== -1 ? cellText(row[gradeIdx]) : "E1";
+        const email = mailIdx !== -1 ? cellText(row[mailIdx]) : "";
+        const designation = roleIdx !== -1 ? cellText(row[roleIdx]) : "Support Engineer";
+        const employeeId = empNo || `EMP${createHash("md5").update(`${file}:${empName}:${r}`).digest("hex").slice(0, 10)}`;
+
+        const matchResult = calculateSkillMatch(
+          employeeMatchText({ skills, designation, grade }),
+          jdSkills
+        );
+
+        parsedEmployees.push({
+          employee_id: employeeId,
+          full_name: empName || "Unknown Employee",
+          email: email || `${employeeId}@example.com`,
+          department: department || "Engineering",
           skills,
-          grade,
-          designation,
-          status,
+          grade: grade || "E1",
+          designation: designation || "Support Engineer",
+          status: status || "Active",
           shortlisted: false,
           score: matchResult.score,
-          matchingSkills: matchResult.matchingSkills
-        };
-        
-        parsedEmployees.push(record);
-        await syncToSupabase(record);
-        loaded++;
+          matchingSkills: matchResult.matchingSkills,
+          source_file: file,
+        });
+        kept++;
       }
+      loaded += kept;
+      await writeLog(
+        "employee",
+        "PARSED_CORP_POOL_EXCEL",
+        "success",
+        `Parsed ${kept} people from ${file} (${skippedBlank} blank rows skipped)`
+      );
     } catch (err: any) {
       await writeLog('employee', 'PARSE_EXCEL_FAILED', 'failed', `Error parsing xlsx employee pool ${file}: ${err.message}`);
     }
@@ -830,21 +1242,22 @@ export async function refreshEmployees(activeJdId?: string): Promise<{ success: 
   // B. Process CSV files
   for (const file of csvFiles) {
     try {
-      const filePath = join(dirPath, file);
-      const csvContent = await readFile(filePath, "utf8");
-      const lines = csvContent.split("\n").filter(Boolean);
-      if (lines.length <= 1) continue;
-      
-      const headers = lines[0].split(",").map(h => h.trim().toLowerCase().replace(/"/g, ''));
+      const buffer = bufferFor(file) || await readDocFileBuffer("Corp Pool", file);
+      const rows = parseCorpPoolCsv(buffer);
+      if (rows.length <= 1) continue;
+
+      const headerRow = rows[0].map((h) => String(h || "").trim().toLowerCase().replace(/[_-]/g, " "));
       const getIdx = (names: string[]) => {
-        const normalizedNames = names.map(n => n.trim().toLowerCase().replace(/[_-]/g, ' '));
-        return headers.findIndex((h: string) => {
+        const normalizedNames = names.map((n) => n.trim().toLowerCase().replace(/[_-]/g, " "));
+        return headerRow.findIndex((h: string) => {
           if (!h) return false;
-          const normalizedH = h.trim().toLowerCase().replace(/[_-]/g, ' ');
-          return normalizedNames.includes(normalizedH);
+          return normalizedNames.some((name) => {
+            if (name.length <= 3) return h === name;
+            return h === name || h.includes(name) || name.includes(h);
+          });
         });
       };
-      
+
       const findColumnIdx = (namesInOrderOfPriority: string[]) => {
         for (const name of namesInOrderOfPriority) {
           const idx = getIdx([name]);
@@ -852,36 +1265,40 @@ export async function refreshEmployees(activeJdId?: string): Promise<{ success: 
         }
         return -1;
       };
-      
-      const idIdx = findColumnIdx(["emp no", "employee id", "emp id", "id"]);
-      const nameIdx = findColumnIdx(["emp name", "employee name", "name"]);
+
+      const idIdx = findColumnIdx(["emp no", "employee id", "emp id", "employee code", "id"]);
+      const nameIdx = findColumnIdx(["emp name", "employee name", "full name", "name"]);
       const deptIdx = findColumnIdx(["business unit", "sbu", "bu", "department", "dept"]);
-      const skillsIdx = findColumnIdx(["detailed skills", "skills bucket", "top 3 skills", "skills"]);
+      const skillsIdx = findColumnIdx(["detailed skills", "skills bucket", "top 3 skills", "primary skill", "skills"]);
       const statusIdx = findColumnIdx(["status", "availability"]);
       const gradeIdx = findColumnIdx(["grade", "level"]);
-      const mailIdx = findColumnIdx(["official mail id", "email", "mail id"]);
+      const mailIdx = findColumnIdx(["official mail id", "official email", "email", "mail id", "mail"]);
       const roleIdx = findColumnIdx(["designation", "role", "position"]);
-      
-      for (let r = 1; r < lines.length; r++) {
-        const line = lines[r];
-        const cells = line.split(",").map(c => c.trim().replace(/"/g, ''));
-        if (cells.length === 0 || cells.every(c => c === '')) continue;
-        
-        const empNo = idIdx !== -1 && cells[idIdx] ? cells[idIdx] : `EMP${Math.floor(1000 + Math.random()*9000)}`;
-        const empName = nameIdx !== -1 && cells[nameIdx] ? cells[nameIdx] : "Unknown Employee";
-        const department = deptIdx !== -1 && cells[deptIdx] ? cells[deptIdx] : "Engineering";
-        const skills = skillsIdx !== -1 && cells[skillsIdx] ? cells[skillsIdx] : "";
-        const status = statusIdx !== -1 && cells[statusIdx] ? cells[statusIdx].trim() : "Active";
-        const grade = gradeIdx !== -1 && cells[gradeIdx] ? cells[gradeIdx] : "E1";
-        const email = mailIdx !== -1 && cells[mailIdx] ? cells[mailIdx] : "";
-        const designation = roleIdx !== -1 && cells[roleIdx] ? cells[roleIdx] : "Support Engineer";
-        
-        const matchResult = calculateSkillMatch(skills, jdSkills);
-        
-        const record: EmployeeRecord = {
-          employee_id: empNo,
-          full_name: empName,
-          email: email || `${empNo}@example.com`,
+
+      for (let r = 1; r < rows.length; r++) {
+        const cells = rows[r];
+        if (!cells || cells.length === 0 || cells.every((c) => !String(c || "").trim())) continue;
+
+        const empNo = idIdx !== -1 ? String(cells[idIdx] || "").trim() : "";
+        const empName = nameIdx !== -1 ? String(cells[nameIdx] || "").trim() : "";
+        if (!empNo && !empName) continue;
+        const employeeId = empNo || `EMP${createHash("md5").update(`${file}:${empName}:${r}`).digest("hex").slice(0, 10)}`;
+        const department = deptIdx !== -1 && cells[deptIdx] ? String(cells[deptIdx]).trim() : "Engineering";
+        const skills = skillsIdx !== -1 && cells[skillsIdx] ? String(cells[skillsIdx]).trim() : "";
+        const status = statusIdx !== -1 && cells[statusIdx] ? String(cells[statusIdx]).trim() : "Active";
+        const grade = gradeIdx !== -1 && cells[gradeIdx] ? String(cells[gradeIdx]).trim() : "E1";
+        const email = mailIdx !== -1 && cells[mailIdx] ? String(cells[mailIdx]).trim() : "";
+        const designation = roleIdx !== -1 && cells[roleIdx] ? String(cells[roleIdx]).trim() : "Support Engineer";
+
+        const matchResult = calculateSkillMatch(
+          employeeMatchText({ skills, designation, grade }),
+          jdSkills
+        );
+
+        parsedEmployees.push({
+          employee_id: employeeId,
+          full_name: empName || "Unknown Employee",
+          email: email || `${employeeId}@example.com`,
           department,
           skills,
           grade,
@@ -889,15 +1306,65 @@ export async function refreshEmployees(activeJdId?: string): Promise<{ success: 
           status,
           shortlisted: false,
           score: matchResult.score,
-          matchingSkills: matchResult.matchingSkills
-        };
-        
-        parsedEmployees.push(record);
-        await syncToSupabase(record);
+          matchingSkills: matchResult.matchingSkills,
+          source_file: file,
+        });
         loaded++;
       }
     } catch (err: any) {
       await writeLog('employee', 'PARSE_CSV_FAILED', 'failed', `Error parsing csv employee pool ${file}: ${err.message}`);
+    }
+  }
+
+  for (const file of cvFiles) {
+    try {
+      const buffer = bufferFor(file) || await readDocFileBuffer("Corp Pool", file);
+      if (!buffer?.length) {
+        await writeLog("employee", "PARSE_CV_EMPTY", "failed", `Corp Pool CV ${file} is empty`);
+        continue;
+      }
+      const text = (await resumeService.extractTextFromBuffer(buffer)).trim();
+      if (!text) {
+        await writeLog("employee", "PARSE_CV_EMPTY", "failed", `No text extracted from Corp Pool CV ${file}`);
+        continue;
+      }
+
+      const profile = corpPoolProfileFromCv(file, text);
+      const matchResult = calculateSkillMatch(
+        employeeMatchText({
+          skills: text,
+          designation: profile.designation,
+          grade: "",
+        }),
+        jdSkills
+      );
+      const resumeSkills = skillsFromCvText(text);
+      const employeeId =
+        profile.employeeId ||
+        `CV${createHash("md5").update(file.toLowerCase()).digest("hex").slice(0, 10)}`;
+      parsedEmployees.push({
+        employee_id: employeeId,
+        full_name: profile.name,
+        email: profile.email || `${employeeId}@corp-pool.local`,
+        department: "Engineering",
+        skills: resumeSkills.join(", "),
+        grade: "",
+        designation: profile.designation,
+        status: "Active",
+        shortlisted: false,
+        score: matchResult.score,
+        matchingSkills: matchResult.matchingSkills.length ? matchResult.matchingSkills : resumeSkills,
+        source_file: file,
+      });
+      loaded++;
+      await writeLog(
+        "employee",
+        "PARSED_CORP_POOL_CV",
+        "success",
+        `Added ${profile.name} to Corp Pool from ${file}`
+      );
+    } catch (err: any) {
+      await writeLog("employee", "PARSE_CV_FAILED", "failed", `Error parsing Corp Pool CV ${file}: ${err.message}`);
     }
   }
   
@@ -912,27 +1379,160 @@ export async function refreshEmployees(activeJdId?: string): Promise<{ success: 
   }
   
   loaded = uniqueParsedEmployees.length;
+  const incomingUpload = incomingSet.size > 0;
+  // A new Excel/CSV/resume upload restores only the people in THAT file.
+  // Other previously deleted Emp IDs stay out, so leftover Corp Pool files
+  // cannot bring old deleted rows back on a full scan.
+  if (incomingUpload) {
+    await unmarkCorpPoolDeleted(
+      uniqueParsedEmployees.map((emp) => emp.employee_id),
+      [...incomingSet, ...files]
+    );
+  }
+  const deletedPool = await loadDeletedCorpPool();
+  if (!incomingUpload) {
+    const liveParsed = uniqueParsedEmployees.filter(
+      (emp) => !isCorpPoolDeleted(deletedPool, { id: emp.employee_id })
+    );
+    uniqueParsedEmployees.length = 0;
+    uniqueParsedEmployees.push(...liveParsed);
+  }
+  loaded = uniqueParsedEmployees.length;
 
-  // Read existing employees from JSON to preserve shortlisted state
-  let finalEmployees = uniqueParsedEmployees;
   const jsonPath = join(getUploadsRoot(), "employees.json");
+  let existingList: EmployeeRecord[] = [];
   try {
-    const raw = await readFile(jsonPath, "utf8");
-    const existingList = JSON.parse(raw) as EmployeeRecord[];
-    finalEmployees = uniqueParsedEmployees.map(parsed => {
-      const match = existingList.find(e => e.employee_id === parsed.employee_id);
-      return {
+    existingList = await loadCorpPoolRoster<EmployeeRecord>();
+  } catch {}
+  if (existingList.length === 0) {
+    try {
+      const persisted = await readPersistedJson("employees.json");
+      if (persisted) existingList = JSON.parse(persisted) as EmployeeRecord[];
+    } catch {}
+  }
+  if (existingList.length === 0) {
+    try {
+      const raw = await readFile(jsonPath, "utf8");
+      existingList = JSON.parse(raw) as EmployeeRecord[];
+    } catch {}
+  }
+  if (!Array.isArray(existingList)) existingList = [];
+  existingList = existingList.filter(
+    (emp) => emp?.employee_id && !isCorpPoolDeleted(deletedPool, { id: emp.employee_id })
+  );
+
+  if (uniqueParsedEmployees.length === 0) {
+    if (incomingUpload) {
+      await writeLog(
+        "employee",
+        "INCOMING_CORP_POOL_EMPTY",
+        "failed",
+        "Uploaded Corp Pool file produced 0 people; left the existing list unchanged"
+      );
+      throw new Error(
+        "The file was stored, but nobody was added to Corp Pool. Use a readable resume PDF/DOCX, an employee Excel/CSV, or a ZIP of those files."
+      );
+    }
+    await writeLog(
+      "employee",
+      "SKIP_EMPTY_CORP_POOL",
+      "success",
+      "Skipped empty Corp Pool refresh to preserve Employee Portal roster and tests"
+    );
+    return {
+      success: true,
+      loaded: existingList.length,
+      added: 0,
+      updated: 0,
+      skippedDeleted: 0,
+      employees: existingList,
+    };
+  }
+
+  const byId = new Map<string, EmployeeRecord>();
+  const byEmail = new Map<string, string>();
+  for (const emp of existingList) {
+    byId.set(String(emp.employee_id), emp);
+    const email = String(emp.email || "").trim().toLowerCase();
+    if (email) byEmail.set(email, String(emp.employee_id));
+  }
+
+  let added = 0;
+  let updated = 0;
+  const uploadBatchAt = new Date().toISOString();
+  for (const parsed of uniqueParsedEmployees) {
+    const email = String(parsed.email || "").trim().toLowerCase();
+    const existingId = byId.has(parsed.employee_id)
+      ? parsed.employee_id
+      : email && byEmail.has(email)
+        ? byEmail.get(email)
+        : undefined;
+    if (existingId && byId.has(existingId)) {
+      const previous = byId.get(existingId)!;
+      const keepId =
+        isGeneratedCorpPoolId(existingId) && !isGeneratedCorpPoolId(parsed.employee_id)
+          ? parsed.employee_id
+          : existingId;
+      if (keepId !== existingId) byId.delete(existingId);
+      byId.set(keepId, {
         ...parsed,
-        shortlisted: match ? match.shortlisted : false
-      };
-    });
-  } catch (e) {}
-  
-  // Save enriched records
-  await writeFile(jsonPath, JSON.stringify(finalEmployees, null, 2), "utf8");
-  await writeLog('employee', 'SYNC_EMPLOYEE_POOL', 'success', `Successfully loaded ${loaded} employees from /docs/Corp Pool`);
-  
-  return { success: true, loaded };
+        employee_id: keepId,
+        shortlisted: previous.shortlisted,
+        score_override: previous.score_override,
+        score_override_jd_id: previous.score_override_jd_id,
+        manually_edited: previous.manually_edited,
+        uploaded_at: previous.uploaded_at || (incomingUpload ? uploadBatchAt : previous.uploaded_at),
+        upload_batch: incomingUpload ? uploadBatchAt : previous.upload_batch,
+        ...(previous.manually_edited
+          ? {
+              full_name: previous.full_name,
+              email: previous.email,
+              department: previous.department,
+              skills: previous.skills,
+              designation: previous.designation,
+              grade: previous.grade,
+              product: previous.product,
+              status: previous.status,
+            }
+          : {}),
+        score:
+          typeof previous.score_override === "number"
+            ? previous.score_override
+            : parsed.score,
+      });
+      if (email) byEmail.set(email, keepId);
+      updated++;
+    } else {
+      byId.set(parsed.employee_id, {
+        ...parsed,
+        uploaded_at: uploadBatchAt,
+        upload_batch: uploadBatchAt,
+      });
+      if (email) byEmail.set(email, parsed.employee_id);
+      added++;
+    }
+  }
+
+  const finalEmployees = Array.from(byId.values()).filter(
+    (emp) => !isCorpPoolDeleted(deletedPool, { id: emp.employee_id })
+  );
+  loaded = finalEmployees.length;
+
+  const serialized = JSON.stringify(finalEmployees, null, 2);
+  await writeFile(jsonPath, serialized, "utf8");
+  await writePersistedJson("employees.json", serialized);
+  await saveCorpPoolRoster(finalEmployees);
+  cacheStore.invalidate("employees");
+  await writeLog(
+    "employee",
+    "SYNC_EMPLOYEE_POOL",
+    "success",
+    incomingUpload
+      ? `Corp Pool now has ${loaded} people (added ${added}, updated ${updated})`
+      : `Successfully loaded ${loaded} employees from /docs/Corp Pool`
+  );
+
+  return { success: true, loaded, added, updated, skippedDeleted: 0, employees: finalEmployees };
 }
 
 /**

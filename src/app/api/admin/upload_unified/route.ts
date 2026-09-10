@@ -4,11 +4,14 @@ import { writeFile } from 'fs/promises';
 import { authenticateAdminRequest } from '@/lib/employee-auth';
 import { checkCsrf } from '@/lib/security';
 import { writeDocFile, type DocCategory } from '@/lib/docs-storage';
-import { 
-  refreshRequirements, 
-  refreshCandidates, 
-  refreshEmployees, 
-  refreshInterviews 
+import {
+  refreshRequirements,
+  refreshCandidates,
+  refreshEmployees,
+  refreshInterviews,
+  sanitizeCorpPoolFileName,
+  isCorpPoolRosterFileName,
+  excelLooksLikeCorpPoolRoster,
 } from '@/services/automation-service';
 
 export const runtime = 'nodejs';
@@ -37,11 +40,24 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
-    const category = formData.get('category') as string || '';
+    let category = formData.get('category') as string || '';
     const activeJdId = formData.get('activeJdId') as string || undefined;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Corp Pool rosters (Excel workbooks) are sometimes dropped in the wrong
+    // upload category from the UI. Detect them by content/name and re-route.
+    if (
+      category !== 'employee' &&
+      category !== 'interview' &&
+      (isCorpPoolRosterFileName(file.name) ||
+        (/\.(xlsx|xls)$/i.test(file.name) && (await excelLooksLikeCorpPoolRoster(buffer))))
+    ) {
+      category = 'employee';
     }
 
     const mapping = CATEGORY_MAP[category];
@@ -49,8 +65,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid upload category" }, { status: 400 });
     }
 
-    const filename = file.name;
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const filename = mapping.docCategory === "Corp Pool"
+      ? sanitizeCorpPoolFileName(file.name)
+      : file.name;
 
     if (category === 'interview') {
       const csvPath = join(getUploadsRoot(), "candidate_interview_data.csv");
@@ -65,13 +82,17 @@ export async function POST(request: NextRequest) {
     } else if (mapping.refresh === 'candidates') {
       refreshResult = await refreshCandidates(activeJdId);
     } else if (mapping.refresh === 'employees') {
-      refreshResult = await refreshEmployees(activeJdId);
+      refreshResult = await refreshEmployees(activeJdId, {
+        incomingCorpPoolFiles: [filename],
+        incomingFileBuffers: [{ filename, buffer }],
+      });
     } else if (mapping.refresh === 'interviews') {
       refreshResult = await refreshInterviews();
     }
 
     return NextResponse.json({ 
       success: true, 
+      category,
       message: `File uploaded and processed successfully under ${category}.`,
       refreshResult 
     });
