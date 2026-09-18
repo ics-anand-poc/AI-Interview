@@ -1,0 +1,46 @@
+# Azure app VM / Azure-like local run: docker compose -f Backend/docker-compose.azure.yml up --build
+# Requires ../.env.azure at the project root (copy from Backend/.env.azure.example
+# and Frontend/.env.example and fill in real values).
+
+services:
+  faceproj:
+    build:
+      context: ./faceproj
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ../.env.azure
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - faceproj
+    env_file:
+      - ../.env.azure
+    environment:
+      FACEPROJ_SERVICE_URL: http://faceproj:8000
+
+  ai-interview:
+    build:
+      context: ../Frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8080}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    env_file:
+      - ../.env.azure
+    volumes:
+      - ai-interview-uploads:/app/uploads
+    restart: unless-stopped
+
+volumes:
+  ai-interview-uploads:
