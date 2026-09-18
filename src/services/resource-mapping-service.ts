@@ -6,7 +6,13 @@ import { derivePortalTestStatus, type PortalTestStatus } from "@/lib/portal-test
 import { formatProductDisplayName, formatTopicTitleForDisplay } from "@/lib/product-display-name";
 import { normalizeEmployeeId } from "@/lib/employee-test-access";
 import { readPersistedJson } from "@/lib/runtime-data";
-import { ensureDocsStorage, listDocFiles, readDocFileBuffer, writeDocFile } from "@/lib/docs-storage";
+import {
+  ensureDocsStorage,
+  listDocFiles,
+  readDocFileBuffer,
+  useCloudDocsStorage,
+  writeDocFile,
+} from "@/lib/docs-storage";
 import {
   isPortalCredentialsFileName,
   isPortalMappingFileName,
@@ -60,18 +66,16 @@ export interface ResourcePortalEmployee {
 }
 
 function resolveExcelFile(name: string): string {
-  const nested = join(process.cwd(), "excel", name);
-  if (existsSync(nested)) return nested;
-  return join(process.cwd(), name);
+  return join(process.cwd(), "excel", name);
 }
 
-const MAPPING_FILE = resolveExcelFile("Resource_Question_Mapping.xlsx");
+const MAPPING_FILE = resolveExcelFile(PORTAL_MAPPING_STORED_NAME);
 const CREDENTIALS_FILE = resolveExcelFile("Employee_User_Credentials.xlsx");
 const ACCOUNTS_FILE = join(process.cwd(), "src", "data", "employee-accounts.json");
 const PROFILES_JSON_FILE = join(process.cwd(), "src", "data", "resource_portal_profiles.json");
 const LOCAL_MAPPING_SEED_PATHS = [
   MAPPING_FILE,
-  join(process.cwd(), "NON-Needed docs", PORTAL_MAPPING_STORED_NAME),
+  join(process.cwd(), "docs", "NON-Needed docs", PORTAL_MAPPING_STORED_NAME),
 ];
 
 let mappingSeedStarted = false;
@@ -318,10 +322,11 @@ async function seedPortalMappingFile(): Promise<void> {
   await ensureDocsStorage();
   const existing = pickPortalMappingFile(await listDocFiles("Portal Mapping"));
   if (existing) return;
+  if (useCloudDocsStorage()) return;
 
   for (const candidate of LOCAL_MAPPING_SEED_PATHS) {
-    if (!existsSync(candidate) || isPortalCredentialsFileName(candidate)) continue;
-    const buffer = await readFile(candidate);
+    if (!existsSync(/*turbopackIgnore: true*/ candidate) || isPortalCredentialsFileName(candidate)) continue;
+    const buffer = await readFile(/*turbopackIgnore: true*/ candidate);
     if (!buffer.length) continue;
     await writeDocFile("Portal Mapping", PORTAL_MAPPING_STORED_NAME, buffer);
     return;
@@ -375,7 +380,7 @@ export async function loadResourceQuestionMapping(): Promise<PortalProfileRow[]>
   }
 
   try {
-    if (existsSync(MAPPING_FILE)) {
+    if (!useCloudDocsStorage() && existsSync(/*turbopackIgnore: true*/ MAPPING_FILE)) {
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.readFile(MAPPING_FILE);
       const rows = parsePortalMappingWorkbook(workbook);
@@ -395,6 +400,7 @@ export async function loadEmployeeCredentialsRoster(): Promise<PortalProfileRow[
     return credentialsCache.rows;
   }
   try {
+    if (useCloudDocsStorage()) return [];
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.readFile(CREDENTIALS_FILE);
     const sheet = workbook.worksheets[0];

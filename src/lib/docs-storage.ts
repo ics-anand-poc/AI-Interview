@@ -72,19 +72,36 @@ function isUsableDocName(name: string): boolean {
   return Boolean(name) && !name.startsWith(".") && name !== ".gitkeep";
 }
 
+async function listNamesInDir(dir: string): Promise<string[]> {
+  try {
+    const entries = await readdir(/*turbopackIgnore: true*/ dir);
+    return entries.filter(isUsableDocName);
+  } catch {
+    return [];
+  }
+}
+
 async function listLocalCategoryFiles(category: DocCategory): Promise<string[]> {
-  const dirs = [localDir(category), join(getRuntimeUploadsRoot(), "docs-cache", LOCAL_DIRS[category])];
+  const folder = LOCAL_DIRS[category];
   const names = new Set<string>();
-  for (const dir of dirs) {
-    try {
-      const entries = await readdir(dir);
-      for (const name of entries) {
-        if (isUsableDocName(name)) names.add(name);
-      }
-    } catch {
-      // folder may not exist
+
+  // Cloud deploys read from Supabase. Scanning repo docs/ here makes Turbopack
+  // trace the whole project into the serverless bundle.
+  if (!useCloudDocsStorage()) {
+    for (const name of await listNamesInDir(join(process.cwd(), "docs", folder))) {
+      names.add(name);
+    }
+    for (const name of await listNamesInDir(join(process.cwd(), "uploads", "docs-cache", folder))) {
+      names.add(name);
     }
   }
+
+  if (useCloudDocsStorage()) {
+    for (const name of await listNamesInDir(join(getRuntimeUploadsRoot(), "docs-cache", folder))) {
+      names.add(name);
+    }
+  }
+
   return Array.from(names);
 }
 
@@ -128,8 +145,8 @@ export async function readDocFileBuffer(
 
   const readIfPresent = async (fullPath: string): Promise<Buffer | null> => {
     try {
-      if (!fs.existsSync(fullPath)) return null;
-      const buf = await readFile(fullPath);
+      if (!fs.existsSync(/*turbopackIgnore: true*/ fullPath)) return null;
+      const buf = await readFile(/*turbopackIgnore: true*/ fullPath);
       return buf.length > 0 ? buf : null;
     } catch {
       return null;
@@ -155,8 +172,6 @@ export async function readDocFileBuffer(
       .from(DOCS_BUCKET)
       .download(objectPath);
     if (error || !data) {
-      const localFallback = await readIfPresent(localPath);
-      if (localFallback) return localFallback;
       throw new Error(error?.message || `Cloud doc not found: ${objectPath}`);
     }
     const buffer = Buffer.from(await data.arrayBuffer());
@@ -220,12 +235,12 @@ export async function deleteDocFile(
   const localPath = join(localDir(category), filename);
   const cached = cachePath(category, filename);
   try {
-    if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
+    if (fs.existsSync(/*turbopackIgnore: true*/ localPath)) fs.unlinkSync(localPath);
   } catch {
     // ignore
   }
   try {
-    if (fs.existsSync(cached)) fs.unlinkSync(cached);
+    if (fs.existsSync(/*turbopackIgnore: true*/ cached)) fs.unlinkSync(cached);
   } catch {
     // ignore
   }
@@ -256,12 +271,12 @@ export async function syncLocalDocsToCloud(): Promise<{ uploaded: number }> {
   let uploaded = 0;
   for (const category of Object.keys(LOCAL_DIRS) as DocCategory[]) {
     const dir = localDir(category);
-    if (!fs.existsSync(dir)) continue;
-    const files = await readdir(dir);
+    if (!fs.existsSync(/*turbopackIgnore: true*/ dir)) continue;
+    const files = await readdir(/*turbopackIgnore: true*/ dir);
     for (const file of files) {
       const full = join(dir, file);
       if (!fs.statSync(full).isFile()) continue;
-      const buffer = await readFile(full);
+      const buffer = await readFile(/*turbopackIgnore: true*/ full);
       await writeDocFile(category, file, buffer);
       uploaded++;
     }

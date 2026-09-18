@@ -59,7 +59,7 @@ interface AccountStore {
 const STATIC_ACCOUNT_FILE = path.join(process.cwd(), "src", "data", "employee-accounts.json");
 const AUTH_SECRET = process.env.EMPLOYEE_AUTH_SECRET || "";
 
-if (!AUTH_SECRET) {
+if (!AUTH_SECRET && !process.env.NEXT_PHASE) {
   if (useSupabasePrimary()) {
     console.error("EMPLOYEE_AUTH_SECRET is required in production.");
   } else {

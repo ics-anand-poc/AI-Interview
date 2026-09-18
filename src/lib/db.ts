@@ -17,7 +17,10 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-if (!supabaseUrl || !supabaseAnonKey || !supabaseUrl.startsWith('http')) {
+if (
+  !process.env.NEXT_PHASE &&
+  (!supabaseUrl || !supabaseAnonKey || !supabaseUrl.startsWith('http'))
+) {
   console.warn('Supabase URL and Anon Key are missing or invalid. Please add them to your .env file.');
 }
 
@@ -61,6 +64,6 @@ export const supabaseServer = createClient(validUrl, supabaseServiceKey || supab
   },
 });
 
-if (!supabaseServiceKey) {
+if (!supabaseServiceKey && !process.env.NEXT_PHASE) {
   console.warn('⚠️ [DB] SUPABASE_SERVICE_ROLE_KEY not set. Using anon key for server operations (storage uploads may fail). Get the service key from Supabase project settings.');
 }
