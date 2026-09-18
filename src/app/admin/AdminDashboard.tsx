@@ -5038,12 +5038,13 @@ export default function AdminDashboard() {
   const handleQwenScoreCorpPool = () => runQwenScanForJd(selectedJdId, selectedPool?.ids || []);
 
   const handleSelectPool = () => {
+    const poolIds = selectedPool?.ids ?? [];
     const tickedAreCurrentPool =
-      Boolean(selectedPool?.ids.length) &&
+      poolIds.length > 0 &&
       selectedEmployeeIds.length > 0 &&
-      selectedEmployeeIds.length === selectedPool.ids.length &&
-      selectedEmployeeIds.every((id) => selectedPool.ids.includes(id));
-    if (tickedAreCurrentPool || (selectedPool?.ids.length && selectedEmployeeIds.length === 0)) {
+      selectedEmployeeIds.length === poolIds.length &&
+      selectedEmployeeIds.every((id) => poolIds.includes(id));
+    if (tickedAreCurrentPool || (poolIds.length > 0 && selectedEmployeeIds.length === 0)) {
       setSelectedPool(null);
       return;
     }

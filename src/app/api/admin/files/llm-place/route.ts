@@ -6,21 +6,16 @@ import { authenticateAdminRequest } from "@/lib/employee-auth";
 import { checkCsrf, inspectUpload, UPLOAD_ALLOWED_EXTS } from "@/lib/security";
 import { classifyHrFileWithLlm, excelSheetPreview } from "@/lib/corp-pool-llm";
 import { jsonPublicError } from "@/lib/api-errors";
+import { resumeService } from "@/services/resume-service";
 
 async function previewFromUpload(fileName: string, buffer: Buffer): Promise<string> {
   const lower = fileName.toLowerCase();
   if (/\.(xlsx|xls)$/i.test(lower)) {
     return excelSheetPreview(buffer);
   }
-  if (/\.(docx|doc)$/i.test(lower)) {
-    const mammoth = await import("mammoth");
-    const result = await mammoth.extractRawText({ buffer });
-    return String(result.value || "").slice(0, 6500);
-  }
-  if (/\.pdf$/i.test(lower)) {
-    const pdfParse = (await import("pdf-parse")).default as (buf: Buffer) => Promise<{ text: string }>;
-    const parsed = await pdfParse(buffer);
-    return String(parsed.text || "").slice(0, 6500);
+  if (/\.(pdf|docx|doc)$/i.test(lower)) {
+    const text = await resumeService.extractTextFromBuffer(buffer, fileName);
+    return String(text || "").slice(0, 6500);
   }
   return buffer.toString("utf8").slice(0, 6500);
 }

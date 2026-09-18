@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
       table = parseCsv(buf.toString("utf8"));
     } else {
       const wb = new ExcelJS.Workbook();
-      await wb.xlsx.load(buf);
+      await wb.xlsx.load(buf as any);
       const sheet = wb.worksheets[0];
       if (!sheet) {
         return NextResponse.json({ error: "That workbook has no sheet." }, { status: 400 });
