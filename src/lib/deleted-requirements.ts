@@ -32,6 +32,28 @@ export function extractBrId(fileName?: string): string {
   return prefix.trim().toLowerCase();
 }
 
+/** True when the label already has a BR id (e.g. 50656BR or 00001BR). */
+export function fileNameHasBrId(fileName?: string): boolean {
+  const prefix = String(fileName || "").split("|")[0] || "";
+  return /(\d+)\s*BR/i.test(prefix.trim()) || /^\d{4,}$/.test(prefix.trim());
+}
+
+/**
+ * Next id for a JD that has no official BR: 00001BR, 00002BR, ...
+ * Ignores real BRs such as 88001BR / 50656BR.
+ */
+export function nextSyntheticBrId(existingLabels: Iterable<string>): string {
+  let max = 0;
+  for (const label of existingLabels) {
+    const prefix = String(label || "").split("|")[0].trim();
+    const match = prefix.match(/^0+(\d+)\s*BR$/i);
+    if (!match) continue;
+    const n = parseInt(match[1], 10);
+    if (Number.isFinite(n) && n > max) max = n;
+  }
+  return `${String(max + 1).padStart(5, "0")}BR`;
+}
+
 export function isPermanentlyRemovedBrId(brId?: string): boolean {
   const normalized = extractBrId(brId);
   return Boolean(normalized && PERMANENTLY_REMOVED_BR_IDS.includes(normalized));

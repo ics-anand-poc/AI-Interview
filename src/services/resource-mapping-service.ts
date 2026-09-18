@@ -518,7 +518,7 @@ export function mergeResourcePortalData(
   return mappingRows.map((row) => {
     const empKey = normalizeEmployeeId(row.employee_id);
     const empTests = (testsByEmployee.get(empKey) || []).filter(
-      (test) => String(test.topicId || "") !== "resource-product-assessment-history"
+      (test) => !String(test.topicId || "").startsWith("resource-product-assessment-history")
     );
     const manifestTestId = manifest[row.employee_id] ?? manifest[empKey] ?? null;
     const completed = empTests

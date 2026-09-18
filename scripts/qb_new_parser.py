@@ -42,10 +42,20 @@ PRODUCT_KEY_ALIASES: dict[str, str] = {
     "CFX": "CFX",
     "MRF": "MRF",
     "NN": "NN",
+    "CFX": "CFX",
+    "NTAS": "NTAS",
+    "SBC": "SBC",
+    "NEF": "NEF",
+    "CNCS": "CNCS",
+    "SMSF": "SMSF",
+    "MSS/MGW": "MSS-MGW",
+    "MSS-MGW": "MSS-MGW",
+    "MSS": "MSS-MGW",
+    "MGW": "MSS-MGW",
+    "CBAM": "CBAM",
     "CBIS": "CBIS",
     "NCOM": "NCOM",
     "NCP": "NCP",
-    "CBAM": "CBAM",
     "NCD": "NCD",
 }
 
@@ -98,6 +108,13 @@ PRODUCT_SAMPLING_RULES: dict[str, dict] = {
             ("UDM Planning", 5),
         ],
     },
+    "NN": {"mode": "random", "count": 25},
+    "CFX": {"mode": "random", "count": 25},
+    "NTAS": {"mode": "random", "count": 25},
+    "SBC": {"mode": "random", "count": 25},
+    "NEF": {"mode": "random", "count": 25},
+    "CNCS": {"mode": "random", "count": 25},
+    "SMSF": {"mode": "random", "count": 25},
 }
 
 CATEGORY_ALIASES: dict[str, str] = {
@@ -188,10 +205,14 @@ def _match_correct_index(options: list[str], correct_answer: str) -> int:
     correct = clean(correct_answer)
     if not correct:
         return 0
+    letter = correct[:1].upper()
+    if letter in "ABCDE" and (len(correct) == 1 or not correct[1:].strip() or correct[1:2] in ".)"):
+        idx = ord(letter) - ord("A")
+        if idx < len(options):
+            return idx
     for idx, opt in enumerate(options):
         if clean(opt) == correct:
             return idx
-    letter = correct[:1].upper()
     for idx, opt in enumerate(options):
         if clean(opt).upper().startswith(f"{letter}."):
             return idx
@@ -335,6 +356,125 @@ def _parse_simple_section(product_key: str, section_rows: list[tuple]) -> list[M
     return [item for item in grouped.values() if len(item.options) >= 2]
 
 
+def _header_index(header: list[str], *names: str) -> int | None:
+    lower = [clean(h).lower() for h in header]
+    for name in names:
+        target = name.lower()
+        for i, h in enumerate(lower):
+            if h == target:
+                return i
+    for name in names:
+        target = name.lower()
+        for i, h in enumerate(lower):
+            if target in h:
+                return i
+    return None
+
+
+def _parse_simple_named_section(product_key: str, header: list[str], data_rows: list[tuple]) -> list[McqRecord]:
+    """NN-style: Sr / Domain / Product / Question / Option / Correct|Wrong."""
+    q_idx = _header_index(header, "question", "questions")
+    opt_idx = _header_index(header, "option")
+    correct_idx = _header_index(header, "answer", "correct")
+    domain_idx = _header_index(header, "domain")
+    product_idx = _header_index(header, "product")
+    if q_idx is None or opt_idx is None:
+        return []
+    grouped: dict[str, McqRecord] = {}
+    for row in data_rows:
+        cells = [clean(c) for c in row]
+        question = cells[q_idx] if q_idx < len(cells) else ""
+        option_text = cells[opt_idx] if opt_idx < len(cells) else ""
+        if not question or not option_text or question.lower() in {"question", "questions"}:
+            continue
+        q_key = normalize_question_key(question)
+        product_cell = cells[product_idx] if product_idx is not None and product_idx < len(cells) else product_key
+        entry = grouped.setdefault(
+            q_key,
+            McqRecord(
+                domain=cells[domain_idx] if domain_idx is not None and domain_idx < len(cells) else "IPTEL",
+                product=resolve_qb_product_key(product_cell) or product_key,
+                category="",
+                question_text=question,
+            ),
+        )
+        entry.options.append(option_text)
+        flag = cells[correct_idx] if correct_idx is not None and correct_idx < len(cells) else ""
+        if flag.lower() == "correct":
+            entry.correct_option_index = len(entry.options) - 1
+    return [item for item in grouped.values() if len(item.options) >= 2]
+
+
+def _parse_wide_mcq_section(product_key: str, header: list[str], data_rows: list[tuple]) -> list[McqRecord]:
+    """One row per question with Option A-D and a letter answer."""
+    q_idx = _header_index(header, "questions", "question")
+    if q_idx is None:
+        return []
+    opt_idxs = []
+    for label in ("option a", "option b", "option c", "option d", "option e"):
+        idx = _header_index(header, label)
+        if idx is not None:
+            opt_idxs.append(idx)
+    if len(opt_idxs) < 2:
+        return []
+    correct_idx = _header_index(header, "correct answer", "correct")
+    domain_idx = _header_index(header, "domain")
+    product_idx = _header_index(header, "product")
+    topic_idx = _header_index(header, "topic", "category")
+    records: list[McqRecord] = []
+    for row in data_rows:
+        cells = [clean(c) for c in row]
+        question = cells[q_idx] if q_idx < len(cells) else ""
+        if not question or question.lower() in {"question", "questions"}:
+            continue
+        options = [cells[i] for i in opt_idxs if i < len(cells) and cells[i]]
+        if len(options) < 2:
+            continue
+        answer = cells[correct_idx] if correct_idx is not None and correct_idx < len(cells) else ""
+        product = product_key
+        if product_idx is not None and product_idx < len(cells) and cells[product_idx]:
+            resolved = resolve_qb_product_key(cells[product_idx])
+            if resolved in PRODUCT_SAMPLING_RULES:
+                product = resolved
+        domain = "IPTEL"
+        if domain_idx is not None and domain_idx < len(cells) and cells[domain_idx]:
+            domain = cells[domain_idx]
+        category = cells[topic_idx] if topic_idx is not None and topic_idx < len(cells) else ""
+        records.append(
+            McqRecord(
+                domain=domain,
+                product=product,
+                category=normalize_category_key(category),
+                question_text=question,
+                options=options,
+                correct_option_index=_match_correct_index(options, answer),
+            )
+        )
+    return records
+
+
+def _parse_auto_section(product_key: str, section_rows: list[tuple]) -> list[McqRecord]:
+    header: list[str] | None = None
+    header_at = -1
+    for i, row in enumerate(section_rows):
+        cells = [clean(c) for c in row]
+        lower = [c.lower() for c in cells]
+        if any("question" in c for c in lower):
+            header = cells
+            header_at = i
+            break
+    if header is None:
+        return []
+    lower = [c.lower() for c in header]
+    if any(c.startswith("option a") for c in lower) or any("correct answer" in c for c in lower):
+        return _parse_wide_mcq_section(product_key, header, section_rows[header_at + 1 :])
+    if header[:2] == ["Domain", "Product"]:
+        return _parse_simple_section(product_key, section_rows)
+    if _header_index(header, "option") is not None and _header_index(header, "option a") is None:
+        return _parse_simple_named_section(product_key, header, section_rows[header_at + 1 :])
+    return _parse_simple_section(product_key, section_rows)
+
+
 def parse_qb_new_xlsx(qb_path: Path) -> tuple[dict[str, list[McqRecord]], list[McqRecord]]:
     wb = openpyxl.load_workbook(qb_path, data_only=True)
     rows = list(wb.active.iter_rows(values_only=True))
@@ -348,7 +488,7 @@ def parse_qb_new_xlsx(qb_path: Path) -> tuple[dict[str, list[McqRecord]], list[M
         if product_key in stratified_products:
             records.extend(_parse_category_section(product_key, section_rows))
         else:
-            records.extend(_parse_simple_section(product_key, section_rows))
+            records.extend(_parse_auto_section(product_key, section_rows))
 
     unique_records = dedupe_records(records)
     pools: dict[str, list[McqRecord]] = defaultdict(list)

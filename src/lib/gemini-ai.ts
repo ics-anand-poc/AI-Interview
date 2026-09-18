@@ -1,36 +1,9 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { ParsedResume } from "@/types/resume";
+import { localLlmCompleteJson } from "@/lib/local-llm";
 
+/** Interview / resume / learning text AI. Backed only by local Qwen3.5-27B (llamafile). */
 export class GeminiAIEngine {
-  private ai: GoogleGenerativeAI | null = null;
-  private model: any = null;
-  private initialized: boolean = false;
-
-  constructor() {
-    // Don't initialize in constructor - use lazy initialization instead
-  }
-
-  private ensureInitialized() {
-    if (this.initialized) return;
-    
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (apiKey) {
-      this.ai = new GoogleGenerativeAI(apiKey);
-      this.model = this.ai.getGenerativeModel({
-        model: "gemini-2.0-flash",
-      });
-    } else {
-      console.warn("GEMINI_API_KEY is not set.");
-    }
-    
-    this.initialized = true;
-  }
-
   async analyzeResume(text: string, parsed: ParsedResume, jdText?: string): Promise<any> {
-    this.ensureInitialized();
-    if (!this.model) {
-      throw new Error("GEMINI_API_KEY is not configured on the server.");
-    }
 
     const isJDMatch = !!jdText && jdText.trim().length > 0;
 
@@ -177,22 +150,10 @@ export class GeminiAIEngine {
     }`;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await (result as any)?.response;
-      let textResponse = response?.text?.() ?? '';
-      
-      // Clean up markdown if the model returns it despite instructions
-      textResponse = textResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
-      
-      try {
-        return JSON.parse(textResponse);
-      } catch (parseError) {
-        console.error("Failed to parse Gemini response:", textResponse);
-        throw new Error("AI returned malformed JSON response.");
-      }
+      return await localLlmCompleteJson(prompt, { maxTokens: 3072, timeoutMs: 300_000 });
     } catch (error: any) {
-      console.error("Gemini API Error:", error.message || error);
-      throw new Error(`Gemini Analysis Failed: ${error.message || "Unknown error"}`);
+      console.error("Local Qwen resume analysis failed:", error.message || error);
+      throw new Error(`Local Qwen analysis failed: ${error.message || "Unknown error"}`);
     }
   }
 
@@ -202,44 +163,7 @@ export class GeminiAIEngine {
   }
 
   async generateText(prompt: string): Promise<any> {
-    this.ensureInitialized();
-    if (!this.model) {
-      throw new Error("GEMINI_API_KEY is not configured.");
-    }
-    const result = await this.model.generateContent(prompt);
-    const response = await (result as any)?.response;
-    let textResponse = response?.text?.() ?? '';
-    
-    // Clean up markdown block styling
-    let cleaned = textResponse.trim();
-    
-    // Find bracket boundaries for JSON
-    const arrayStart = cleaned.indexOf('[');
-    const objStart = cleaned.indexOf('{');
-    let startIdx = -1;
-    let endIdx = -1;
-
-    if (arrayStart !== -1 && (objStart === -1 || arrayStart < objStart)) {
-      startIdx = arrayStart;
-      endIdx = cleaned.lastIndexOf(']');
-    } else if (objStart !== -1) {
-      startIdx = objStart;
-      endIdx = cleaned.lastIndexOf('}');
-    }
-
-    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-      cleaned = cleaned.substring(startIdx, endIdx + 1);
-    } else {
-      // Fallback manual replacement
-      cleaned = cleaned.replace(/```json/gi, '').replace(/```/g, '').trim();
-    }
-
-    try {
-      return JSON.parse(cleaned);
-    } catch (parseError) {
-      console.error("Failed to parse Gemini JSON response. Raw was:", textResponse);
-      throw parseError;
-    }
+    return localLlmCompleteJson(prompt, { maxTokens: 3072, timeoutMs: 300_000 });
   }
 
   generateSuggestions(analysis: any): any[] {

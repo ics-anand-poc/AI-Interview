@@ -37,7 +37,7 @@ export const PRODUCT_ASSESSMENT_TOPIC_ID = "resource-product-assessment";
 export const PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID = "resource-product-assessment-history";
 
 export function isProductAssessmentHistoryTopic(topicId: string | null | undefined): boolean {
-  return String(topicId || "").trim() === PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID;
+  return String(topicId || "").trim().startsWith(PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID);
 }
 
 export function isProductQbEmployee(

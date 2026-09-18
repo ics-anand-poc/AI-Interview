@@ -47,6 +47,25 @@ const CANONICAL_ALIASES: Record<string, string> = {
   redis: "redis",
   aws: "aws",
   "amazon web services": "aws",
+  eks: "eks",
+  ec2: "ec2",
+  lambda: "lambda",
+  "api gateway": "api gateway",
+  cloudfront: "cloudfront",
+  rds: "rds",
+  iam: "iam",
+  vpc: "vpc",
+  s3: "s3",
+  "route 53": "route 53",
+  route53: "route 53",
+  elb: "elb",
+  alb: "alb",
+  "auto scaling": "auto scaling",
+  autoscaling: "auto scaling",
+  waf: "waf",
+  cloudwatch: "cloudwatch",
+  bitbucket: "bitbucket",
+  fargate: "fargate",
   azure: "azure",
   azue: "azure",
   gcp: "gcp",
@@ -161,7 +180,12 @@ const RELATED_EQUIVALENCE: Record<string, string[]> = {
   bash: ["linux", "shell"],
   spring: ["java"],
   java: ["spring"],
-  kubernetes: ["openshift", "caas"],
+  kubernetes: ["openshift", "caas", "eks"],
+  eks: ["kubernetes"],
+  fargate: ["docker"],
+  alb: ["elb"],
+  elb: ["alb"],
+  bitbucket: ["gitlab", "git"],
   openshift: ["kubernetes"],
   openstack: ["caas"],
   helm: ["kubernetes"],
@@ -190,7 +214,7 @@ const WEAK_BODY_SKILLS = new Set([
 
 /** Skills that must not move rank or the 60% line (table stakes / noise). */
 const TABLE_STAKES_SKILLS = new Set([
-  "git", "github", "gitlab", "html", "css", "rest", "api",
+  "git", "github", "html", "css", "rest", "api",
 ]);
 
 const FE_FRAMEWORKS = new Set(["react", "angular", "vue", "next.js"]);
@@ -639,7 +663,7 @@ export function extractJdPrimarySkills(jdText: string): string[] {
 /** Recruiter fit at or above this is treated as qualified / suitable. */
 export const QUALIFIED_COVERAGE_PERCENT = 60;
 
-/** Manual score override applies only to the JD it was saved against. */
+/** Manual/Qwen override applies only to the JD it was saved against. */
 export function scoreOverrideForJd(
   emp: { score_override?: number | null; score_override_jd_id?: string | null },
   selectedJdId: string | null | undefined

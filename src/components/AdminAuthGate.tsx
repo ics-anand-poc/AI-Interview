@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Lock, FileText, ShieldAlert } from "lucide-react";
+import { Lock, ClipboardList, ShieldAlert } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { clearAdminAccessFlags, storeAdminAccessFlags } from "@/lib/admin-accounts";
 
@@ -237,7 +237,7 @@ export default function AdminAuthGate({ children }: { children: React.ReactNode 
 
   if (!initialized) {
     return (
-      <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 flex items-center justify-center text-foreground transition-colors duration-300">
+      <div className="min-h-screen bg-background flex items-center justify-center text-foreground transition-colors duration-300">
         <div className="text-muted-foreground font-medium">Loading admin gateway…</div>
       </div>
     );
@@ -245,7 +245,7 @@ export default function AdminAuthGate({ children }: { children: React.ReactNode 
 
   if (showStayLoggedInPrompt) {
     return (
-      <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 flex items-center justify-center px-4 py-12 transition-colors duration-300">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12 transition-colors duration-300">
         <Card className="w-full max-w-md p-8 bg-card border border-border shadow-card rounded-3xl">
           <div className="flex flex-col items-center gap-4 text-center mb-6">
             <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-md shadow-indigo-500/30">
@@ -319,13 +319,13 @@ export default function AdminAuthGate({ children }: { children: React.ReactNode 
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 flex items-center justify-center px-4 py-12 transition-colors duration-300">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12 transition-colors duration-300">
         <Card className="w-full max-w-md p-8 bg-card border border-border shadow-card rounded-3xl">
           <div className="flex flex-col items-center gap-4 text-center mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-md shadow-indigo-500/30">
-              <FileText className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-md shadow-violet-500/30">
+              <ClipboardList className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Admin Screening Console</h1>
+            <h1 className="text-2xl font-bold text-foreground">HR Screening Console</h1>
             <p className="text-sm text-muted-foreground leading-relaxed">Enter your credentials to access the screening dashboard.</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -89,7 +89,7 @@ export async function POST(
       const result = await geminiEngine.generateText(prompt);
       return NextResponse.json(result);
     } catch (geminiErr: any) {
-      console.warn("Gemini sandbox compiler failed (rate limit or quota limit). Falling back to local heuristic runner...", geminiErr);
+      console.warn("Local Qwen sandbox compiler failed. Falling back to heuristic runner...", geminiErr);
       const fallbackResult = runLocalMockEvaluator(question, language, code);
       return NextResponse.json(fallbackResult);
     }

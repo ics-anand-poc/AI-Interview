@@ -25,6 +25,7 @@ import {
   isRequirementDeleted,
   loadDeletedRequirements,
   markRequirementsDeleted,
+  nextSyntheticBrId,
   PERMANENTLY_REMOVED_BR_IDS,
   unmarkRequirementsDeleted,
 } from '@/lib/deleted-requirements';
@@ -586,14 +587,7 @@ async function restoreIncomingBrIds(ids: string[], blockedBrIds: Set<string>): P
 }
 
 function nextAutoReqId(existing: Set<string>): string {
-  let max = 40000;
-  for (const id of existing) {
-    const match = id.match(/(\d+)/);
-    if (!match) continue;
-    const num = parseInt(match[1], 10);
-    if (Number.isFinite(num) && num > max) max = num;
-  }
-  return `${max + 1}BR`;
+  return nextSyntheticBrId(existing);
 }
 
 function copyRowStyle(fromRow: ExcelJS.Row, toRow: ExcelJS.Row, colCount: number) {

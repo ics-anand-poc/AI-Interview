@@ -1,0 +1,91 @@
+%%{init: {"theme": "base", "themeVariables": {
+  "primaryColor": "#eef2ff",
+  "primaryTextColor": "#0f172a",
+  "primaryBorderColor": "#6366f1",
+  "lineColor": "#64748b",
+  "fontFamily": "Segoe UI, Arial, sans-serif",
+  "fontSize": "14px"
+}}}%%
+flowchart TB
+  subgraph actors["People"]
+    TAG["TAG / Admin"]
+    EMP["Employee"]
+    CAN["Candidate"]
+  end
+
+  subgraph ui["Next.js 16 surfaces"]
+    ADM["/admin Screening Dashboard<br/>Requirements · Corp Pool · Candidates · Portal admin"]
+    POR["/employee Employee Portal<br/>Q-forms · learning"]
+    INT["/ and /interview Candidate"]
+  end
+
+  subgraph api["Route handlers — no middleware.ts"]
+    AJD["/api/admin/jd"]
+    ACP["/api/admin/employees"]
+    ALLM["/api/admin/files/llm-place<br/>/api/admin/employees/llm-evaluate"]
+    AEP["/api/employee/*"]
+    AIV["/api/interview/*  /api/resume/*"]
+  end
+
+  subgraph services["Services + lib"]
+    AUTO["automation-service"]
+    SM["skill-match.ts"]
+    CPS["corp-pool-store"]
+    AUTH["employee-auth HMAC JWT"]
+  end
+
+  subgraph data["Data — two people lists"]
+    JD[("job_descriptions")]
+    ROSTER[("portal_settings<br/>corp_pool_roster")]
+    EMPT[("employees + tests")]
+    RES[("resumes + interviews")]
+    JSON["uploads/*.json mirrors"]
+  end
+
+  subgraph storage["Supabase Storage"]
+    B1["docs-ingest"]
+    B2["app-data"]
+    B3["resumes · recordings · verifications"]
+  end
+
+  subgraph ai["AI"]
+    QW["Local Qwen 4B llamafile"]
+    GEM["Gemini"]
+    OAI["OpenAI JD-to-BR"]
+  end
+
+  TAG --> ADM
+  EMP --> POR
+  CAN --> INT
+
+  ADM --> AJD
+  ADM --> ACP
+  ADM --> ALLM
+  POR --> AEP
+  INT --> AIV
+
+  AJD --> AUTO
+  ACP --> CPS
+  ACP --> SM
+  ALLM --> QW
+  AEP --> EMPT
+  AIV --> GEM
+  AIV --> RES
+
+  AUTO --> JD
+  AUTO --> ROSTER
+  CPS --> ROSTER
+  SM --> JD
+  AUTH --> AEP
+  AUTH --> ADM
+
+  JD --> JSON
+  ROSTER --> JSON
+  AUTO --> B1
+  CPS --> B2
+  RES --> B3
+
+  ALLM -.-> GEM
+  AUTO -.-> OAI
+
+  ROSTER -.->|"never writes"| EMPT

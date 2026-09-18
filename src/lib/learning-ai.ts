@@ -1,5 +1,5 @@
 /**
- * Gemini-backed helper for the learning portal.
+ * Local Qwen-backed helper for the learning portal.
  *
  * All prompt strings are defined here — never in the UI — so they stay
  * out of the client bundle and out of source-control diffs in other files.

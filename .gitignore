@@ -52,9 +52,12 @@ build.log
 # Scratch scripts and sub-projects
 scratch/
 
-# Local GGUF weights (do not commit)
+# Local GGUF weights and llamafile API key (do not commit)
 *.gguf
 AI/*.gguf
+AI/*.exe
+AI/.llm-api-key
+AI/.llm-ui-config.json
 
 # Kilo audit tool directory
 .kilo/

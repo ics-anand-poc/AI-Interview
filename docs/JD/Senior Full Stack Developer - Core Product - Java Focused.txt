@@ -1,0 +1,11 @@
+Job Title: Senior Full Stack Developer - Core Product - Java Focused
+
+Mandatory Skills: Java, Spring Boot, REST APIs, TypeScript, React, AWS, Docker, Kubernetes
+
+Primary Skills: Maven, PostgreSQL, Terraform, GitHub Actions, EKS, ECR, Tailwind, Microservices, Copilot, Cursor
+
+Secondary Skills: Tomcat, Gradle, Vite, IAM, S3, ALB, Section 508, WCAG, JUnit, Playwright
+
+Optional Skills: Python, Node.js, Go, C#, Redis, Kafka, Grafana
+
+Thoriva core product role. Senior full stack developer with strong current Java (11+, ideally 21), Spring Boot or Jakarta EE, Maven/Gradle, React/TypeScript front end, and production AWS (EKS, ECR, S3, IAM, ALB). Package services as containers with Docker/Helm and IaC (Terraform). Daily AI-assisted engineering (Claude Code, Copilot, Cursor) plus LLM/agent integration. 10–12 years experience. Additional languages do not substitute for Java.

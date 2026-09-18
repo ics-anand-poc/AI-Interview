@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
+    "llm": "AI\\start.bat",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

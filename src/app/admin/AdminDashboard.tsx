@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ScreeningTableSkeleton, Skeleton } from "@/components/ui/skeleton";
 import { 
   Loader2, 
   ArrowLeft, 
@@ -43,10 +44,17 @@ import { formatPortalTimestamp } from "@/lib/portal-format";
 const AdminResumeDetails = dynamic(() => import("@/components/AdminResumeDetails").then(mod => mod.AdminResumeDetails), {
   ssr: false,
   loading: () => (
-    <div className="fixed inset-0 z-50 bg-indigo-900/60 backdrop-blur-sm flex items-center justify-center">
-      <div className="bg-card p-6 rounded-3xl flex items-center gap-3">
-        <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-        <span className="font-bold text-slate-800 dark:text-slate-200 animate-pulse">Loading analysis details...</span>
+    <div className="fixed inset-0 z-50 bg-indigo-900/60 backdrop-blur-sm flex items-center justify-center p-6">
+      <div className="bg-card p-6 rounded-3xl w-full max-w-md skeleton-screen space-y-4" role="status" aria-label="Loading analysis details">
+        <Skeleton className="h-5 w-40" />
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-5/6" />
+        <Skeleton className="h-24 w-full rounded-2xl" />
+        <div className="flex gap-2">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-3 w-12" />
+        </div>
       </div>
     </div>
   )
@@ -177,6 +185,7 @@ function UploadDateHeaderRow({
   groupIds,
   selectedIds,
   onToggleGroup,
+  tinted,
 }: {
   label: string;
   colSpan: number;
@@ -184,6 +193,7 @@ function UploadDateHeaderRow({
   groupIds: string[];
   selectedIds: string[];
   onToggleGroup: () => void;
+  tinted?: boolean;
 }) {
   const allSelected = groupIds.length > 0 && groupIds.every((id) => selectedIds.includes(id));
   const someSelected = groupIds.some((id) => selectedIds.includes(id));
@@ -196,7 +206,7 @@ function UploadDateHeaderRow({
           </td>
         </tr>
       )}
-      <tr>
+      <tr className={tinted ? "bg-sky-50/80 dark:bg-sky-950/30" : undefined}>
         <td colSpan={colSpan} className="px-3 py-3">
           <label className="inline-flex items-center gap-2 cursor-pointer select-none">
             <input
@@ -210,7 +220,11 @@ function UploadDateHeaderRow({
               title={`Select everyone under ${label}`}
               aria-label={`Select all under ${label}`}
             />
-            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+            <span className={`text-[11px] font-medium ${
+              tinted
+                ? "text-sky-700 dark:text-sky-300 font-semibold"
+                : "text-slate-400 dark:text-slate-500"
+            }`}>
               {label}
             </span>
           </label>
@@ -980,6 +994,11 @@ function resolveJdId(jdId: string): string {
 }
 
 const PINNED_JD_STORAGE_KEY = "hr-console-pinned-jd-id";
+const SELECTED_POOL_STORAGE_KEY = "hr-console-selected-pool";
+const FULL_STACK_SELECTED_POOL = {
+  ids: ["1040204", "1029342", "1019777", "1042674", "1041554", "1032084", "1035362", "1039956"],
+  dateLabel: "11 Sep 2026",
+};
 
 function readPinnedJdId(): string {
   if (typeof window === "undefined") return "";
@@ -988,6 +1007,21 @@ function readPinnedJdId(): string {
   } catch {
     return "";
   }
+}
+
+function readStoredSelectedPool(): { ids: string[]; dateLabel: string } | null {
+  if (typeof window === "undefined") return FULL_STACK_SELECTED_POOL;
+  try {
+    const raw = localStorage.getItem(SELECTED_POOL_STORAGE_KEY);
+    if (raw === "null") return null;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed?.ids) && parsed.ids.length) {
+        return { ids: parsed.ids.map((id: unknown) => String(id)), dateLabel: String(parsed.dateLabel || FULL_STACK_SELECTED_POOL.dateLabel) };
+      }
+    }
+  } catch {}
+  return FULL_STACK_SELECTED_POOL;
 }
 
 function isNamedPinnedJd(jd: { fileName?: string; jdText?: string }): boolean {
@@ -1205,6 +1239,11 @@ export default function AdminDashboard() {
   } | null>(null);
   const [activeEmployee, setActiveEmployee] = useState<any>(null);
   const [employeeSearch, setEmployeeSearch] = useState("");
+  const [qwenScoring, setQwenScoring] = useState(false);
+  const [qwenProgress, setQwenProgress] = useState<{ done: number; total: number } | null>(null);
+  const [selectedPool, setSelectedPool] = useState<{ ids: string[]; dateLabel: string } | null>(readStoredSelectedPool);
+  const qwenScanSeqRef = useRef(0);
+  const qwenScanIdRef = useRef("");
   const [requirementSearch, setRequirementSearch] = useState("");
   const [requirementDateFilter, setRequirementDateFilter] = useState("all");
   const [requirementSkillFilter, setRequirementSkillFilter] = useState("all");
@@ -1229,6 +1268,13 @@ export default function AdminDashboard() {
   const [refreshingType, setRefreshingType] = useState<"requirements" | "candidates" | "employees" | "interviews" | "all" | null>(null);
   const [activityLogs, setActivityLogs] = useState<string[]>([]);
   const [uploadCategory, setUploadCategory] = useState("resume");
+
+  useEffect(() => {
+    try {
+      if (!selectedPool?.ids.length) localStorage.setItem(SELECTED_POOL_STORAGE_KEY, "null");
+      else localStorage.setItem(SELECTED_POOL_STORAGE_KEY, JSON.stringify(selectedPool));
+    } catch {}
+  }, [selectedPool]);
 
   // Clear selections when tab changes
   useEffect(() => {
@@ -2110,7 +2156,7 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to reset test");
-      setActionSuccess(`Test reset successfully for employee ${employeeId}.`);
+      setActionSuccess(`Previous attempt saved for review. Test reset for employee ${employeeId}.`);
       setTestAttemptDetails((prev) => {
         const next = { ...prev };
         delete next[testId];
@@ -2654,6 +2700,46 @@ export default function AdminDashboard() {
 
   const ingestUnifiedFile = async (file: File) => {
     let category = inferUnifiedCategory(file, uploadCategory);
+    const askQwen =
+      /\.(xlsx|xls|csv)$/i.test(file.name) ||
+      /\b(jd|br|requirement|job description|program manager|technical lead)\b/i.test(file.name);
+
+    if (askQwen) {
+      setPipelineStatus(`Ingestion: Qwen reading ${file.name}…`);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const placeRes = await adminFetch("/api/admin/files/llm-place", { method: "POST", body: formData });
+        const placeJson = await placeRes.json();
+        if (placeRes.ok && placeJson.placement?.category) {
+          const p = placeJson.placement;
+          const accepted = await new Promise<boolean>((resolve) => {
+            setConfirmDialog({
+              title: "Where this file goes",
+              message: `${file.name}\n\nPlace in: ${p.placeIn}\n${p.why}${
+                p.columns?.emp_no ? `\nEmp No column: ${p.columns.emp_no}` : ""
+              }${p.columns?.skills ? `\nSkills column: ${p.columns.skills}` : ""}${
+                p.suggestedTitle ? `\nJD title: ${p.suggestedTitle}` : ""
+              }`,
+              confirmLabel: "Upload there",
+              onConfirm: () => resolve(true),
+              onCancel: () => resolve(false),
+            });
+          });
+          if (!accepted) {
+            setPipelineStatus("Ingestion: Idle");
+            return;
+          }
+          category = p.category;
+          setUploadCategory(category === "employee" ? "employee" : category === "jd" || category === "br" ? "jd" : uploadCategory);
+        }
+      } catch (err: any) {
+        setActivityLogs((prev) => [
+          `[${new Date().toLocaleTimeString()}] Qwen file read skipped: ${err.message}`,
+          ...prev,
+        ]);
+      }
+    }
 
     if (category === "employee" && uploadCategory !== "employee") {
       setUploadCategory("employee");
@@ -4818,9 +4904,17 @@ export default function AdminDashboard() {
       return String(a.full_name || "").localeCompare(String(b.full_name || ""));
     });
 
+  const selectedPoolIdSet = useMemo(() => new Set(selectedPool?.ids || []), [selectedPool]);
+
   const corpPoolEmployeeGroups = useMemo(() => {
+    const poolEmployees = selectedPoolIdSet.size
+      ? filteredEmployees.filter((emp) => selectedPoolIdSet.has(emp.employee_id))
+      : [];
+    const restEmployees = selectedPoolIdSet.size
+      ? filteredEmployees.filter((emp) => !selectedPoolIdSet.has(emp.employee_id))
+      : filteredEmployees;
     const groups = new Map<string, typeof filteredEmployees>();
-    for (const emp of filteredEmployees) {
+    for (const emp of restEmployees) {
       const key = uploadGroupKey(emp);
       const list = groups.get(key) || [];
       list.push(emp);
@@ -4828,17 +4922,27 @@ export default function AdminDashboard() {
     }
     const keys = Array.from(groups.keys()).sort((a, b) => uploadGroupSortTime(b) - uploadGroupSortTime(a));
     const labels = labelUploadGroups(keys);
-    return keys.map((key) => ({
+    const restGroups = keys.map((key) => ({
       key,
       label: labels.get(key) || uploadGroupDayLabel(key),
       employees: groups.get(key) || [],
+      tinted: false,
     }));
-  }, [filteredEmployees]);
+    if (poolEmployees.length && selectedPool) {
+      return [
+        {
+          key: "selected-pool",
+          label: `Selected pool · ${selectedPool.dateLabel}`,
+          employees: poolEmployees,
+          tinted: true,
+        },
+        ...restGroups,
+      ];
+    }
+    return restGroups;
+  }, [filteredEmployees, selectedPool, selectedPoolIdSet]);
 
   const shortlistedCount = scoredEmployees.filter((emp) => emp.shortlisted).length;
-  const qualifiedUnshortlistedIds = scoredEmployees
-    .filter((emp) => !emp.shortlisted && Number(emp.score) >= QUALIFIED_COVERAGE_PERCENT)
-    .map((emp) => emp.employee_id);
   const selectedUnshortlistedIds = selectedEmployeeIds.filter((id) =>
     scoredEmployees.some((emp) => emp.employee_id === id && !emp.shortlisted)
   );
@@ -4848,17 +4952,112 @@ export default function AdminDashboard() {
   const jdIsSelectedForFit =
     Boolean(selectedJdId) && selectedJdId !== "all" && Boolean(jdSavedText.trim());
 
-  const handleShortlistQualified = () => {
-    if (!qualifiedUnshortlistedIds.length) {
-      setActionError(
-        jdIsSelectedForFit
-          ? `No unshortlisted people at ${QUALIFIED_COVERAGE_PERCENT}%+ recruiter fit.`
-          : "Select a requirement first to shortlist by recruiter fit."
+  const runQwenScanForJd = async (jdId: string, employeeIds: string[]) => {
+    if (!jdId || jdId === "all" || jdId.includes("@")) {
+      setActionError("Select one requirement first.");
+      setTimeout(() => setActionError(null), 4000);
+      return;
+    }
+    const poolIds = Array.from(new Set(employeeIds.map((id) => String(id || "").trim()).filter(Boolean)));
+    if (!poolIds.length) {
+      setActionError("Tick people, click Select pool, then Analyze.");
+      setTimeout(() => setActionError(null), 4000);
+      return;
+    }
+    const seq = qwenScanSeqRef.current + 1;
+    qwenScanSeqRef.current = seq;
+    const scanId = `${jdId}-${Date.now()}`;
+    qwenScanIdRef.current = scanId;
+    const totalGuess = poolIds.length;
+    setQwenScoring(true);
+    setQwenProgress({ done: 0, total: totalGuess });
+    setPipelineStatus(`Analyzing ${totalGuess} people in the selected pool…`);
+    try {
+      let offset = 0;
+      let total = totalGuess;
+      let scoredCount = 0;
+      let failedCount = 0;
+      let jdFileName = "";
+      while (seq === qwenScanSeqRef.current) {
+        const res = await adminFetch("/api/admin/employees/llm-evaluate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jdId, force: true, offset, limit: 1, scanId, employeeIds: poolIds }),
+        });
+        const result = await res.json();
+        if (seq !== qwenScanSeqRef.current) return;
+        if (!res.ok || !result.success) {
+          throw new Error(result.error || "Analyze failed");
+        }
+        if (result.aborted) return;
+        jdFileName = result.jdFileName || jdFileName;
+        total = Number(result.total) || total;
+        scoredCount += Number(result.scored) || 0;
+        failedCount += Number(result.failed) || 0;
+        setEmployees((prev) =>
+          prev.map((emp) => {
+            const hit = (result.results || []).find((r: any) => r.employee_id === emp.employee_id);
+            if (!hit) return emp;
+            return {
+              ...emp,
+              score: hit.score,
+              score_override: hit.score,
+              score_override_jd_id: jdId,
+              llm_rationale: hit.rationale,
+              llm_best_jd: hit.bestJdFileName,
+              llm_best_jd_why: hit.bestJdWhy,
+            };
+          })
+        );
+        offset = Number(result.nextOffset) || offset + 1;
+        setQwenProgress({ done: Math.min(offset, total), total });
+        setPipelineStatus(`Analyzing ${Math.min(offset, total)}/${total}…`);
+        if (result.done) break;
+      }
+      if (seq !== qwenScanSeqRef.current) return;
+      setActionSuccess(
+        `Analyzed ${scoredCount} people vs ${jdFileName || "this JD"}.${
+          failedCount ? ` ${failedCount} failed — click Analyze to retry.` : ""
+        }`
       );
+      setTimeout(() => setActionSuccess(null), 8000);
+      setPipelineStatus("Ingestion: Idle");
+    } catch (err: any) {
+      if (seq !== qwenScanSeqRef.current) return;
+      setActionError(err.message || "Analyze failed. Keep npm run llm running.");
+      setTimeout(() => setActionError(null), 8000);
+      setPipelineStatus("Ingestion: Idle");
+    } finally {
+      if (seq === qwenScanSeqRef.current) {
+        setQwenScoring(false);
+        setQwenProgress(null);
+      }
+    }
+  };
+
+  const handleQwenScoreCorpPool = () => runQwenScanForJd(selectedJdId, selectedPool?.ids || []);
+
+  const handleSelectPool = () => {
+    const tickedAreCurrentPool =
+      Boolean(selectedPool?.ids.length) &&
+      selectedEmployeeIds.length > 0 &&
+      selectedEmployeeIds.length === selectedPool.ids.length &&
+      selectedEmployeeIds.every((id) => selectedPool.ids.includes(id));
+    if (tickedAreCurrentPool || (selectedPool?.ids.length && selectedEmployeeIds.length === 0)) {
+      setSelectedPool(null);
+      return;
+    }
+    if (!selectedEmployeeIds.length) {
+      setActionError("Tick the people you want in the pool first.");
       setTimeout(() => setActionError(null), 3000);
       return;
     }
-    handleBulkShortlistEmployees(true, qualifiedUnshortlistedIds);
+    const dateLabel = new Date().toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+    setSelectedPool({ ids: [...selectedEmployeeIds], dateLabel });
   };
 
   const bestMatch = scoredEmployees.length > 0
@@ -4882,7 +5081,7 @@ export default function AdminDashboard() {
 
   if (!authInitialized) {
     return (
-      <div className="min-h-screen bg-[#f0f4ff] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-slate-500 font-medium">Loading admin gateway…</div>
       </div>
     );
@@ -4890,21 +5089,21 @@ export default function AdminDashboard() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-[#f0f4ff] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-slate-500 font-medium">Redirecting to login…</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8fafc] via-[#f0f4ff] to-[#e2e8f0] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 font-sans text-foreground transition-colors duration-300">
+    <div className="min-h-screen bg-background font-sans text-foreground transition-colors duration-300">
       <nav className="bg-card/80 backdrop-blur-md border-b border-border py-4 px-6 shadow-sm sticky top-0 z-50 transition-colors duration-300">
         <div className="max-w-full mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-indigo-500/30">
-              <FileText className="w-[18px] h-[18px] text-white" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-md shadow-violet-500/30">
+              <ClipboardList className="w-[18px] h-[18px] text-white" />
             </div>
-            <span className="text-lg md:text-xl font-black tracking-tight bg-primary bg-clip-text text-transparent">
+            <span className="text-lg md:text-xl font-black tracking-tight text-primary">
               <span className="hidden sm:inline">HR </span>Screening Console
             </span>
           </div>
@@ -4970,13 +5169,13 @@ export default function AdminDashboard() {
                   onClick={() => setActiveTab("requirements")}
                   className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-black text-xs sm:text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "requirements"
-                      ? "border-indigo-600 text-indigo-700 bg-card dark:text-violet-400"
-                      : "border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-white"
+                      ? "border-primary text-foreground bg-card"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <ClipboardList className="w-4 h-4 text-primary" />
                   Requirements (BR / JD)
-                  <Badge className={`border-0 text-[10px] ${activeTab === "requirements" ? "bg-indigo-100 text-indigo-700 dark:bg-slate-800 dark:text-violet-400" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
+                  <Badge className={`border-0 text-[10px] ${activeTab === "requirements" ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}>
                     {isDashboardBootstrapping || isJdLoading ? "…" : filteredJds.length}
                   </Badge>
                 </button>
@@ -4984,12 +5183,12 @@ export default function AdminDashboard() {
                   onClick={() => setActiveTab("employee")}
                   className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-black text-xs sm:text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "employee"
-                      ? "border-indigo-600 text-indigo-700 bg-card dark:text-violet-400"
-                      : "border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-white"
+                      ? "border-primary text-foreground bg-card"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   Corp Pool
-                  <Badge className={`border-0 text-[10px] ${activeTab === "employee" ? "bg-indigo-100 text-indigo-700 dark:bg-slate-800 dark:text-violet-400" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
+                  <Badge className={`border-0 text-[10px] ${activeTab === "employee" ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}>
                     {isDashboardBootstrapping || isEmployeeDataPending ? "…" : employees.length}
                   </Badge>
                 </button>
@@ -4997,12 +5196,12 @@ export default function AdminDashboard() {
                   onClick={() => setActiveTab("suitable")}
                   className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-black text-xs sm:text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "suitable"
-                      ? "border-indigo-600 text-indigo-700 bg-card dark:text-violet-400"
-                      : "border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-white"
+                      ? "border-primary text-foreground bg-card"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   Suitable Candidates
-                  <Badge className={`border-0 text-[10px] ${activeTab === "suitable" ? "bg-indigo-100 text-indigo-700 dark:bg-slate-800 dark:text-violet-400" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
+                  <Badge className={`border-0 text-[10px] ${activeTab === "suitable" ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}>
                     {isDashboardBootstrapping || loading ? "…" : suitableCandidates.length}
                   </Badge>
                 </button>
@@ -5010,12 +5209,12 @@ export default function AdminDashboard() {
                   onClick={() => setActiveTab("unsuitable")}
                   className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-black text-xs sm:text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "unsuitable"
-                      ? "border-indigo-600 text-indigo-700 bg-card dark:text-violet-400"
-                      : "border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-white"
+                      ? "border-primary text-foreground bg-card"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   Non-Suitable Candidates
-                  <Badge className={`border-0 text-[10px] ${activeTab === "unsuitable" ? "bg-indigo-100 text-indigo-700 dark:bg-slate-800 dark:text-violet-400" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
+                  <Badge className={`border-0 text-[10px] ${activeTab === "unsuitable" ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}>
                     {isDashboardBootstrapping || loading ? "…" : unsuitableCandidates.length}
                   </Badge>
                 </button>
@@ -5027,12 +5226,12 @@ export default function AdminDashboard() {
                   }}
                   className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-black text-xs sm:text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "employee-portal"
-                      ? "border-indigo-600 text-indigo-700 bg-card dark:text-violet-400"
-                      : "border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-white"
+                      ? "border-primary text-foreground bg-card"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   Employee Portal
-                  <Badge className={`border-0 text-[10px] ${activeTab === "employee-portal" ? "bg-indigo-100 text-indigo-700 dark:bg-slate-800 dark:text-violet-400" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
+                  <Badge className={`border-0 text-[10px] ${activeTab === "employee-portal" ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}>
                     {isDashboardBootstrapping || isEmployeeDataPending
                       ? "…"
                       : resourcePortalEmployees.length ||
@@ -5044,13 +5243,13 @@ export default function AdminDashboard() {
                   onClick={() => setActiveTab("outbox")}
                   className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-black text-xs sm:text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "outbox"
-                      ? "border-indigo-600 text-indigo-700 bg-card dark:text-violet-400"
-                      : "border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-white"
+                      ? "border-primary text-foreground bg-card"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <Mail className="w-4 h-4 text-primary" />
                   Email Outbox
-                  <Badge className={`border-0 text-[10px] ${activeTab === "outbox" ? "bg-indigo-100 text-indigo-700 dark:bg-slate-800 dark:text-violet-400" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
+                  <Badge className={`border-0 text-[10px] ${activeTab === "outbox" ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}>
                     {isDashboardBootstrapping || isEmailsLoading ? "…" : emails.length}
                   </Badge>
                 </button>
@@ -5059,22 +5258,17 @@ export default function AdminDashboard() {
               {/* Candidates List Container */}
               <div className="p-6">
                 {isTabContentLoading ? (
-                  <div className="flex-1 flex flex-col items-center justify-center py-24 gap-3">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    <p className="text-slate-500 font-bold text-sm">
-                      {isDashboardBootstrapping
-                        ? "Loading screening dashboard…"
-                        : activeTab === "employee-portal"
-                          ? "Loading employee portal data…"
-                          : activeTab === "employee"
-                            ? "Loading Corp Pool…"
-                            : activeTab === "requirements"
-                              ? "Loading requirements…"
-                              : activeTab === "outbox"
-                                ? "Loading email outbox…"
-                                : "Loading candidates…"}
-                    </p>
-                  </div>
+                  <ScreeningTableSkeleton
+                    variant={
+                      activeTab === "requirements"
+                        ? "requirements"
+                        : activeTab === "employee"
+                          ? "corp-pool"
+                          : activeTab === "employee-portal"
+                            ? "portal"
+                            : "table"
+                    }
+                  />
                 ) : activeTab === "requirements" ? (
                   <div className="space-y-4">
                     {/* Search + filters */}
@@ -5440,8 +5634,11 @@ export default function AdminDashboard() {
                                         <div className="flex items-center justify-center gap-1.5">
                                           <Button
                                             size="sm"
-                                            variant={isActive ? "outline" : "default"}
+                                            variant="default"
                                             onClick={() => {
+                                              qwenScanSeqRef.current += 1;
+                                              setQwenScoring(false);
+                                              setQwenProgress(null);
                                               setSelectedJdId(j.id);
                                               setJdSavedText(j.jdText);
                                               setJdText(j.jdText);
@@ -5452,11 +5649,7 @@ export default function AdminDashboard() {
                                                 { method: "POST" }
                                               ).catch(() => {});
                                             }}
-                                            className={`h-7 px-2.5 rounded-lg text-[10px] font-extrabold transition duration-200 ${
-                                              isActive
-                                                ? "border-indigo-200 text-indigo-600 dark:border-slate-800"
-                                                : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
-                                            }`}
+                                            className="h-7 px-2.5 rounded-lg text-[10px] font-extrabold bg-violet-600 hover:bg-violet-500 text-white shadow-sm shadow-violet-500/25"
                                           >
                                             {isActive ? "Viewing Candidates" : "Select & Screen"}
                                           </Button>
@@ -5477,8 +5670,8 @@ export default function AdminDashboard() {
                                             }}
                                             className={`h-7 w-7 rounded-lg flex items-center justify-center border ${
                                               pinnedJdId === j.id || isNamedPinnedJd(j)
-                                                ? "bg-amber-50 border-amber-200 text-amber-600"
-                                                : "border-slate-200 text-slate-400 hover:text-amber-600 hover:border-amber-200"
+                                                ? "bg-amber-950/40 border-amber-700 text-amber-400"
+                                                : "border-border text-muted-foreground hover:text-amber-400 hover:border-amber-600"
                                             }`}
                                             title={pinnedJdId === j.id ? "Unpin job" : "Pin job to top"}
                                           >
@@ -5554,11 +5747,11 @@ export default function AdminDashboard() {
                   <div className="space-y-4">
                       {/* Summary Metrics */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
-                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl shadow-sm text-center">
+                        <div className="p-3 bg-secondary/40 border border-border rounded-2xl shadow-sm text-center">
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Total in Corp Pool</span>
                           <span className="text-xl md:text-2xl font-black text-primary">{scoredEmployees.length}</span>
                         </div>
-                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl shadow-sm text-center flex flex-col items-center justify-center min-h-[70px]">
+                        <div className="p-3 bg-secondary/40 border border-border rounded-2xl shadow-sm text-center flex flex-col items-center justify-center min-h-[70px]">
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Recruiter fit ≥60%</span>
                           {selectedJdId && selectedJdId !== "all" && jdSavedText.trim() ? (
                             <div className="w-full">
@@ -5576,7 +5769,7 @@ export default function AdminDashboard() {
                         <button
                           type="button"
                           onClick={() => setCorpPoolListFilter(corpPoolListFilter === "shortlisted" ? "all" : "shortlisted")}
-                          className="p-3 bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl shadow-sm text-center hover:border-violet-300 dark:hover:border-violet-700 transition-colors"
+                          className="p-3 bg-secondary/40 border border-border rounded-2xl shadow-sm text-center hover:border-violet-400/50 dark:hover:border-violet-500 transition-colors"
                           title="Show shortlisted people"
                         >
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Shortlisted</span>
@@ -5584,7 +5777,7 @@ export default function AdminDashboard() {
                             {shortlistedCount}
                           </span>
                         </button>
-                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl shadow-sm text-center">
+                        <div className="p-3 bg-secondary/40 border border-border rounded-2xl shadow-sm text-center">
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">Avg Match Score</span>
                           <span className="text-xl md:text-2xl font-black text-primary">
                             {scoredEmployees.length > 0 ? Math.round(scoredEmployees.reduce((acc, curr) => acc + (Number(curr.score) || 0), 0) / scoredEmployees.length) : 0}%
@@ -5604,14 +5797,14 @@ export default function AdminDashboard() {
                               className="w-full rounded-xl border border-border bg-slate-50/50 dark:bg-slate-950 p-2.5 pl-3 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-200"
                             />
                           </div>
-                          <div className="flex rounded-xl border border-border overflow-hidden shrink-0">
+                          <div className="flex items-center gap-1 shrink-0">
                             <button
                               type="button"
                               onClick={() => setCorpPoolListFilter("all")}
-                              className={`px-3 py-2 text-[10px] font-black uppercase tracking-wider ${
+                              className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
                                 corpPoolListFilter === "all"
-                                  ? "bg-indigo-600 text-white"
-                                  : "bg-slate-50 dark:bg-slate-950 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900"
+                                  ? "bg-violet-600 text-white shadow-sm shadow-violet-500/30"
+                                  : "text-muted-foreground hover:text-foreground"
                               }`}
                             >
                               All ({scoredEmployees.length})
@@ -5619,10 +5812,10 @@ export default function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => setCorpPoolListFilter("shortlisted")}
-                              className={`px-3 py-2 text-[10px] font-black uppercase tracking-wider border-l border-border ${
+                              className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
                                 corpPoolListFilter === "shortlisted"
-                                  ? "bg-violet-600 text-white"
-                                  : "bg-slate-50 dark:bg-slate-950 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900"
+                                  ? "bg-violet-600 text-white shadow-sm shadow-violet-500/30"
+                                  : "text-muted-foreground hover:text-foreground"
                               }`}
                             >
                               Shortlisted ({shortlistedCount})
@@ -5630,39 +5823,67 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         <div className="flex gap-2 w-full sm:w-auto flex-wrap justify-end">
-                          {selectedEmployeeIds.length > 0 && (
-                            <>
+                          {(selectedEmployeeIds.length > 0 || Boolean(selectedPool?.ids.length)) && (
                             <Button
                               size="sm"
-                              disabled={selectedUnshortlistedIds.length === 0}
-                              onClick={() => handleBulkShortlistEmployees(true, selectedUnshortlistedIds)}
+                              onClick={handleSelectPool}
+                              className="flex-1 sm:flex-none rounded-xl bg-sky-600 hover:bg-sky-700 text-white gap-1.5 font-bold text-xs"
+                              title={
+                                selectedPool?.ids.length &&
+                                (selectedEmployeeIds.length === 0 ||
+                                  (selectedEmployeeIds.length === selectedPool.ids.length &&
+                                    selectedEmployeeIds.every((id) => selectedPool.ids.includes(id))))
+                                  ? "Remove these people from the selected pool"
+                                  : "Pin the ticked people to the top as the selected pool. Analyze scores only this pool."
+                              }
+                            >
+                              {selectedPool?.ids.length &&
+                              (selectedEmployeeIds.length === 0 ||
+                                (selectedEmployeeIds.length === selectedPool.ids.length &&
+                                  selectedEmployeeIds.every((id) => selectedPool.ids.includes(id))))
+                                ? `Unselect pool (${selectedPool.ids.length})`
+                                : `Select pool (${selectedEmployeeIds.length})`}
+                            </Button>
+                          )}
+                          {selectedEmployeeIds.length > 0 && (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                const allShortlisted = selectedShortlistedIds.length === selectedEmployeeIds.length;
+                                handleBulkShortlistEmployees(
+                                  !allShortlisted,
+                                  allShortlisted ? selectedShortlistedIds : selectedUnshortlistedIds
+                                );
+                              }}
                               className="flex-1 sm:flex-none rounded-xl bg-violet-600 hover:bg-violet-700 text-white gap-1.5 font-bold text-xs"
-                              title="Shortlist everyone currently selected in Corp Pool"
+                              title={
+                                selectedShortlistedIds.length === selectedEmployeeIds.length
+                                  ? "Remove the selected people from the shortlist"
+                                  : "Shortlist the selected people"
+                              }
                             >
                               <CheckCircle2 className="w-3.5 h-3.5" />
-                              Shortlist selected ({selectedUnshortlistedIds.length})
+                              {selectedShortlistedIds.length === selectedEmployeeIds.length
+                                ? `Unshortlist (${selectedShortlistedIds.length})`
+                                : `Shortlist (${selectedUnshortlistedIds.length || selectedEmployeeIds.length})`}
                             </Button>
-                            <Button
-                              size="sm"
-                              disabled={selectedShortlistedIds.length === 0}
-                              onClick={() => handleBulkShortlistEmployees(false, selectedShortlistedIds)}
-                              className="flex-1 sm:flex-none rounded-xl bg-white dark:bg-slate-900 border border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 gap-1.5 font-bold text-xs"
-                              title="Remove selected people from the shortlist"
-                            >
-                              Unshortlist selected ({selectedShortlistedIds.length})
-                            </Button>
-                            </>
                           )}
                           {jdIsSelectedForFit && (
                             <Button
                               size="sm"
-                              disabled={qualifiedUnshortlistedIds.length === 0}
-                              onClick={handleShortlistQualified}
-                              className="flex-1 sm:flex-none rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 font-bold text-xs"
-                              title={`Shortlist everyone at ${QUALIFIED_COVERAGE_PERCENT}%+ recruiter fit for the selected requirement`}
+                              disabled={qwenScoring || !selectedPool?.ids.length}
+                              onClick={handleQwenScoreCorpPool}
+                              className="flex-1 sm:flex-none rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5 font-bold text-xs"
+                              title="Analyze only people in the selected pool against this JD"
                             >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              Shortlist qualified ({qualifiedUnshortlistedIds.length})
+                              {qwenScoring ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Sparkles className="w-3.5 h-3.5" />
+                              )}
+                              {qwenScoring
+                                ? `Analyze ${qwenProgress?.done || 0}/${qwenProgress?.total || selectedPool?.ids.length || 0}…`
+                                : "Analyze"}
                             </Button>
                           )}
                           {employees.filter(e => e.shortlisted).length > 0 && (
@@ -5684,20 +5905,34 @@ export default function AdminDashboard() {
                               Dispatch Mail
                             </Button>
                           )}
+                          {jdIsSelectedForFit && jdCoverageQualifiedCount > 0 && (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                const ids = scoredEmployees
+                                  .filter((emp) => Number(emp.score) >= QUALIFIED_COVERAGE_PERCENT)
+                                  .map((emp) => emp.employee_id);
+                                handleBulkShortlistEmployees(true, ids);
+                              }}
+                              className="flex-1 sm:flex-none rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white gap-1.5 font-bold text-xs shadow-sm shadow-emerald-500/25"
+                              title="Shortlist everyone at or above 60% recruiter fit for this requirement"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              Shortlist qualified ({jdCoverageQualifiedCount})
+                            </Button>
+                          )}
                           <Button
                             onClick={handleExportEmployees}
-                            variant="outline"
                             size="sm"
-                            className="flex-1 sm:flex-none rounded-xl border-border text-primary hover:bg-secondary gap-1.5 font-bold text-xs"
+                            className="flex-1 sm:flex-none rounded-xl bg-violet-600 hover:bg-violet-500 text-white gap-1.5 font-bold text-xs shadow-sm shadow-violet-500/25"
                           >
                             <Download className="w-3.5 h-3.5" />
                             Export Pool
                           </Button>
                           <Button
                             onClick={handleExportInterviews}
-                            variant="outline"
                             size="sm"
-                            className="flex-1 sm:flex-none rounded-xl border-border text-primary hover:bg-secondary gap-1.5 font-bold text-xs"
+                            className="flex-1 sm:flex-none rounded-xl bg-violet-600 hover:bg-violet-500 text-white gap-1.5 font-bold text-xs shadow-sm shadow-violet-500/25"
                           >
                             <Download className="w-3.5 h-3.5" />
                             Export Interviews
@@ -5754,6 +5989,7 @@ export default function AdminDashboard() {
                                       showDivider={groupIndex > 0}
                                       groupIds={group.employees.map((emp) => emp.employee_id)}
                                       selectedIds={selectedEmployeeIds}
+                                      tinted={group.tinted}
                                       onToggleGroup={() =>
                                         setSelectedEmployeeIds((prev) =>
                                           toggleIdGroup(
@@ -5768,7 +6004,9 @@ export default function AdminDashboard() {
                                 const skillChips = personSkillChips(emp);
                                 return (
                                   <tr key={emp.employee_id} className={`hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors duration-150 ${
-                                    emp.shortlisted
+                                    selectedPoolIdSet.has(emp.employee_id)
+                                      ? "bg-sky-50/70 dark:bg-sky-950/25"
+                                      : emp.shortlisted
                                       ? "bg-violet-50/70 dark:bg-violet-950/25"
                                       : selectedEmployeeIds.includes(emp.employee_id) ? "bg-indigo-50/20 dark:bg-indigo-950/20" : ""
                                   }`}>
@@ -6003,7 +6241,7 @@ export default function AdminDashboard() {
                                 <tr>
                                   <td colSpan={8} className="text-center py-12 text-slate-400 italic">
                                     {corpPoolListFilter === "shortlisted"
-                                      ? "No shortlisted people yet. Click Shortlist on a row, or Shortlist qualified after selecting a requirement."
+                                      ? "No shortlisted people yet. Click Shortlist on a row."
                                       : "No people in Corp Pool match this search."}
                                   </td>
                                 </tr>
@@ -7528,9 +7766,9 @@ export default function AdminDashboard() {
         {/* Admin Controls Section */}
         <div className="mt-8 space-y-4">
           <div className="flex items-center gap-3 px-1">
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+            <div className="h-px flex-1 bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-400" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Admin Controls</span>
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+            <div className="h-px flex-1 bg-gradient-to-r from-fuchsia-400 via-violet-500 to-cyan-400" />
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
@@ -8453,7 +8691,7 @@ export default function AdminDashboard() {
                 Reset the assigned test for{" "}
                 <span className="text-primary font-bold">{resetTargetEmployee.employeeName}</span>{" "}
                 (Emp ID: <span className="text-primary font-bold">{resetTargetEmployee.employeeId}</span>)?
-                Their previous answers and test progress will be cleared so they can start again.
+                The current attempt is saved in full so they can still review it. They can then retake the live test.
               </p>
             </div>
 

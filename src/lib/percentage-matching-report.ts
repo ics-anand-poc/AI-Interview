@@ -15,13 +15,12 @@ export type PercentageMatchRow = {
 };
 
 const HEADER = {
-  title: "Corp Pool Resource's Scores against NOKIA's JD",
+  title: "Corp Pool Resource's Scores against the JD",
   demand: "Demand against Each JD",
   rejected: "Score <30 % is Rejected",
   evaluate: "Score 30 to 50% To evaluate",
   l1: "Score 51 to 70% - Direct L1 Interview",
   shortlisted: "Score >70 % Shortlisted",
-  total: "Total (Percentage)",
 };
 
 const FILL = {
@@ -187,12 +186,6 @@ function fillCell(
   };
 }
 
-function pctReady(counts: MatchBucketCounts): string {
-  if (!counts.total) return "0%";
-  const ready = counts.l1 + counts.shortlisted;
-  return `${Math.round((ready / counts.total) * 1000) / 10}%`;
-}
-
 export async function buildPercentageMatchingWorkbook(rows: PercentageMatchRow[]): Promise<ExcelJS.Workbook> {
   const wb = new ExcelJS.Workbook();
   wb.creator = "HR Screening Console";
@@ -204,7 +197,6 @@ export async function buildPercentageMatchingWorkbook(rows: PercentageMatchRow[]
     { width: 30 },
     { width: 36 },
     { width: 28 },
-    { width: 22 },
   ];
   ws.getRow(1).height = 36;
 
@@ -215,7 +207,6 @@ export async function buildPercentageMatchingWorkbook(rows: PercentageMatchRow[]
     HEADER.evaluate,
     HEADER.l1,
     HEADER.shortlisted,
-    HEADER.total,
   ];
   const headerFills = [
     FILL.blueLight,
@@ -224,13 +215,10 @@ export async function buildPercentageMatchingWorkbook(rows: PercentageMatchRow[]
     FILL.green,
     FILL.green,
     FILL.green,
-    FILL.yellow,
   ];
   headers.forEach((text, i) => {
     fillCell(ws.getRow(1).getCell(i + 1), text, headerFills[i], { bold: true, wrap: true, center: true });
   });
-
-  const sum: MatchBucketCounts = { rejected: 0, evaluate: 0, l1: 0, shortlisted: 0, total: 0 };
 
   rows.forEach((row, idx) => {
     const counts = bucketScores(row.scores);
@@ -242,23 +230,7 @@ export async function buildPercentageMatchingWorkbook(rows: PercentageMatchRow[]
     fillCell(excelRow.getCell(4), counts.evaluate, FILL.green, { center: true });
     fillCell(excelRow.getCell(5), counts.l1, FILL.green, { center: true });
     fillCell(excelRow.getCell(6), counts.shortlisted, FILL.green, { center: true });
-    fillCell(excelRow.getCell(7), pctReady(counts), FILL.yellow, { center: true, bold: true });
-    sum.rejected += counts.rejected;
-    sum.evaluate += counts.evaluate;
-    sum.l1 += counts.l1;
-    sum.shortlisted += counts.shortlisted;
-    sum.total += counts.total;
   });
-
-  const totalRow = ws.getRow(rows.length + 2);
-  totalRow.height = 22;
-  fillCell(totalRow.getCell(1), HEADER.total, FILL.blueLight, { bold: true });
-  fillCell(totalRow.getCell(2), "", FILL.blueMid, { center: true });
-  fillCell(totalRow.getCell(3), sum.rejected, FILL.green, { center: true, bold: true });
-  fillCell(totalRow.getCell(4), sum.evaluate, FILL.green, { center: true, bold: true });
-  fillCell(totalRow.getCell(5), sum.l1, FILL.green, { center: true, bold: true });
-  fillCell(totalRow.getCell(6), sum.shortlisted, FILL.green, { center: true, bold: true });
-  fillCell(totalRow.getCell(7), pctReady(sum), FILL.yellow, { center: true, bold: true });
 
   ws.views = [{ state: "frozen", ySplit: 1 }];
   return wb;

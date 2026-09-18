@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ResultsView, ConfirmModal } from "@/components/test-view";
+import { ResultsView, ConfirmModal, type ResultReviewItem } from "@/components/test-view";
 import { CheckCircle2, Clock, Flag, XCircle, Zap, ArrowRight, RotateCcw,
   Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,38 @@ import {
 // ---------------------------------------------------------------------------
 
 const DEFAULT_TIME_LIMIT_SECONDS = 1800;
+const PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID = "resource-product-assessment-history";
+
+function buildReviewItems(
+  questions: TestQuestion[] | null | undefined,
+  attempts: Array<{ question_id: string; selected_option_index?: number | null; is_correct?: boolean | null }> | null | undefined,
+  answersByIndex?: Record<number, number>
+): ResultReviewItem[] {
+  if (!questions?.length) return [];
+  const byQuestionId = new Map((attempts ?? []).map((a) => [a.question_id, a]));
+  return [...questions]
+    .sort((a, b) => a.question_index - b.question_index)
+    .map((q, idx) => {
+      const attempt = byQuestionId.get(q.id);
+      const selected =
+        attempt?.selected_option_index ??
+        answersByIndex?.[q.question_index] ??
+        answersByIndex?.[idx] ??
+        null;
+      const isCorrect =
+        attempt?.is_correct ??
+        (selected == null ? null : selected === q.correct_option_index);
+      return {
+        question_index: q.question_index ?? idx,
+        question_text: q.question_text,
+        options: q.options ?? [],
+        selected_option_index: selected,
+        correct_option_index: q.correct_option_index ?? null,
+        explanation: q.explanation,
+        is_correct: isCorrect,
+      };
+    });
+}
 
 function durationToLabel(d: number): string {
   const m = Math.floor(d / 60);
@@ -87,6 +119,8 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
   const [timeLeft,    setTimeLeft]    = useState<number | null>(null);
   const [msg,         setMsg]         = useState<string | null>(null);
   const [submitted,   setSubmitted]   = useState<{ correct: number; total: number; accuracy_pct: number; ai_analysis?: string; topic_title: string } | null>(null);
+  const [reviewItems, setReviewItems] = useState<ResultReviewItem[]>([]);
+  const [isArchivedReview, setIsArchivedReview] = useState(false);
   const [videoUploadState, setVideoUploadState] = useState<VideoUploadState>("pending");
 
   const savedRef     = useRef(false);
@@ -172,7 +206,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
           }
           throw new Error(message);
         }
-        const { test: testData, questions: questionsData } = await r.json();
+        const { test: testData, questions: questionsData, attempts: attemptsData } = await r.json();
         if (cancelled) return;
         setTest(testData);
         setQuestions(questionsData);
@@ -204,8 +238,12 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
             correct,
             total,
             accuracy_pct: accuracy,
+            ai_analysis: testData.ai_analysis ?? undefined,
             topic_title: testData.topic_title ?? "",
           });
+          setReviewItems(buildReviewItems(questionsData, attemptsData));
+          setIsArchivedReview(String(testData.topic_id || "").startsWith(PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID));
+          setVideoUploadState("done");
           setPhase("submitted");
           return;
         }
@@ -551,6 +589,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
           accuracy_pct: res.accuracy ?? 0,
           topic_title: (test as any)?.topic_title ?? "",
         });
+        setReviewItems(buildReviewItems(questions, null, ans));
         if (document.fullscreenElement) {
           document.exitFullscreen().catch(() => {});
         }
@@ -567,6 +606,7 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
         ai_analysis: res.ai_analysis,
         topic_title: (test as any)?.topic_title ?? "",
       });
+      setReviewItems(buildReviewItems(questions, null, ans));
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
       }
@@ -653,7 +693,21 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
       <ResultsView
         result={submitted}
         videoUploadState={videoUploadState}
-        onRetake={() => { setPhase("retake-confirm"); setSubmitted(null); setAnswers({}); setCurrentIdx(0); setVideoUploadState("pending"); }}
+        reviewItems={reviewItems}
+        isArchivedReview={isArchivedReview}
+        hideVideoStatus={isArchivedReview}
+        retakeLabel={isArchivedReview ? "Start new attempt" : "Retake"}
+        onRetake={() => {
+          if (isArchivedReview) {
+            window.location.href = "/employee/dashboard";
+            return;
+          }
+          setPhase("retake-confirm");
+          setSubmitted(null);
+          setAnswers({});
+          setCurrentIdx(0);
+          setVideoUploadState("pending");
+        }}
         onGoDashboard={() => window.location.href = "/employee/dashboard"}
       />
     );

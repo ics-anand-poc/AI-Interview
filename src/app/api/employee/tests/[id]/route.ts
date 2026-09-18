@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/db";
-import { authenticateRequest, isAssessmentOnlyEmployee, isProductQbEmployee, PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID, PRODUCT_ASSESSMENT_TOPIC_ID } from "@/lib/employee-auth";
+import { authenticateRequest, isAssessmentOnlyEmployee, isProductQbEmployee, isProductAssessmentHistoryTopic, PRODUCT_ASSESSMENT_TOPIC_ID } from "@/lib/employee-auth";
 import { localTestsDb } from "@/services/local-tests-db";
 import { writeLog } from "@/lib/structured-logger";
-import { syncLocalTestStateToSupabase, syncQuestionsToSupabase } from "@/services/employee-test-supabase-sync";
+import { syncLocalTestStateToSupabase, syncQuestionsToSupabase, resetTestInSupabase, clearLocalTestSnapshotAfterReset } from "@/services/employee-test-supabase-sync";
+import { employeeTestVideoExists, deleteEmployeeTestVideo } from "@/lib/employee-test-video";
 import { useSupabasePrimary } from "@/lib/db-mode";
-import { employeeTestVideoExists } from "@/lib/employee-test-video";
 import { formatTopicTitleForDisplay } from "@/lib/product-display-name";
 
 import { fetchQuestionsFromAI, mapDifficulty } from "@/lib/learning-fallback";
@@ -119,7 +119,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (
       isAssessmentOnlyEmployee(auth.employee) &&
       testRow.topic_id !== PRODUCT_ASSESSMENT_TOPIC_ID &&
-      testRow.topic_id !== PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID
+      !isProductAssessmentHistoryTopic(testRow.topic_id)
     ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -136,11 +136,31 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    if (questions.length === 0) {
+    if (questions.length === 0 && String(testRow.status) !== "completed") {
       return NextResponse.json(
         { error: "This assessment has no questions assigned yet. Please contact your administrator." },
         { status: 400 }
       );
+    }
+
+    let attempts: any[] = [];
+    if (String(testRow.status) === "completed") {
+      try {
+        const { data: attemptRows } = await supabase
+          .from("test_attempts")
+          .select("id, question_id, selected_option_index, is_correct, time_taken_seconds, created_at")
+          .eq("test_id", id);
+        attempts = attemptRows ?? [];
+        if (attempts.length === 0) {
+          attempts = await localTestsDb.getAttempts(id);
+        }
+      } catch {
+        try {
+          attempts = await localTestsDb.getAttempts(id);
+        } catch {
+          attempts = [];
+        }
+      }
     }
 
     const has_recording = await employeeTestVideoExists(id);
@@ -150,6 +170,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         topic_title: formatTopicTitleForDisplay(testRow.topic_title),
       },
       questions,
+      attempts,
       has_recording,
     });
   } catch (e) {
@@ -240,6 +261,44 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       }
       testRow = localTest;
       usingLocal = true;
+    }
+
+    if (isProductAssessmentHistoryTopic(testRow.topic_id)) {
+      return NextResponse.json(
+        { error: "Previous attempts are kept for review and cannot be overwritten." },
+        { status: 403 }
+      );
+    }
+
+    if (testRow.topic_id === PRODUCT_ASSESSMENT_TOPIC_ID) {
+      await deleteEmployeeTestVideo(id);
+      await resetTestInSupabase(id);
+      await clearLocalTestSnapshotAfterReset(id);
+      try {
+        await localTestsDb.updateTest(id, {
+          status: "pending",
+          in_progress: null,
+          current_question_index: 0,
+          started_at: null,
+          completed_at: null,
+          session_recording_url: null as any,
+          proctoring: null as any,
+          score_correct: null,
+          score_total: null,
+          score_percent: null,
+          ai_analysis: null,
+        });
+        await localTestsDb.deleteAttempts(id);
+      } catch {
+        // live test may exist only in Supabase
+      }
+      await writeLog(
+        "employee",
+        "RESET_EMPLOYEE_TEST",
+        "success",
+        `Archived previous attempt and reset product assessment ${id} for employee ${auth?.employeeId || "unknown"}`
+      );
+      return NextResponse.json({ success: true, archived: true });
     }
 
     const { topic_id, topic_title, subject_title, difficulty } = testRow;

@@ -1,8 +1,22 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, RotateCcw, AlertTriangle, Sparkles, Loader2 } from "lucide-react";
+import { CheckCircle2, RotateCcw, AlertTriangle, Sparkles, Loader2, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
+
+export type ResultReviewItem = {
+  question_index: number;
+  question_text: string;
+  options: string[];
+  selected_option_index: number | null;
+  correct_option_index: number | null;
+  explanation?: string;
+  is_correct: boolean | null;
+};
+
+function optionLabel(index: number): string {
+  return String.fromCharCode(65 + index);
+}
 
 function ResultsView(props: {
   result: {
@@ -15,9 +29,17 @@ function ResultsView(props: {
   videoUploadState?: "pending" | "uploading" | "done" | "failed";
   onRetake: () => void;
   onGoDashboard: () => void;
+  reviewItems?: ResultReviewItem[];
+  isArchivedReview?: boolean;
+  hideVideoStatus?: boolean;
+  retakeLabel?: string;
 }) {
   const { correct = 0, total = 0, accuracy_pct = 0, ai_analysis, topic_title } = props.result;
   const videoUploadState = props.videoUploadState ?? "done";
+  const hideVideoStatus = props.hideVideoStatus === true || props.isArchivedReview === true;
+  const reviewItems = props.reviewItems ?? [];
+  const answersMissing =
+    reviewItems.length > 0 && reviewItems.every((item) => item.selected_option_index == null);
   const pct = accuracy_pct;
   const accent = pct >= 75
     ? "text-emerald-600"
@@ -58,27 +80,85 @@ function ResultsView(props: {
       )}
 
       {/* ── Video upload status ── */}
-      {videoUploadState === "uploading" && (
+      {!hideVideoStatus && videoUploadState === "uploading" && (
         <div className="rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/80 dark:bg-indigo-950/30 p-4 flex items-center gap-3 text-sm text-indigo-900 dark:text-indigo-200">
           <Loader2 className="w-4 h-4 animate-spin shrink-0" />
           <p className="font-medium">Saving proctoring video… Please keep this page open.</p>
         </div>
       )}
-      {videoUploadState === "done" && (
+      {!hideVideoStatus && videoUploadState === "done" && (
         <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/80 dark:bg-emerald-950/20 p-4 text-sm text-emerald-800 dark:text-emerald-300 font-medium">
           Proctoring video saved successfully.
         </div>
       )}
-      {videoUploadState === "failed" && (
+      {!hideVideoStatus && videoUploadState === "failed" && (
         <div className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/80 dark:bg-amber-950/20 p-4 text-sm text-amber-900 dark:text-amber-200">
           Proctoring video could not be saved. Your score is already recorded.
+        </div>
+      )}
+
+      {reviewItems.length > 0 && (
+        <div className="space-y-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-primary">Question review</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {answersMissing
+                ? "The question paper and score are kept. Individual selected answers were not available for this archived attempt."
+                : "Your answers, the correct option, and explanations for this attempt."}
+            </p>
+          </div>
+          {reviewItems.map((item) => {
+            const mark =
+              item.is_correct === true ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              ) : item.is_correct === false || item.selected_option_index != null ? (
+                <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+              ) : null;
+            return (
+              <div
+                key={`${item.question_index}-${item.question_text.slice(0, 24)}`}
+                className="rounded-xl border border-border bg-card p-4 space-y-2"
+              >
+                <div className="flex items-start gap-2">
+                  {mark}
+                  <p className="text-sm font-semibold text-foreground">
+                    {item.question_index + 1}. {item.question_text}
+                  </p>
+                </div>
+                <ul className="space-y-1.5 pl-6">
+                  {item.options.map((option, idx) => {
+                    const isCorrect = item.correct_option_index === idx;
+                    const isSelected = item.selected_option_index === idx;
+                    const cls = isCorrect
+                      ? "text-emerald-700 dark:text-emerald-300 font-medium"
+                      : isSelected
+                        ? "text-red-600 dark:text-red-400"
+                        : "text-muted-foreground";
+                    return (
+                      <li key={idx} className={`text-sm ${cls}`}>
+                        {optionLabel(idx)}) {option}
+                        {isSelected ? " · your answer" : ""}
+                        {isCorrect ? " · correct" : ""}
+                      </li>
+                    );
+                  })}
+                </ul>
+                {item.selected_option_index == null && (
+                  <p className="text-xs text-muted-foreground pl-6">Not answered / selection not stored</p>
+                )}
+                {item.explanation ? (
+                  <p className="text-xs text-muted-foreground pl-6 leading-relaxed">{item.explanation}</p>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       )}
 
       {/* ── Actions ── */}
       <div className="flex gap-3">
         <Button onClick={props.onRetake} className="flex-1 gap-2 bg-primary hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all font-semibold">
-          <RotateCcw className="w-4 h-4" /> Retake
+          <RotateCcw className="w-4 h-4" /> {props.retakeLabel ?? (props.isArchivedReview ? "Start new attempt" : "Retake")}
         </Button>
         <Button
           variant="outline"
@@ -93,7 +173,7 @@ function ResultsView(props: {
   );
 }
 
-function ConfirmModal(props: { onConfirm: () => void; onCancel: () => void }) {
+function ConfirmModal(props: { onConfirm: () => void; onCancel: () => void; message?: string }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-indigo-900/80 backdrop-blur-sm" role="dialog">
       <motion.div
@@ -109,8 +189,8 @@ function ConfirmModal(props: { onConfirm: () => void; onCancel: () => void }) {
           <div>
             <h2 className="text-lg font-extrabold text-foreground">Retake this test?</h2>
             <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-              Your previous score and attempt history for this session will be overwritten.
-              This action cannot be undone.
+              {props.message ??
+                "Your previous score and answers will be saved as a previous attempt you can still review. A new attempt will then start."}
             </p>
           </div>
         </div>

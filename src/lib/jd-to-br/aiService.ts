@@ -1,5 +1,5 @@
-import { OpenAI } from 'openai';
 import { extractJdDisplaySkills, parseJdRequirements } from '@/lib/skill-match';
+import { localLlmCompleteJson } from '@/lib/local-llm';
 
 // Predefined mock datasets for sample workspace documents
 const MOCK_L1_L2_JD = {
@@ -40,18 +40,8 @@ const MOCK_L2_PRODUCTION_JD = {
  * @returns Structured JSON object
  */
 export const extractJdDetails = async (rawText: string, filename?: string): Promise<any> => {
-  const apiKey = process.env.OPENAI_API_KEY;
-  const isMockKey = !apiKey || apiKey.includes('your-openai') || apiKey === 'mock-key-value-for-startup';
-
-  if (isMockKey) {
-    console.log('[AI] OpenAI API key is missing or placeholder. Running Mock Fallback parsing.');
-    return runMockFallback(rawText, filename);
-  }
-
   try {
-    const openai = new OpenAI({ apiKey });
-    
-    console.log('[AI] Calling OpenAI API for JD structured extraction...');
+    console.log('[AI] Extracting JD with local Qwen3.5-27B…');
     const prompt = `
 You are an expert HR Recruiting and AI Parsing system. Analyze the following Job Description text and extract structured information.
 
@@ -81,21 +71,11 @@ ${rawText}
 -------------------------------------------
 `;
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: 'You are a precise HR parsing model returning structured JSON only.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.1,
-      response_format: { type: "json_object" }
-    });
-
-    const parsedJson = JSON.parse(response.choices[0].message.content || '{}');
-    console.log('[AI] OpenAI structured extraction completed successfully!');
+    const parsedJson = await localLlmCompleteJson(prompt, { temperature: 0.1, maxTokens: 2048 });
+    console.log('[AI] Local Qwen JD extraction completed.');
     return parsedJson;
   } catch (err: any) {
-    console.error('[AI] OpenAI API extraction failed, using regex fallback:', err.message);
+    console.error('[AI] Local Qwen JD extraction failed, using regex fallback:', err.message);
     return runMockFallback(rawText, filename);
   }
 };

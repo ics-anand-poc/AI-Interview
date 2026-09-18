@@ -1,0 +1,11 @@
+Job Title: Senior Full Stack Developer - SLED
+
+Mandatory Skills: JavaScript, TypeScript, React, REST APIs, Full Stack, Node.js
+
+Primary Skills: Java, Python, PostgreSQL, Microservices, AWS, Azure, HTML, CSS, Accessibility, CI/CD, Docker, Kubernetes, Agile
+
+Secondary Skills: Angular, Vue, SQL Server, Oracle, MongoDB, Section 508, WCAG, GitHub Actions, Jenkins, Terraform
+
+Optional Skills: Go, C#, .NET, DynamoDB, GCP
+
+Thoriva AI product role for government / SLED programs. Senior full stack developer owning features from database to browser: React/TypeScript UI, Node.js or similar backend APIs, microservices, secure auditable data access, accessibility (Section 508 / WCAG), and cloud-native delivery. 7–10 years full stack experience. Preferred: AWS/Azure/GCP, containers, Kubernetes, AI/ML reviewer workflows, PII/PHI security.

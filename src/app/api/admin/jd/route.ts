@@ -14,10 +14,12 @@ import { writeLog } from '@/lib/structured-logger';
 import { allowLocalDataFallback } from '@/lib/db-mode';
 import {
   extractBrId,
+  fileNameHasBrId,
   isPermanentlyRemovedBrId,
   isRequirementDeleted,
   loadDeletedRequirements,
   markRequirementsDeleted,
+  nextSyntheticBrId,
 } from '@/lib/deleted-requirements';
 import { eraseDeletedRequirementsFromMaster } from '@/services/automation-service';
 import { adminCanViewOrgScreeningData } from '@/lib/admin-accounts-server';
@@ -319,6 +321,19 @@ export async function POST(request: NextRequest) {
         { error: "This requirement was permanently removed and cannot be restored." },
         { status: 409 }
       );
+    }
+
+    if (!isUpdate && !fileNameHasBrId(fileName)) {
+      const labels: string[] = [];
+      try {
+        const localJds = await ensureJdsJson();
+        for (const j of localJds) labels.push(String(j.fileName || j.file_name || ""));
+      } catch {}
+      try {
+        const { data } = await supabase.from("job_descriptions").select("file_name");
+        for (const row of data || []) labels.push(String(row.file_name || ""));
+      } catch {}
+      fileName = `${nextSyntheticBrId(labels)} | ${fileName}`;
     }
 
     const id = jdId || crypto.randomUUID();

@@ -1,0 +1,15 @@
+[Unit]
+Description=Qwen 4B llamafile API (key auth)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/azureuser/AI-Interview-main/AI
+ExecStart=/home/azureuser/AI-Interview-main/AI/start.sh
+Restart=always
+RestartSec=3
+Environment=HOST=127.0.0.1
+Environment=PORT=8080
+
+[Install]
+WantedBy=multi-user.target

@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { supabase } from "@/lib/db";
 import { useSupabasePrimary } from "@/lib/db-mode";
 import type { EmployeeAccount } from "@/lib/employee-auth";
-import { PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID } from "@/lib/employee-auth";
+import { PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID, isProductAssessmentHistoryTopic } from "@/lib/employee-auth";
 import { readPersistedJson, writePersistedJson } from "@/lib/runtime-data";
 import {
   localTestsDb,
@@ -337,7 +337,7 @@ export async function syncSubmitToSupabase(
 export async function archiveTestAsHistory(testId: string): Promise<string | null> {
   const { data: test, error } = await supabase.from("tests").select("*").eq("id", testId).maybeSingle();
   if (error || !test) return null;
-  if (String(test.topic_id || "") === PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID) return null;
+  if (isProductAssessmentHistoryTopic(test.topic_id)) return null;
 
   const { data: attempts } = await supabase.from("test_attempts").select("*").eq("test_id", testId);
   const attemptRows = attempts || [];
@@ -365,14 +365,13 @@ export async function archiveTestAsHistory(testId: string): Promise<string | nul
   const { error: insErr } = await supabase.from("tests").insert({
     ...rest,
     id: historyId,
-    topic_id: PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID,
+    topic_id: `${PRODUCT_ASSESSMENT_HISTORY_TOPIC_ID}:${historyId}`,
     topic_title: `${title} (previous)`,
     status: "completed",
     completed_at: test.completed_at || new Date().toISOString(),
   });
   if (insErr) {
-    console.warn("archiveTestAsHistory insert failed:", insErr.message);
-    return null;
+    throw new Error(`archiveTestAsHistory insert failed: ${insErr.message}`);
   }
 
   const qIdMap = new Map<string, string>();
@@ -383,7 +382,7 @@ export async function archiveTestAsHistory(testId: string): Promise<string | nul
       return { ...q, id: newId, test_id: historyId };
     });
     const { error: qErr } = await supabase.from("test_questions").insert(copied);
-    if (qErr) console.warn("archiveTestAsHistory questions failed:", qErr.message);
+    if (qErr) throw new Error(`archiveTestAsHistory questions failed: ${qErr.message}`);
   }
 
   if (attemptRows.length) {
@@ -394,7 +393,7 @@ export async function archiveTestAsHistory(testId: string): Promise<string | nul
       question_id: qIdMap.get(String(a.question_id)) || a.question_id,
     }));
     const { error: aErr } = await supabase.from("test_attempts").insert(copiedAttempts);
-    if (aErr) console.warn("archiveTestAsHistory attempts failed:", aErr.message);
+    if (aErr) throw new Error(`archiveTestAsHistory attempts failed: ${aErr.message}`);
   }
 
   return historyId;

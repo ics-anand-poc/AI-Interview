@@ -1,0 +1,49 @@
+Job Title: Senior Software Engineer
+
+Date: 17 Sep 2026
+
+Mandatory Skills: Java, J2EE, REST APIs
+
+Primary Skills: Java, J2EE, Spring Boot, Hibernate, SQL, PL/SQL, Servlets, JSP, SOAP, Microservices, Spring, Struts, React, Angular, Tomcat, Git, Jira
+
+51210BR - Senior Software Engineer
+Status: Open
+Client: Conduent Business Services LLC
+Project: Conduent - Transportation - BATA
+Grade: E3
+Location: Hyderabad (Bangalore/Hyderabad)
+Experience: 3-6 years
+Sourcing: External - India
+Requirement type: Backfill (Rishab Ranjan / 1042978)
+TAG / RMG Manager: Antony, Nithin (1027544)
+Reports to: Reddy, Janardhana (1039901)
+
+JOB DESCRIPTION:
+Experience of Design, Implementation, Delivery & Maintenance of apps using Java/JavaEE technologies & compatible frameworks.
+
+- Good communication skills, both written and verbal
+- Experience in System Designing
+- Experience in Code review of Junior resources
+- Leading a small team (5-10 members); leads delivery of multiple modules
+- Outstanding skills in Core Java (Java 7, 8/11), J2EE
+- Strong Object-Oriented design and analysis skills
+- Implementation, Delivery & Maintenance of Multi-Tier applications using Java, J2EE Technologies and related frameworks
+- Working experience in Servlets, JSP
+- Experience of RESTful web-services
+- Experience of SOAP Web-services
+- Good working knowledge of Design Patterns and Design Principles
+- Experience of Spring Boot
+- Experience/Knowledge of Micro-services
+- Experience in Struts/Spring Framework, Hibernate/any ORM
+- Working experience for SQL & PL/SQL, DB Design Skills
+- Good working knowledge of Application & Web Servers; WebSphere or other application server; Tomcat or other webserver
+- Good understanding of the Software Development life cycle
+- Good understanding/knowledge of secure coding practices/standards; PCI, OWASP
+- Experience of implementing projects/modules for high availability, high performance
+- Experience of any Defect Management tool (e.g. Jira), Code Repository (SVN, GIT)
+- Experience of JMS or EJB
+- Knowledge of UI Frameworks – ReactJS/Angular
+- Participates in Requirement analysis, Architectural discussions
+- Creates high level & detailed design
+
+Develops and tests software systems or applications for software enhancements and new products. Analyses, programs, and modifies software for enhancements and/or new products. Using current programming languages and technologies, writes code, completes programming, and performs testing and debugging of applications.

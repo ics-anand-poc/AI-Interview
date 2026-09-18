@@ -1,0 +1,19 @@
+Job Title: DevOps Engineer - AWS
+
+Date: 16 Sep 2026
+
+Mandatory Skills: Jenkins, AWS, EKS, EC2, Lambda, API Gateway, CloudFront, RDS, IAM, VPC, S3, Route 53, ELB, ALB, Auto Scaling, WAF, CloudWatch, Bitbucket, GitLab, Docker, Kubernetes, Fargate
+
+Primary Skills: Jenkins, AWS, EKS, EC2, Lambda, API Gateway, CloudFront, RDS, IAM, VPC, S3, Route 53, ELB, ALB, Auto Scaling, WAF, CloudWatch, Bitbucket, GitLab, Docker, Kubernetes, Fargate
+
+All skills on this requirement are mandatory.
+
+CI/CD: Jenkins.
+
+Cloud: AWS (EKS, EC2, Lambda, API Gateway, CloudFront, RDS, IAM, VPC, S3, Route 53, ELB/ALB, Auto Scaling, WAF, CloudWatch).
+
+Version Control: Bitbucket, GitLab.
+
+Containers: Docker, Kubernetes, Fargate.
+
+The engineer designs and deploys scalable, secure, and highly available architectures across Development, UAT, and Production environments.

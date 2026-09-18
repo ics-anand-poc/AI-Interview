@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authenticateRequestAsync, isProductQbEmployee } from "@/lib/employee-auth";
+import { authenticateRequestAsync, isProductQbEmployee, isProductAssessmentHistoryTopic } from "@/lib/employee-auth";
 import { getEmployeeUuid } from "@/lib/employee-test-access";
 import { supabase } from "@/lib/db";
 import { reconcileEmployeeTestsFromLocalJson } from "@/services/employee-test-supabase-sync";
@@ -54,17 +54,21 @@ export async function GET(request: NextRequest) {
 
     const employeeUuid = await getEmployeeUuid(auth.employeeId);
 
-    const { data: completedRow } = await supabase
+    const { data: completedRows } = await supabase
       .from("tests")
       .select(
-        "id, topic_title, total_questions, score_correct, score_percent, completed_at, status"
+        "id, topic_id, topic_title, total_questions, score_correct, score_percent, completed_at, status"
       )
       .eq("employee_id", employeeUuid)
-      .eq("topic_id", TOPIC_ID)
       .eq("status", "completed")
       .order("completed_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(20);
+
+    const completedRow =
+      (completedRows ?? []).find(
+        (row) =>
+          row.topic_id === TOPIC_ID || isProductAssessmentHistoryTopic(row.topic_id)
+      ) ?? null;
 
     const { data: activeRow, error } = await supabase
       .from("tests")

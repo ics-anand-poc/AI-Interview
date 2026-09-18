@@ -305,35 +305,12 @@ export function DashboardInner() {
 
       <main className="max-w-full mx-auto px-6 md:px-12 -mt-6 pb-14 space-y-6 relative z-10">
 
-        {assignedTest && productQbEligible && (
-          <Card className="p-6 bg-card border border-indigo-200 dark:border-indigo-900 shadow-soft">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-primary">Assigned Product Assessment</p>
-                <h2 className="mt-1 text-xl font-bold text-foreground">{assignedTest.topic_title}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {assignedTest.total_questions} questions ·{" "}
-                  {assignedTest.status === "in_progress"
-                    ? "In progress — resume where you left off"
-                    : "Ready to start"}
-                </p>
-              </div>
-              <Button
-                className="rounded-xl"
-                onClick={() => router.push(`/employee/tests/${assignedTest.test_id}`)}
-              >
-                {assignedTest.status === "in_progress" ? "Resume Assessment" : "Start Assessment"}
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        {!assignedTest && completedAssessment && productQbEligible && (
+        {completedAssessment && productQbEligible && (
           <Card className="p-6 bg-card border border-emerald-200 dark:border-emerald-900/60 shadow-soft">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                  Assessment Completed
+                  {assignedTest ? "Previous attempt" : "Assessment Completed"}
                 </p>
                 <h2 className="mt-1 text-xl font-bold text-foreground">{completedAssessment.topic_title}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -344,7 +321,9 @@ export function DashboardInner() {
                     : ""}
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Contact your administrator if you need to retake this assessment.
+                  {assignedTest
+                    ? "Your earlier attempt is kept in full. You can review it and still start a new attempt below."
+                    : "Contact your administrator if you need to retake this assessment."}
                 </p>
               </div>
               <Button
@@ -353,6 +332,37 @@ export function DashboardInner() {
                 onClick={() => router.push(`/employee/tests/${completedAssessment.test_id}`)}
               >
                 Review Results
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {assignedTest && productQbEligible && (
+          <Card className="p-6 bg-card border border-indigo-200 dark:border-indigo-900 shadow-soft">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                  {completedAssessment ? "New attempt" : "Assigned Product Assessment"}
+                </p>
+                <h2 className="mt-1 text-xl font-bold text-foreground">{assignedTest.topic_title}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {assignedTest.total_questions} questions ·{" "}
+                  {assignedTest.status === "in_progress"
+                    ? "In progress — resume where you left off"
+                    : completedAssessment
+                      ? "Ready to retake — previous score stays available"
+                      : "Ready to start"}
+                </p>
+              </div>
+              <Button
+                className="rounded-xl"
+                onClick={() => router.push(`/employee/tests/${assignedTest.test_id}`)}
+              >
+                {assignedTest.status === "in_progress"
+                  ? "Resume Assessment"
+                  : completedAssessment
+                    ? "Start New Attempt"
+                    : "Start Assessment"}
               </Button>
             </div>
           </Card>

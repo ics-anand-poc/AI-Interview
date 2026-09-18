@@ -183,14 +183,14 @@ export class ResumeService {
       let analysis: any;
       try {
         pushProgress(resume.id, {
-          step: "analysis-gemini",
-          message: "Running AI analysis…",
+          step: "analysis-qwen",
+          message: "Running local Qwen3.5-27B analysis…",
         });
         analysis = await geminiEngine.analyzeResume(text, parsed, jdText);
         analysis.isLocal = false;
       } catch (geminiError: any) {
         console.warn(
-          "Gemini Engine failed (likely rate limit/quota), falling back to local engine:",
+          "Local Qwen engine failed, falling back to rule-based analysis:",
           geminiError.message
         );
         pushProgress(resume.id, {
