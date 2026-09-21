@@ -23,24 +23,23 @@ export async function POST(request: NextRequest) {
   const actorEmail = (searchParams.get('email') || "").trim().toLowerCase();
 
   try {
+    let result: Record<string, unknown> = {};
     if (type === 'requirements') {
-      const res = await refreshRequirements({ actorEmail });
-      return NextResponse.json({ ...res, success: true });
+      result = { ...(await refreshRequirements({ actorEmail })), success: true };
     } else if (type === 'sync-selected') {
-      const res = await syncSelectedRequirementToMaster(activeJdId || "");
-      return NextResponse.json({ ...res, success: true });
+      result = { ...(await syncSelectedRequirementToMaster(activeJdId || "")), success: true };
     } else if (type === 'candidates') {
-      const res = await refreshCandidates(activeJdId);
-      return NextResponse.json({ ...res, success: true });
+      result = { ...(await refreshCandidates(activeJdId)), success: true };
     } else if (type === 'employees') {
-      const res = await refreshEmployees(activeJdId);
-      return NextResponse.json({ ...res, success: true });
+      result = { ...(await refreshEmployees(activeJdId)), success: true };
     } else if (type === 'interviews') {
-      const res = await refreshInterviews();
-      return NextResponse.json({ ...res, success: true });
+      result = { ...(await refreshInterviews()), success: true };
     } else {
       return NextResponse.json({ error: 'Invalid refresh type specified' }, { status: 400 });
     }
+    const { bumpDashboardSync } = await import("@/lib/dashboard-sync");
+    await bumpDashboardSync(`refresh_${type}`);
+    return NextResponse.json(result);
   } catch (error: unknown) {
     return jsonPublicError(error, "Refresh failed");
   }

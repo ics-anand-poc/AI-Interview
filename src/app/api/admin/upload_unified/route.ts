@@ -167,6 +167,9 @@ export async function POST(request: NextRequest) {
       refreshResult = await refreshInterviews();
     }
 
+    const { bumpDashboardSync } = await import("@/lib/dashboard-sync");
+    await bumpDashboardSync(`upload_${category}`);
+
     return NextResponse.json({ 
       success: true, 
       category,

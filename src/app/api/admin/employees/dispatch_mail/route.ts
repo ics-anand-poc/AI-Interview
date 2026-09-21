@@ -319,6 +319,8 @@ export async function POST(request: NextRequest) {
       'success',
       `Successfully dispatched assessment invitations to ${dispatched.length} employees.`
     );
+    const { bumpDashboardSync } = await import("@/lib/dashboard-sync");
+    await bumpDashboardSync("dispatch_mail");
     return NextResponse.json({ success: true, count: dispatched.length, dispatched });
   } catch (error: unknown) {
     await writeLog('employee', 'DISPATCH_EMPLOYEE_MAILS_FAILED', 'failed', 'Failed to dispatch internal emails');

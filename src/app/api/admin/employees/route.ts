@@ -633,7 +633,7 @@ export async function GET(request: NextRequest) {
     if (!blankLiveResults) {
       cacheStore.set("employees", payload, activeJdId);
     } else {
-      cacheStore.invalidate("employees");
+      cacheStore.invalidate("employees", { sync: false });
     }
 
     return NextResponse.json(withPortalVisibility(payload));

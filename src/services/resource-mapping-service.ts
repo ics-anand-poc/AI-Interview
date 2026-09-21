@@ -199,6 +199,9 @@ export async function loadResourcePortalProfilesFromJson(): Promise<PortalProfil
 export function invalidatePortalMappingCaches(): void {
   mappingCache = null;
   profilesJsonCache = null;
+  void import("@/lib/dashboard-sync")
+    .then((mod) => mod.bumpDashboardSync("portal_mapping"))
+    .catch(() => {});
 }
 
 export async function excelLooksLikePortalMapping(buffer: Buffer): Promise<boolean> {

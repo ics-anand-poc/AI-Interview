@@ -388,6 +388,8 @@ export async function POST(request: NextRequest) {
     });
 
     await writeLog('requirements', isUpdate ? 'UPDATE_JD' : 'CREATE_JD', 'success', `Successfully ${isUpdate ? 'updated' : 'created'} JD ID: ${id} (${fileName}). Associated RM: ${rmEmail}`);
+    const { bumpDashboardSync } = await import("@/lib/dashboard-sync");
+    await bumpDashboardSync(isUpdate ? "jd_update" : "jd_create");
 
     return NextResponse.json({ 
       success: true, 
@@ -502,6 +504,8 @@ export async function DELETE(request: NextRequest) {
       'success',
       `Successfully deleted JD ID${ids.length > 1 ? "s" : ""}: ${ids.join(", ")}`
     );
+    const { bumpDashboardSync } = await import("@/lib/dashboard-sync");
+    await bumpDashboardSync("jd_delete");
 
     return NextResponse.json({ success: true, deletedCount: ids.length });
   } catch (error: unknown) {

@@ -30,8 +30,13 @@ class CacheStore {
     });
   }
 
-  invalidate(key: string) {
+  invalidate(key: string, opts?: { sync?: boolean }) {
     this.store.delete(key);
+    if (opts?.sync === false) return;
+    if (key !== "employees" && key !== "resumes") return;
+    void import("@/lib/dashboard-sync")
+      .then((mod) => mod.bumpDashboardSync(key))
+      .catch(() => {});
   }
 
   clear() {

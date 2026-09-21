@@ -1276,14 +1276,6 @@ export default function AdminDashboard() {
     } catch {}
   }, [selectedPool]);
 
-  // Clear selections when tab changes
-  useEffect(() => {
-    setSelectedResumeIds([]);
-    setSelectedEmailIds([]);
-    setSelectedEmployeeIds([]);
-    setSelectedJdIds([]);
-  }, [activeTab]);
-
   // General Action Loading states
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
@@ -1549,9 +1541,9 @@ export default function AdminDashboard() {
     }
   };
 
-  const loadJobDescriptions = async (emailToUse?: string) => {
+  const loadJobDescriptions = async (emailToUse?: string, opts?: { silent?: boolean }) => {
     const email = emailToUse || adminEmail;
-    setIsJdLoading(true);
+    if (!opts?.silent) setIsJdLoading(true);
     try {
       const res = await fetch(`/api/admin/jd?email=${encodeURIComponent(email)}`);
       const data = await res.json();
@@ -1560,6 +1552,7 @@ export default function AdminDashboard() {
         return;
       }
       setJds(data.jds);
+      if (opts?.silent) return;
       if (data.jds.length > 0) {
           setSelectedJdId((prevId) => {
             const exists = data.jds.some((j: any) => j.id === prevId);
@@ -1588,7 +1581,7 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error("Failed to load JDs", err);
     } finally {
-      setIsJdLoading(false);
+      if (!opts?.silent) setIsJdLoading(false);
     }
   };
 
@@ -1648,8 +1641,8 @@ export default function AdminDashboard() {
     }
   };
 
-  const loadEmployees = useCallback(async (opts?: { fresh?: boolean }) => {
-    setIsEmployeesLoading(true);
+  const loadEmployees = useCallback(async (opts?: { fresh?: boolean; silent?: boolean }) => {
+    if (!opts?.silent) setIsEmployeesLoading(true);
     try {
       const sendJdId = selectedJdId && !selectedJdId.includes("@") ? selectedJdId : "all";
       const freshQuery = opts?.fresh ? "&fresh=1" : "";
@@ -1684,9 +1677,75 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error("Failed to fetch employees", err);
     } finally {
-      setIsEmployeesLoading(false);
+      if (!opts?.silent) setIsEmployeesLoading(false);
     }
   }, [selectedJdId, adminEmail]);
+
+  const pauseLiveSyncRef = useRef(false);
+  pauseLiveSyncRef.current = Boolean(qwenScoring || refreshingType);
+  const liveReloadRef = useRef({
+    loadEmployees,
+    loadResumes,
+    loadEmails,
+    loadJobDescriptions,
+  });
+  liveReloadRef.current = {
+    loadEmployees,
+    loadResumes,
+    loadEmails,
+    loadJobDescriptions,
+  };
+
+  useEffect(() => {
+    if (!authenticated || !adminEmail) return;
+    let cancelled = false;
+    let seenRevision = -1;
+    let inFlight = false;
+
+    const pullRemoteChanges = async () => {
+      if (cancelled || inFlight) return;
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+      if (pauseLiveSyncRef.current || isInitialLoadRef.current) return;
+      inFlight = true;
+      try {
+        const res = await adminFetch("/api/admin/sync");
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || cancelled) return;
+        const revision = Number(data.revision) || 0;
+        if (seenRevision < 0) {
+          seenRevision = revision;
+          return;
+        }
+        if (revision === seenRevision) return;
+        seenRevision = revision;
+        const loaders = liveReloadRef.current;
+        await Promise.all([
+          loaders.loadEmployees({ fresh: true, silent: true }),
+          loaders.loadResumes(adminEmail, { silent: true }),
+          loaders.loadEmails(adminEmail, { silent: true }),
+          loaders.loadJobDescriptions(adminEmail, { silent: true }),
+        ]);
+      } catch (err) {
+        console.warn("[admin] live sync skipped:", err);
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      void pullRemoteChanges();
+    }, 8000);
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void pullRemoteChanges();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    void pullRemoteChanges();
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [authenticated, adminEmail]);
 
   useEffect(() => {
     if (authenticated && adminEmail) {
@@ -1793,13 +1852,15 @@ export default function AdminDashboard() {
     refreshingType === "all";
   const isTabContentLoading =
     isDashboardBootstrapping ||
-    (activeTab === "employee" || activeTab === "employee-portal"
-      ? isEmployeeDataPending
-      : activeTab === "requirements"
-        ? isJdLoading
-        : activeTab === "outbox"
-          ? isEmailsLoading
-          : loading);
+    (activeTab === "employee"
+      ? isEmployeeDataPending && employees.length === 0
+      : activeTab === "employee-portal"
+        ? isEmployeeDataPending && resourcePortalEmployees.length === 0
+        : activeTab === "requirements"
+          ? isJdLoading
+          : activeTab === "outbox"
+            ? isEmailsLoading
+            : loading);
 
   const portalCompletedDateModel = useMemo(() => {
     const keys = new Set<string>();
@@ -5190,7 +5251,7 @@ export default function AdminDashboard() {
                 >
                   Corp Pool
                   <Badge className={`border-0 text-[10px] ${activeTab === "employee" ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}>
-                    {isDashboardBootstrapping || isEmployeeDataPending ? "…" : employees.length}
+                    {isDashboardBootstrapping && employees.length === 0 ? "…" : employees.length}
                   </Badge>
                 </button>
                 <button
@@ -5221,10 +5282,7 @@ export default function AdminDashboard() {
                 </button>
                 {canViewEmployeePortal && (
                 <button
-                  onClick={() => {
-                    setActiveTab("employee-portal");
-                    void loadEmployees({ fresh: true });
-                  }}
+                  onClick={() => setActiveTab("employee-portal")}
                   className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-black text-xs sm:text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "employee-portal"
                       ? "border-primary text-foreground bg-card"
@@ -5233,7 +5291,7 @@ export default function AdminDashboard() {
                 >
                   Employee Portal
                   <Badge className={`border-0 text-[10px] ${activeTab === "employee-portal" ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}>
-                    {isDashboardBootstrapping || isEmployeeDataPending
+                    {isDashboardBootstrapping && resourcePortalEmployees.length === 0
                       ? "…"
                       : resourcePortalEmployees.length ||
                         Array.from(new Set(allTestResults.map((t) => t.employeeId))).length}

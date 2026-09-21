@@ -62,4 +62,7 @@ export async function saveCorpPoolRoster(employees: Array<{ employee_id: string 
   if (error) {
     throw new Error(`Failed to save Corp Pool to database: ${error.message}`);
   }
+  void import("@/lib/dashboard-sync")
+    .then((mod) => mod.bumpDashboardSync("corp_pool"))
+    .catch(() => {});
 }
