@@ -59,7 +59,7 @@ const HTTP_ERRORS: Record<number, Omit<HttpErrorInfo, "code">> = {
   },
   413: {
     title: "File too large",
-    description: "The upload is larger than Interviewscore allows. Use a smaller file.",
+    description: "The upload is larger than TalentScope allows. Use a smaller file.",
   },
   414: {
     title: "URI too long",
@@ -123,7 +123,7 @@ const HTTP_ERRORS: Record<number, Omit<HttpErrorInfo, "code">> = {
   },
   500: {
     title: "Something went wrong",
-    description: "Interviewscore hit an unexpected error. Try again, or return Home.",
+    description: "TalentScope hit an unexpected error. Try again, or return Home.",
   },
   501: {
     title: "Not implemented",
@@ -135,7 +135,7 @@ const HTTP_ERRORS: Record<number, Omit<HttpErrorInfo, "code">> = {
   },
   503: {
     title: "Service unavailable",
-    description: "Interviewscore is temporarily unavailable. Please try again in a few minutes.",
+    description: "TalentScope is temporarily unavailable. Please try again in a few minutes.",
   },
   504: {
     title: "Gateway timeout",
@@ -163,7 +163,7 @@ const HTTP_ERRORS: Record<number, Omit<HttpErrorInfo, "code">> = {
   },
   511: {
     title: "Network authentication required",
-    description: "You must authenticate with the network before accessing Interviewscore.",
+    description: "You must authenticate with the network before accessing TalentScope.",
   },
 };
 

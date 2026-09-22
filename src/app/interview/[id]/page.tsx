@@ -10,8 +10,13 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, CheckCircle, ArrowRight, ShieldAlert, Loader2, Sparkles, Bot, Volume2, RotateCcw, ChevronDown, ChevronUp, Code2, AlertCircle, AlertTriangle, Camera, Upload, ShieldCheck } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
+import { PageLoadingSkeleton } from '@/components/ui/skeleton';
 import {
   GOVERNMENT_ID_TYPES,
+  ID_UPLOAD_MAX_BYTES,
+  ID_UPLOAD_MAX_LABEL,
+  candidateIdentityCopy,
+  formatFileMb,
   getIdTypeLabel,
   type GovernmentIdType,
 } from '@/lib/identity-verification-shared';
@@ -22,6 +27,7 @@ import {
   LOOKING_DOWN_SECONDS,
   SILENT_PROCTOR_COOLDOWN_MS,
 } from '@/lib/interview-silent-proctor';
+import { acquireInterviewMedia } from '@/lib/interview-media';
 
 const CODING_LANGUAGES = [
   { value: 'javascript', label: 'JavaScript' },
@@ -232,17 +238,7 @@ export default function CandidatePortal() {
     try {
       setGeneralError(null);
       // Re-request permissions
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: { ideal: 1280 }, 
-          height: { ideal: 720 },
-          facingMode: 'user'
-        }, 
-        audio: { 
-          echoCancellation: true, 
-          noiseSuppression: true 
-        } 
-      });
+      const { stream } = await acquireInterviewMedia();
       
       console.log("✅ Camera stream re-acquired successfully");
       streamRef.current = stream;
@@ -1133,8 +1129,10 @@ export default function CandidatePortal() {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setVerificationError("File is too large (max 5MB)");
+    if (file.size > ID_UPLOAD_MAX_BYTES) {
+      setVerificationError(
+        `This file is ${formatFileMb(file.size)}. ID photos must be ${ID_UPLOAD_MAX_LABEL} or smaller.`
+      );
       e.target.value = '';
       return;
     }
@@ -1151,6 +1149,7 @@ export default function CandidatePortal() {
         const compressed = await compressImageDataUrl(event.target.result as string);
         setIdImageBase64(compressed);
         setVerificationError(null);
+        e.target.value = "";
       }
     };
     reader.readAsDataURL(file);
@@ -1251,17 +1250,7 @@ export default function CandidatePortal() {
   const handleAgreeAndStart = async () => {
     try {
       // Request camera and microphone permissions
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: { ideal: 1280 }, 
-          height: { ideal: 720 },
-          facingMode: 'user'
-        }, 
-        audio: { 
-          echoCancellation: true, 
-          noiseSuppression: true 
-        } 
-      });
+      const { stream } = await acquireInterviewMedia();
       
       console.log("✅ Real camera stream acquired successfully");
       streamRef.current = stream;
@@ -1320,154 +1309,7 @@ export default function CandidatePortal() {
       setShowIdVerification(true);
     } catch (err: any) {
       console.error("❌ Failed to acquire real media streams:", err);
-      
-      // Show user-friendly error message
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        setGeneralError('Camera/Microphone permission denied. Please allow access in browser settings and try again.');
-        return;
-      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-        setGeneralError('No camera or microphone found. Please check your device.');
-        return;
-      } else if (err.name === 'NotReadableError') {
-        setGeneralError('Camera/Microphone is in use by another application. Please close it and try again.');
-        return;
-      }
-      
-      console.warn("Attempting fallback to synthetic MediaStream...", err);
-      
-      // 1. Create a synthetic canvas video track
-      let videoTrack: MediaStreamTrack | null = null;
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = 640;
-        canvas.height = 480;
-        const ctx = canvas.getContext("2d");
-        
-        let angle = 0;
-        const drawMockFeed = () => {
-          if (!ctx) return;
-          ctx.fillStyle = "#0f172a";
-          ctx.fillRect(0, 0, 640, 480);
-          
-          ctx.strokeStyle = "#1e293b";
-          ctx.lineWidth = 1;
-          for (let i = 0; i < 640; i += 40) {
-            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 480); ctx.stroke();
-          }
-          for (let j = 0; j < 480; j += 40) {
-            ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(640, j); ctx.stroke();
-          }
-
-          const radius = 80 + Math.sin(angle) * 10;
-          ctx.strokeStyle = "#6366f1";
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.arc(320, 240, radius, 0, Math.PI * 2);
-          ctx.stroke();
-
-          ctx.strokeStyle = "#4f46e5";
-          ctx.beginPath(); ctx.moveTo(320, 200); ctx.lineTo(320, 280); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(280, 240); ctx.lineTo(360, 240); ctx.stroke();
-
-          ctx.fillStyle = "#e2e8f0";
-          ctx.font = "bold 16px sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText("SIMULATED PROCTOR FEED", 320, 100);
-          
-          ctx.fillStyle = "#a5b4fc";
-          ctx.font = "10px monospace";
-          ctx.fillText(`STATUS: ACTIVE | MOCKED | TIME: ${new Date().toLocaleTimeString()}`, 320, 380);
-
-          angle += 0.05;
-          if (streamRef.current) {
-            requestAnimationFrame(drawMockFeed);
-          }
-        };
-        drawMockFeed();
-        
-        const canvasStream = (canvas as any).captureStream ? (canvas as any).captureStream(30) : (canvas as any).webkitCaptureStream(30);
-        videoTrack = canvasStream.getVideoTracks()[0];
-      } catch (videoErr) {
-        console.error("Failed to generate mock video track:", videoErr);
-      }
-
-      // 2. Create a synthetic audio track (silent oscillator)
-      let audioTrack: MediaStreamTrack | null = null;
-      try {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        const audioCtx = new AudioContextClass();
-        const dest = audioCtx.createMediaStreamDestination();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        gain.gain.value = 0.001; 
-        osc.connect(gain);
-        gain.connect(dest);
-        osc.start();
-        audioTrack = dest.stream.getAudioTracks()[0];
-      } catch (audioErr) {
-        console.error("Failed to generate mock audio track:", audioErr);
-      }
-
-      // 3. Combine tracks into a new MediaStream
-      const tracks: MediaStreamTrack[] = [];
-      if (videoTrack) tracks.push(videoTrack);
-      if (audioTrack) tracks.push(audioTrack);
-      
-      const mockStream = new MediaStream(tracks);
-      streamRef.current = mockStream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = mockStream;
-        videoRef.current.play().catch(e => console.debug("Mock video play triggered", e));
-      }
-
-      // 4. Initialize MediaRecorder on the mock stream
-      try {
-        const mediaRecorder = createMediaRecorder(mockStream);
-        if (mediaRecorder) {
-          mediaRecorderRef.current = mediaRecorder;
-          chunksRef.current = [];
-          mediaRecorder.ondataavailable = (event) => {
-            if (event.data && event.data.size > 0) {
-              chunksRef.current.push(event.data);
-            }
-          };
-
-          mediaRecorder.onstop = async () => {
-            setIsUploadingVideo(true);
-            try {
-              const recordingDuration = recordingStartTimeRef.current 
-                ? (Date.now() - recordingStartTimeRef.current) / 1000 
-                : 0;
-
-              const videoBlob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType || 'video/webm' });
-              const formData = new FormData();
-              formData.append('video', videoBlob, `${resumeId}.webm`);
-              if (recordingDuration > 0) {
-                formData.append('duration', recordingDuration.toFixed(1));
-              }
-              const uploadRes = await fetch(`/api/interview/${resumeId}/upload_video`, {
-                method: 'POST',
-                body: formData
-              });
-              if (!uploadRes.ok) {
-                const errorData = await uploadRes.json();
-                console.error("❌ Failed to upload recording file. Status:", uploadRes.status, "Error:", errorData);
-              } else {
-                console.log("✅ Video uploaded successfully");
-              }
-            } catch (e) {
-              console.error("❌ Error saving interview recording:", e);
-            } finally {
-              setIsUploadingVideo(false);
-            }
-          };
-        } else {
-          console.warn("⚠️ Media recording features are disabled on mock stream because MediaRecorder could not be initialized.");
-        }
-      } catch (recErr) {
-        console.error("Failed to initialize MediaRecorder on mock stream:", recErr);
-      }
-
+      setGeneralError(null);
       setHasAgreed(true);
       setShowIdVerification(true);
     }
@@ -2233,7 +2075,7 @@ export default function CandidatePortal() {
         : 0;
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-[#f8fafc] via-[#f0f4ff] to-[#e0e7ff] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-foreground font-sans transition-colors duration-300 ${(currentStep === 'questions' || currentStep === 'candidate_question') ? 'select-none' : ''}`}>
+    <div className={`min-h-screen app-canvas text-foreground font-sans transition-colors duration-300 ${(currentStep === 'questions' || currentStep === 'candidate_question') ? 'select-none' : ''}`}>
       {/* Floating ThemeToggle above modals for setup screen access */}
       {(!hasAgreed || showStartConfirm) && (
         <div className="fixed top-4 right-4 z-[110]">
@@ -2260,17 +2102,22 @@ export default function CandidatePortal() {
       `}</style>
 
       {/* Header */}
-      <nav className="bg-card/80 backdrop-blur-md border-b border-indigo-50/80 dark:border-slate-800 py-3 md:py-4 px-4 md:px-6 shadow-sm sticky top-0 z-50 transition-colors">
+      <nav className="app-nav py-3 md:py-3.5 px-4 md:px-6">
         <div className="max-w-full mx-auto px-2 md:px-6 flex flex-wrap items-center justify-between gap-3 md:gap-4">
           <div className="flex items-center gap-2 md:gap-3">
-            <h1 className="text-lg md:text-xl font-black bg-primary bg-clip-text text-transparent tracking-tight">Voice Interview</h1>
-            <Badge className="hidden sm:inline-flex bg-secondary text-primary hover:bg-indigo-100 dark:hover:bg-slate-700 border-0 font-bold px-3 py-1">Confidential Session</Badge>
+            <div className="app-brand-mark h-8 w-8">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div className="leading-tight">
+              <h1 className="text-sm md:text-base font-bold tracking-tight text-foreground">Voice Interview</h1>
+              <p className="hidden sm:block text-[11px] text-muted-foreground font-medium">Confidential session</p>
+            </div>
           </div>
           <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-end">
             <div className="flex items-center gap-1.5 pr-2 border-r border-border">
               <Link href="/">
-                <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-indigo-700 dark:hover:text-violet-400 hover:bg-secondary px-2.5 md:px-3 font-semibold text-xs md:text-sm">
-                  <span className="hidden sm:inline">Candidate Screening Report</span>
+                <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-foreground px-2.5 md:px-3 text-xs md:text-sm">
+                  <span className="hidden sm:inline">Home</span>
                   <span className="inline sm:hidden">Home</span>
                 </Button>
               </Link>
@@ -2418,9 +2265,9 @@ export default function CandidatePortal() {
             {!idImageBase64 && (
               <div className="space-y-6">
                 <div className="text-left">
-                  <h3 className="text-sm font-black text-slate-855 dark:text-slate-200 uppercase tracking-wider mb-2">Step 1: Capture or Upload Government ID</h3>
+                  <h3 className="text-sm font-black text-slate-855 dark:text-slate-200 uppercase tracking-wider mb-2">Step 1: Government ID</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
-                    Select your ID type, then hold the physical card to the camera or upload a clear scan. The face photo on the ID must be fully visible — the system verifies both the card type and that the selfie matches the ID photo.
+                    Select the ID type, then upload a photo of the card or take one with the camera. The face on the ID must be clear. Next you will take a live selfie.
                   </p>
                 </div>
 
@@ -2453,10 +2300,28 @@ export default function CandidatePortal() {
                 )}
 
                 <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${!selectedIdType ? 'opacity-50 pointer-events-none' : ''}`}>
-                  {/* Webcam Snap Panel */}
                   <div className="flex flex-col gap-3">
-                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-left">Camera Capture</span>
-                    <div className="relative aspect-video rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-850 bg-slate-950 flex flex-col items-center justify-center shadow-inner">
+                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-left">Upload ID photo</span>
+                    <label className="flex-1 flex flex-col justify-center items-center p-6 border-2 border-dashed border-indigo-300 dark:border-indigo-800 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 text-center relative hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors group aspect-video min-h-[160px] md:min-h-0 cursor-pointer">
+                      <Upload className="w-8 h-8 text-indigo-600 group-hover:scale-110 transition-transform mb-2" />
+                      <span className="text-sm font-extrabold text-slate-800 dark:text-slate-100">Upload from this device</span>
+                      <span className="text-[11px] text-muted-foreground mt-1 font-semibold">PNG, JPG, or WebP · max {ID_UPLOAD_MAX_LABEL}</span>
+                      <span className="mt-3 inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white">
+                        Choose file
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg,image/webp"
+                        onChange={handleIdFileUpload}
+                        disabled={!selectedIdType}
+                        className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-left">Or take a photo</span>
+                    <div className="relative aspect-video rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-850 bg-slate-950 flex flex-col items-center justify-center shadow-inner min-h-[160px]">
                       <video
                         ref={verificationVideoRef}
                         autoPlay
@@ -2474,23 +2339,6 @@ export default function CandidatePortal() {
                       >
                         <Camera className="w-3.5 h-3.5" /> Capture ID Photo
                       </Button>
-                    </div>
-                  </div>
-
-                  {/* File Upload Panel */}
-                  <div className="flex flex-col gap-3">
-                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-left">File Upload Fallback</span>
-                    <div className="flex-1 flex flex-col justify-center items-center p-6 border-2 border-dashed border-slate-250 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-950/40 text-center relative hover:bg-slate-100 dark:hover:bg-slate-950/60 transition-colors group aspect-video min-h-[140px] md:min-h-0">
-                      <Upload className="w-8 h-8 text-primary group-hover:scale-110 transition-transform mb-2" />
-                      <span className="text-xs font-extrabold text-muted-foreground">Choose ID Scan File</span>
-                      <span className="text-[9px] text-muted-foreground mt-1 font-semibold">Accepts PNG, JPG, JPEG (Max 5MB)</span>
-                      <input
-                        type="file"
-                        accept="image/png,image/jpeg,image/jpg,image/webp"
-                        onChange={handleIdFileUpload}
-                        disabled={!selectedIdType}
-                        className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                      />
                     </div>
                   </div>
                 </div>
@@ -2568,14 +2416,10 @@ export default function CandidatePortal() {
               <div>
                 {/* 3A. Verification in progress spinner */}
                 {isVerifying && (
-                  <div className="flex flex-col items-center py-12 text-center">
-                    <div className="relative mb-6">
-                      <Loader2 className="w-14 h-14 text-primary animate-spin" />
-                      <Sparkles className="w-6 h-6 text-purple-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
-                    </div>
-                    <h3 className="text-lg font-black text-slate-855 dark:text-slate-100">Verifying Identity…</h3>
-                    <p className="text-xs text-slate-550 dark:text-slate-400 mt-2 max-w-sm font-semibold leading-relaxed">
-                      Checking that the document matches the selected ID type, then matching the face on the card to your live selfie. This usually takes a few seconds.
+                  <div className="py-4">
+                    <PageLoadingSkeleton label="Verifying identity" />
+                    <p className="text-xs text-slate-550 dark:text-slate-400 mt-4 text-center max-w-sm mx-auto font-semibold leading-relaxed">
+                      Matching the face on the ID to your live selfie. This usually takes a few seconds.
                     </p>
                   </div>
                 )}
@@ -2643,13 +2487,13 @@ export default function CandidatePortal() {
                           <AlertCircle className="w-7 h-7" />
                         </div>
                         <h3 className="text-lg font-black text-foreground">Verification Rejected</h3>
-                        <span className="text-xs bg-rose-100 dark:bg-rose-950/45 text-rose-700 dark:text-rose-400 px-3 py-0.5 rounded-full font-black mt-1">
-                          Match Confidence: {verificationResult.confidence}%
-                        </span>
                         
                         <div className="my-4 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-150 dark:border-rose-900/30 text-rose-700 dark:text-rose-350 text-xs font-semibold leading-relaxed text-left w-full">
-                          <strong className="block mb-1 text-[10px] font-black uppercase tracking-wider text-rose-800 dark:text-rose-450">Assessment Feedback:</strong>
-                          {verificationResult.reason}
+                          {candidateIdentityCopy({
+                            matched: false,
+                            failureCode: (verificationResult as { failureCode?: string }).failureCode,
+                            selectedIdType: verificationResult.selectedIdType || selectedIdType,
+                          })}
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4 my-6 w-full max-w-md">
@@ -2686,18 +2530,17 @@ export default function CandidatePortal() {
                       <ShieldCheck className="w-7 h-7" />
                     </div>
                     <h3 className="text-lg font-black text-foreground">Identity Verified</h3>
-                    <span className="text-xs bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 px-3.5 py-0.5 rounded-full font-black mt-1">
-                      Biometric Match Confidence: {verificationResult.confidence}%
-                    </span>
                     {(verificationResult.selectedIdType || selectedIdType) && (
                       <span className="text-[10px] text-slate-500 font-bold mt-2 uppercase tracking-wider">
-                        ID type confirmed: {getIdTypeLabel(verificationResult.selectedIdType || selectedIdType)}
+                        {getIdTypeLabel(verificationResult.selectedIdType || selectedIdType)}
                       </span>
                     )}
 
                     <div className="my-4 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-150 dark:border-emerald-900/30 text-emerald-800 dark:text-emerald-355 text-xs font-semibold leading-relaxed text-left w-full">
-                      <strong className="block mb-1 text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-450">Biometric Matching Rationale:</strong>
-                      {verificationResult.reason || 'Your identity has been verified successfully.'}
+                      {candidateIdentityCopy({
+                        matched: true,
+                        selectedIdType: verificationResult.selectedIdType || selectedIdType,
+                      })}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 my-6 w-full max-w-md">
@@ -3141,12 +2984,9 @@ export default function CandidatePortal() {
 
       <main className="max-w-full mx-auto px-6 md:px-12 py-8">
         {isInitializing ? (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center py-40 space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-indigo-500/30">
-              <Sparkles className="w-7 h-7 text-white animate-pulse" />
-            </div>
-            <p className="text-slate-600 font-bold animate-pulse text-sm">Generating your personalized questions…</p>
-          </motion.div>
+          <div className="py-16">
+            <PageLoadingSkeleton label="Generating your personalized questions" />
+          </div>
         ) : !interviewEnded ? (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
@@ -4133,9 +3973,9 @@ export default function CandidatePortal() {
               </div>
               <h2 className="text-2xl font-black text-foreground mb-4">Interview Complete</h2>
               {isUploadingVideo ? (
-                <div className="flex flex-col items-center gap-3 py-6">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                  <p className="text-slate-600 dark:text-slate-400 text-sm font-semibold">Securing and saving your video recording. Please do not close this window...</p>
+                <div className="py-4">
+                  <PageLoadingSkeleton label="Saving video recording" />
+                  <p className="text-slate-600 dark:text-slate-400 text-sm font-semibold mt-4">Please do not close this window.</p>
                 </div>
               ) : (
                 <>

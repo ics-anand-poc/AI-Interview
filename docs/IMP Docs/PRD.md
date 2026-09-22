@@ -1,6 +1,6 @@
-# Product Requirements Document — Interviewscore / HR Screening Console
+# Product Requirements Document — TalentScope
 
-**Product name:** Interviewscore (repo `resume-intelligence-platform`)  
+**Product name:** TalentScope (repo `talentscope`)  
 **Audience:** Infinite Computer Solutions TAG / RMG, delivery managers, and assigned employees  
 **Document owner:** Product + engineering  
 **Version:** 2.0  

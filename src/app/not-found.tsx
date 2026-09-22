@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import HttpErrorScreen from "@/components/http-error-screen";
+import { APP_NAME } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "Page not found · Interviewscore",
+  title: `Page not found · ${APP_NAME}`,
   robots: { index: false, follow: false },
 };
 

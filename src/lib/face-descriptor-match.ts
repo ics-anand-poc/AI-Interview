@@ -54,7 +54,7 @@ export function matchFaceDescriptors(
     confidence,
     distance,
     reason: matched
-      ? `Face embeddings match (distance ${distance.toFixed(3)}, confidence ${confidence}%).`
-      : `Face embeddings do not match closely enough (distance ${distance.toFixed(3)}, need ≤ ${maxDistance}).`,
+      ? "The face on the ID matches the live photo."
+      : "The face on the ID does not match the live photo.",
   };
 }

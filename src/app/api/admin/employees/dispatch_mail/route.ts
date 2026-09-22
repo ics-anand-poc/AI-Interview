@@ -71,8 +71,8 @@ function buildAssessmentInviteHtml(opts: {
   return `
 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #e0e7ff; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
   <div style="text-align: center; margin-bottom: 24px;">
-    <div style="display: inline-block; width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); line-height: 48px; color: #ffffff; font-size: 24px; font-weight: bold; font-family: sans-serif;">B</div>
-    <h2 style="color: #1e1b4b; margin-top: 12px; margin-bottom: 4px; font-size: 20px; font-weight: 800; font-family: sans-serif;">BizX Intelligence Portal</h2>
+    <div style="display: inline-block; width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); line-height: 48px; color: #ffffff; font-size: 20px; font-weight: bold; font-family: sans-serif;">TS</div>
+    <h2 style="color: #1e1b4b; margin-top: 12px; margin-bottom: 4px; font-size: 20px; font-weight: 800; font-family: sans-serif;">TalentScope</h2>
     <span style="color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-family: sans-serif;">Assessment Invitation</span>
   </div>
   <hr style="border: 0; border-top: 1px solid #f3f4f6; margin-bottom: 24px;" />
@@ -96,7 +96,7 @@ function buildAssessmentInviteHtml(opts: {
     
     <p style="margin-top: 24px;">Good luck with your interview!</p>
     <p style="color: #9ca3af; font-size: 12px; margin-top: 32px; border-top: 1px solid #f3f4f6; padding-top: 16px; text-align: center;">
-      This is an automated simulation email dispatched by the BizX Screening Console.
+      This is an automated email dispatched by TalentScope.
     </p>
   </div>
 </div>
@@ -260,7 +260,7 @@ export async function POST(request: NextRequest) {
         await sessionService.createCandidateSession(emp.email, resumeId);
       }
 
-      const subject = `Assessment Invitation - BizX Screening Console`;
+      const subject = `Assessment Invitation - TalentScope`;
       const assessmentLabel = portalMode ? "technical" : "technical";
       const loginHint = portalMode
         ? `Login with Employee ID: <strong>${emp.employee_id}</strong>`

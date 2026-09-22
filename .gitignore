@@ -58,6 +58,9 @@ AI/*.gguf
 AI/*.exe
 AI/.llm-api-key
 AI/.llm-ui-config.json
+AI/laya/.venv/
+AI/laya/.cache/
+faceproj/.venv/
 
 # Kilo audit tool directory
 .kilo/

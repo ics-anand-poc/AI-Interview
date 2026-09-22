@@ -338,6 +338,8 @@ export async function POST(request: NextRequest) {
 
     const id = jdId || crypto.randomUUID();
     const createdAt = parseRequirementCreatedAt(requestedCreatedAt, new Date().toISOString());
+    const { buildJdVector, saveJdVector } = await import("@/lib/cv-vector");
+    const jdVector = buildJdVector(jdText.trim());
 
     // 1. Persist to Supabase Database
     const { error: dbError } = await supabase.from('job_descriptions').upsert({
@@ -358,7 +360,7 @@ export async function POST(request: NextRequest) {
       if (isUpdate) {
         localJds = localJds.map((j: any) => 
           j.id === id 
-            ? { ...j, jdText: jdText.trim(), rmEmail: rmEmail.toLowerCase().trim(), fileName, createdAt } 
+            ? { ...j, jdText: jdText.trim(), rmEmail: rmEmail.toLowerCase().trim(), fileName, createdAt, ...jdVector } 
             : j
         );
       } else {
@@ -369,6 +371,7 @@ export async function POST(request: NextRequest) {
           fileName, 
           createdAt,
           uploadBatch: createdAt,
+          ...jdVector,
         });
       }
       const serialized = JSON.stringify(localJds, null, 2);
@@ -388,6 +391,9 @@ export async function POST(request: NextRequest) {
     });
 
     await writeLog('requirements', isUpdate ? 'UPDATE_JD' : 'CREATE_JD', 'success', `Successfully ${isUpdate ? 'updated' : 'created'} JD ID: ${id} (${fileName}). Associated RM: ${rmEmail}`);
+    await saveJdVector(id, jdText.trim(), fileName).catch((err) => {
+      console.warn("JD vectorize skipped:", err?.message || err);
+    });
     const { bumpDashboardSync } = await import("@/lib/dashboard-sync");
     await bumpDashboardSync(isUpdate ? "jd_update" : "jd_create");
 

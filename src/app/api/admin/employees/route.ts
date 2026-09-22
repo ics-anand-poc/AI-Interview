@@ -9,7 +9,7 @@ import { localTestsDb, LocalTestsDb } from '@/services/local-tests-db';
 import { allowLocalTestsFallback } from '@/lib/db-mode';
 import { formatProductDisplayName, formatTopicTitleForDisplay } from '@/lib/product-display-name';
 import { readPersistedJson, writePersistedJson, getRuntimeUploadsRoot } from '@/lib/runtime-data';
-import { calculateSkillMatch, employeeMatchText, scoreOverrideForJd } from '@/lib/skill-match';
+import { calculateSkillMatch, compileJdForMatch, employeeMatchText, scoreOverrideForJd } from '@/lib/skill-match';
 import { cacheStore } from '@/lib/cache-store';
 import { deleteDocFile, listDocFiles } from '@/lib/docs-storage';
 import { isCorpPoolDeleted, loadDeletedCorpPool, markCorpPoolDeleted } from '@/lib/deleted-corp-pool';
@@ -206,8 +206,9 @@ export async function GET(request: NextRequest) {
       }
       if (!jdText.trim()) return;
 
+      const compiled = compileJdForMatch(jdText);
       employees = employees.map((emp) => {
-        const matchResult = calculateSkillMatch(employeeMatchText(emp), jdText);
+        const matchResult = calculateSkillMatch(employeeMatchText(emp), jdText, compiled);
         return {
           ...emp,
           score: scoreOverrideForJd(emp, activeJdId) ?? matchResult.score,

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ClipboardList, Home, RotateCcw, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getHttpError, parseHttpErrorCode } from "@/lib/http-error-catalog";
+import { APP_NAME } from "@/lib/brand";
 
 type HttpErrorScreenProps = {
   code: number | string;
@@ -31,7 +32,7 @@ export default function HttpErrorScreen({
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-md shadow-indigo-500/30">
             <ClipboardList className="h-4 w-4 text-white" />
           </div>
-          <span className="text-sm font-black tracking-tight text-slate-100">Interviewscore</span>
+          <span className="text-sm font-black tracking-tight text-slate-100">{APP_NAME}</span>
         </div>
 
         <div className="rounded-3xl border border-white/10 bg-[#0c1020]/90 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur">

@@ -17,6 +17,7 @@ const connectSrc = [
   "'self'",
   "https://*.supabase.co",
   supabaseConnect,
+  "https://cdn.jsdelivr.net",
 ].filter(Boolean).join(" ");
 
 /** @type {import('next').NextConfig} */
@@ -67,7 +68,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src ${connectSrc}; frame-ancestors 'none';`
+            value: `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://cdn.jsdelivr.net; media-src 'self' blob:; worker-src 'self' blob:; connect-src ${connectSrc}; frame-ancestors 'none';`
           },
           {
             key: 'X-Frame-Options',
@@ -98,6 +99,10 @@ const nextConfig = {
     ];
   },
   webpack(config, { dev }) {
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      { module: /@vladmandic[\\/]face-api/ },
+    ];
     if (dev) {
       // PackFileCacheStrategy cannot serialize Map snapshots (common on Windows / OneDrive).
       config.cache = { type: "memory" };

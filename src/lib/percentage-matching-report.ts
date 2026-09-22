@@ -188,7 +188,7 @@ function fillCell(
 
 export async function buildPercentageMatchingWorkbook(rows: PercentageMatchRow[]): Promise<ExcelJS.Workbook> {
   const wb = new ExcelJS.Workbook();
-  wb.creator = "HR Screening Console";
+  wb.creator = "TalentScope";
   const ws = wb.addWorksheet("Percentage summary");
   ws.columns = [
     { width: 56 },

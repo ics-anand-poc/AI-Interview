@@ -1,26 +1,34 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import "plyr/dist/plyr.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Script from "next/script";
+import { APP_DESCRIPTION, APP_KEYWORDS, APP_NAME } from "@/lib/brand";
 
-const inter = Inter({ subsets: ["latin"] });
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
-  title: "Interviewscore",
-  description: "HR screening console — requirements, Corp Pool matching, and employee assessments.",
-  applicationName: "Interviewscore",
-  keywords: ["interviewscore", "HR screening", "corp pool", "job description", "assessment"],
+  title: APP_NAME,
+  description: APP_DESCRIPTION,
+  applicationName: APP_NAME,
+  keywords: [...APP_KEYWORDS],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
- return (
-   <html lang="en" className="dark" suppressHydrationWarning>
-     <head />
-     <body className={`${inter.className} bg-background text-foreground transition-colors duration-300 min-h-screen`}>
-       <Script id="theme-script" strategy="beforeInteractive">
-         {`
+  return (
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head />
+      <body
+        className={`${jakarta.variable} ${jakarta.className} bg-background text-foreground antialiased transition-colors duration-300 min-h-screen`}
+      >
+        <Script id="theme-script" strategy="beforeInteractive">
+          {`
            (function() {
              try {
                var saved = localStorage.getItem('theme');
@@ -42,11 +50,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
              }
            })();
          `}
-       </Script>
-       <ThemeProvider>
-         {children}
-       </ThemeProvider>
-     </body>
-   </html>
- );
+        </Script>
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
+    </html>
+  );
 }

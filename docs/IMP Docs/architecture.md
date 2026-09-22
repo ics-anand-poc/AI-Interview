@@ -1,7 +1,7 @@
-# AI Interview / Interviewscore — Level 0 (L0) System Architecture
+# TalentScope — Level 0 (L0) System Architecture
 
 **Document version:** 2.0  
-**Codebase:** `resume-intelligence-platform` (Next.js 16 monolith)  
+**Codebase:** `talentscope` (Next.js 16 monolith)  
 **Method:** Derived from source as of 17 Sep 2026 — supersedes the July 2026 L0 draft in this folder  
 **Related:** [PRD.md](./PRD.md) · [rules.md](./rules.md) · [phases.md](./phases.md) · [design.md](./design.md) · [memory.md](./memory.md)
 
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-Interviewscore is a **Next.js 16 full-stack monolith** with three product surfaces in one deployable unit:
+TalentScope is a **Next.js 16 full-stack monolith** with three product surfaces in one deployable unit:
 
 1. **Screening Dashboard (`/admin`)** — Requirements (BR/JD), Corp Pool, candidate CV suitability, optional Employee Portal admin
 2. **Employee Portal (`/employee`)** — product Q-forms, learning, proctored recordings

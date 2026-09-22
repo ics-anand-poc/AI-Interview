@@ -1,4 +1,4 @@
-# Design — Interviewscore UI
+# Design — TalentScope UI
 
 Visual and interaction spec for the three surfaces. Implementation: Next.js App Router, React 18, Tailwind 3, Radix slot Button, Lucide, Framer Motion, Recharts.
 

@@ -3,6 +3,7 @@
  * ID photos use FaceNet / browser face-api.
  */
 import {
+  candidateIdentityCopy,
   getIdTypeLabel,
   isGovernmentIdType,
   type GovernmentIdType,
@@ -270,7 +271,11 @@ export async function verifyCandidateIdentity(input: {
       return {
         matched: false,
         confidence: facenetFace.confidence,
-        reason: facenetFace.reason,
+        reason: candidateIdentityCopy({
+          matched: false,
+          failureCode: facenetFace.failureCode,
+          selectedIdType,
+        }),
         selectedIdType,
         detectedIdType: selectedIdType,
         idTypeMatched: true,
@@ -294,7 +299,11 @@ export async function verifyCandidateIdentity(input: {
       return {
         matched: false,
         confidence,
-        reason: facenetFace.reason,
+        reason: candidateIdentityCopy({
+          matched: false,
+          failureCode: "face_mismatch",
+          selectedIdType,
+        }),
         selectedIdType,
         detectedIdType: selectedIdType,
         idTypeMatched: true,
@@ -307,7 +316,7 @@ export async function verifyCandidateIdentity(input: {
     return {
       matched: true,
       confidence,
-      reason: `${getIdTypeLabel(selectedIdType)} accepted. ${facenetFace.reason}`,
+      reason: `${getIdTypeLabel(selectedIdType)} matched your live photo.`,
       selectedIdType,
       detectedIdType: selectedIdType,
       idTypeMatched: true,
@@ -328,7 +337,11 @@ export async function verifyCandidateIdentity(input: {
       return {
         matched: false,
         confidence,
-        reason: faceApiMatch.reason,
+        reason: candidateIdentityCopy({
+          matched: false,
+          failureCode: "face_mismatch",
+          selectedIdType,
+        }),
         selectedIdType,
         detectedIdType: selectedIdType,
         idTypeMatched: true,
@@ -340,7 +353,7 @@ export async function verifyCandidateIdentity(input: {
     return {
       matched: true,
       confidence,
-      reason: `${getIdTypeLabel(selectedIdType)} accepted (selected by candidate). ${faceApiMatch.reason}`,
+      reason: `${getIdTypeLabel(selectedIdType)} matched your live photo.`,
       selectedIdType,
       detectedIdType: selectedIdType,
       idTypeMatched: true,

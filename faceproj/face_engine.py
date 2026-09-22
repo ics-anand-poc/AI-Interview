@@ -96,8 +96,9 @@ class FaceEngine:
             confidence = int(max(0, 69 - ((dist - tolerance) / 0.75) * 69))
 
         reason = (
-            f"FaceNet biometric comparison complete. Euclidean face distance is {dist:.4f}, "
-            f"which is {'under' if matched else 'above'} the matching threshold of {tolerance}."
+            "The face on the ID matches the live photo."
+            if matched
+            else "The face on the ID does not match the live photo."
         )
 
         return {

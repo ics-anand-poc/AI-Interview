@@ -250,12 +250,10 @@ export default function EmployeeLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8fafc] via-[#f0f4ff] to-[#e0e7ff] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center px-4 py-6 relative overflow-hidden transition-colors duration-300">
-      {/* Background decorative elements */}
+    <div className="min-h-screen app-canvas flex items-center justify-center px-4 py-6 relative overflow-hidden transition-colors duration-300">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-700/5 rounded-full blur-[120px]" />
+        <div className="absolute top-10 left-10 w-72 h-72 bg-primary/8 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
       </div>
 
       {/* Theme Toggler */}
@@ -269,42 +267,39 @@ export default function EmployeeLoginPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="group flex items-center gap-2 text-muted-foreground hover:text-slate-700 dark:hover:text-white hover:bg-indigo-50/50 dark:hover:bg-white/10 rounded-xl px-3.5 py-2 transition-all duration-200"
+            className="group flex items-center gap-2 text-muted-foreground hover:text-foreground rounded-xl px-3.5 py-2"
           >
             <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
-            <span className="font-semibold text-xs">Go to Candidate Portal</span>
+            <span className="font-semibold text-xs">Candidate Portal</span>
           </Button>
         </Link>
       </div>
 
-      <Card className="w-full max-w-md p-6 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-indigo-50 dark:border-slate-700/50 shadow-2xl shadow-indigo-500/5 dark:shadow-black/35 relative overflow-hidden transition-colors duration-300">
-        {/* Top accent bar */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500" />
+      <Card className="w-full max-w-md p-6 md:p-7 shadow-card relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
 
-        {/* Side accent glow */}
-        <div className="absolute -top-20 -right-20 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="mb-4 text-center relative z-10">
-          {/* Logo mark */}
-          <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-lg shadow-indigo-500/40 ring-2 ring-white/[0.08]">
-            <ShieldCheck className="h-6 w-6 text-white" />
+        <div className="mb-5 text-center relative z-10">
+          <div className="mx-auto mb-3 app-brand-mark h-12 w-12">
+            <ShieldCheck className="h-6 w-6" />
           </div>
 
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-            {isResetPassword ? "Reset Portal Password" : (org ? `${org} Portal Login` : "Employee Portal Login")}
+          <h1 className="text-2xl font-bold tracking-tight text-foreground leading-tight">
+            {isResetPassword
+              ? "Reset Portal Password"
+              : org
+                ? `${org} · TalentScope`
+                : "TalentScope Login"}
           </h1>
-          <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed max-w-sm mx-auto">
+          <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
             {isResetPassword 
               ? "Verify your Employee ID and Email to set a new password." 
-              : `Access your learning assessments, performance analytics, and personalized growth path.`}
+              : `Access your TalentScope assessments, performance analytics, and growth path.`}
           </p>
         </div>
 
-        {/* Badge */}
         <div className="flex justify-center mb-4 relative z-10">
-          <Badge className="bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-semibold text-[10px] uppercase tracking-widest px-2.5 py-0.5">
-            {org ? `${org.toUpperCase()} - SECURE ACCESS` : "Secure Access Only"}
+          <Badge variant="default">
+            {org ? `${org.toUpperCase()} · Secure access` : "Secure access"}
           </Badge>
         </div>
 

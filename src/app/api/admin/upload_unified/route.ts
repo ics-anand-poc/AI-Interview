@@ -6,6 +6,9 @@ import { checkCsrf, getClientIp, inspectUpload, isRateLimitedAny, rateLimitedRes
 import { jsonPublicError } from '@/lib/api-errors';
 import { asEmail } from '@/lib/input-validation';
 import { writeDocFile, type DocCategory } from '@/lib/docs-storage';
+import { placeHrFile } from '@/lib/hr-file-place';
+import { excelSheetPreview } from '@/lib/corp-pool-llm';
+import { resumeService } from '@/services/resume-service';
 import { 
   refreshRequirements, 
   refreshCandidates, 
@@ -97,7 +100,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let preview = "";
+    try {
+      if (/\.(xlsx|xls)$/i.test(inspected.safeName)) preview = await excelSheetPreview(buffer);
+      else if (/\.(pdf|docx|doc|txt|html|htm)$/i.test(inspected.safeName)) {
+        preview = String(await resumeService.extractTextFromBuffer(buffer, inspected.safeName) || "").slice(0, 6500);
+      }
+    } catch {
+      preview = "";
+    }
+    const placed = placeHrFile({ fileName: inspected.safeName, preview });
     let category = inferUploadCategory(inspected.safeName, selectedCategory);
+    if (
+      placed.kind !== "unknown" &&
+      (!selectedCategory ||
+        selectedCategory === "resume" ||
+        placed.category === selectedCategory ||
+        (selectedCategory === "jd" && (placed.category === "jd" || placed.category === "br")))
+    ) {
+      category = placed.category;
+    }
     if (
       category !== "portal-mapping" &&
       /\.(xlsx|xls)$/i.test(inspected.safeName) &&
@@ -138,14 +160,16 @@ export async function POST(request: NextRequest) {
     if (mapping.refresh === 'requirements') {
       refreshResult = await refreshRequirements(
         category === "br"
-          ? { incomingBrFiles: [filename], actorEmail }
+          ? { incomingBrFiles: [filename], incomingFileBuffers: [{ filename, buffer, kind: "br" }], actorEmail }
           : category === "jd"
-            ? { incomingJdFiles: [filename], actorEmail }
+            ? { incomingJdFiles: [filename], incomingFileBuffers: [{ filename, buffer, kind: "jd" }], actorEmail }
             : { actorEmail }
       );
       if (category === "jd" && Number(refreshResult.convertedJDs || 0) === 0) {
         throw new Error(
-          "The JD was stored, but it could not be added to Requirements. Check the file has readable text and a BR ID in the filename (for example 50656BR.docx or 50656BR.html)."
+          preview.trim()
+            ? "The JD was stored, but it could not be added to Requirements. Put a BR ID in the filename (for example 51210BR.pdf)."
+            : "No readable text in this JD. Use a text PDF, Word, HTML, or TXT — not a scanned image."
         );
       }
       if (category === "br" && Number(refreshResult.incomingBrRows || 0) === 0) {

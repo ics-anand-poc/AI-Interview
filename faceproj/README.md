@@ -38,12 +38,23 @@ Redeploy the Next.js app. Verification order:
 
 ## Local run
 
+Windows (Store Python 3.13 is fine — uses a venv + prebuilt wheels):
+
+```bash
+npm run face
+```
+
+Or:
+
 ```bash
 cd faceproj
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-pip install -r requirements.txt
-uvicorn server:app --host 0.0.0.0 --port 10000
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe -m uvicorn server:app --host 127.0.0.1 --port 10000
 ```
+
+Do not `pip install -r requirements.txt` into Store Python 3.13. That file is pinned for Docker Python 3.11. Use `npm run face` (venv + prebuilt wheels).
 
 Test:
 

@@ -1,4 +1,4 @@
-# Phases — Interviewscore
+# Phases — TalentScope
 
 How the product was built and what “done” means in each phase. Dates are approximate; the live system on **17 Sep 2026** is Phase 4.
 
@@ -51,7 +51,7 @@ Microsoft Entra SSO was added on this surface (`MICROSOFT_CLIENT_*`).
 
 ---
 
-## Phase 3 — HR Screening Console (TAG daily driver)
+## Phase 3 — TalentScope Admin (TAG daily driver)
 
 **Intent:** Requirements + Corp Pool in `/admin`, dated batches, BR IDs, skill chips, shortlist.
 

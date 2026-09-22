@@ -1,18 +1,17 @@
-import ExcelJS from "exceljs";
-import { localLlmCompleteJson } from "@/lib/local-llm";
-import { decisionFromScore, type MatchDecision } from "@/lib/skill-match";
+﻿import ExcelJS from "exceljs";
+import { localLlmCompleteJson, localLlmIsUp } from "@/lib/local-llm";
+import { hrPlacement, placeHrFile, type HrFilePlacement } from "@/lib/hr-file-place";
+import {
+  calculateSkillMatch,
+  compileJdForMatch,
+  employeeMatchText,
+  type CompiledJd,
+  type MatchDecision,
+} from "@/lib/skill-match";
 
 export type LlmFileKind = "corp_pool" | "jd" | "br" | "portal_mapping" | "unknown";
 
-export type LlmFilePlacement = {
-  kind: LlmFileKind;
-  category: "employee" | "jd" | "br" | "portal-mapping" | "resume";
-  placeIn: string;
-  why: string;
-  peopleCount?: number;
-  suggestedTitle?: string;
-  columns?: Record<string, string>;
-};
+export type LlmFilePlacement = HrFilePlacement;
 
 export type LlmPersonScore = {
   score: number;
@@ -20,6 +19,8 @@ export type LlmPersonScore = {
   rationale: string;
   bestJdFileName: string;
   bestJdWhy: string;
+  matchingSkills?: string[];
+  engine?: "jd-cv" | "chips" | "laya";
 };
 
 function cellToText(v: unknown): string {
@@ -54,26 +55,16 @@ export async function excelSheetPreview(buffer: Buffer, maxRows = 12): Promise<s
   return lines.join("\n").slice(0, 7000);
 }
 
-const KIND_TO_CATEGORY: Record<LlmFileKind, LlmFilePlacement["category"]> = {
-  corp_pool: "employee",
-  jd: "jd",
-  br: "br",
-  portal_mapping: "portal-mapping",
-  unknown: "resume",
-};
-
-const KIND_TO_PLACE: Record<LlmFileKind, string> = {
-  corp_pool: "Corp Pool (people list)",
-  jd: "Requirements JD/BR",
-  br: "Requirements JD/BR (BR workbook)",
-  portal_mapping: "Employee Portal mapping",
-  unknown: "Do not auto-place — pick the tab yourself",
-};
-
 export async function classifyHrFileWithLlm(input: {
   fileName: string;
   preview: string;
 }): Promise<LlmFilePlacement> {
+  const rules = placeHrFile(input);
+  if (rules.kind !== "unknown") return rules;
+
+  if (!(await localLlmIsUp())) return rules;
+
+  try {
   const parsed = await localLlmCompleteJson(
     `You classify files for an HR screening console with two people lists that must stay separate:
 - Corp Pool = bench/employees to match against job descriptions (Emp No, name, grade, skills)
@@ -94,7 +85,7 @@ Return ONLY JSON:
   "columns": { "emp_no": "", "name": "", "skills": "" }
 }
 If it is a JD, suggestedTitle is the job title. columns only for corp_pool.`,
-    { temperature: 0.1, maxTokens: 500, timeoutMs: 120_000 }
+    { temperature: 0.1, maxTokens: 220, timeoutMs: 12_000 }
   );
 
   const kind = (["corp_pool", "jd", "br", "portal_mapping", "unknown"] as LlmFileKind[]).includes(
@@ -103,15 +94,14 @@ If it is a JD, suggestedTitle is the job title. columns only for corp_pool.`,
     ? (parsed.kind as LlmFileKind)
     : "unknown";
 
-  return {
-    kind,
-    category: KIND_TO_CATEGORY[kind],
-    placeIn: KIND_TO_PLACE[kind],
-    why: String(parsed.why || "").trim() || "Could not classify this file.",
+  return hrPlacement(kind, String(parsed.why || "").trim() || "Could not classify this file.", {
     peopleCount: Number(parsed.peopleCount) || undefined,
     suggestedTitle: String(parsed.suggestedTitle || "").trim() || undefined,
     columns: parsed.columns && typeof parsed.columns === "object" ? parsed.columns : undefined,
-  };
+  });
+  } catch {
+    return rules;
+  }
 }
 
 export async function scorePersonAgainstJdsWithLlm(input: {
@@ -124,24 +114,38 @@ export async function scorePersonAgainstJdsWithLlm(input: {
     designation?: string;
     grade?: string;
     skills?: string;
+    product?: string;
+    role?: string;
+    cv_vec?: string[];
+    cv_hash?: string;
   };
+  jdVec?: string[];
+  deep?: boolean;
+  llmReady?: boolean;
+  compiledJd?: CompiledJd;
 }): Promise<LlmPersonScore> {
-  const parsed = await localLlmCompleteJson(
-    `Score 0-100 vs this JD. Wrong family <50. JSON only, no thinking.
-JD: ${input.selectedJdFileName}
-${input.selectedJdText.slice(0, 420)}
-PERSON ${input.person.employee_id} ${input.person.full_name} ${input.person.designation || ""} ${input.person.grade || ""}
-Skills: ${String(input.person.skills || "").slice(0, 280)}
-{"score":0,"rationale":"short","bestJdFileName":"${input.selectedJdFileName}","bestJdWhy":"short"}`,
-    { temperature: 0.1, maxTokens: 72, timeoutMs: 90_000 }
+  const match = calculateSkillMatch(
+    employeeMatchText({
+      skills: input.person.skills,
+      designation: input.person.designation,
+      grade: input.person.grade,
+      product: input.person.product,
+      role: input.person.role,
+    }),
+    input.selectedJdText,
+    input.compiledJd
   );
-
-  const score = Math.max(0, Math.min(100, Math.round(Number(parsed.score) || 0)));
   return {
-    score,
-    decision: decisionFromScore(score),
-    rationale: String(parsed.rationale || "").trim() || "Local Qwen score.",
-    bestJdFileName: String(parsed.bestJdFileName || input.selectedJdFileName).trim(),
-    bestJdWhy: String(parsed.bestJdWhy || "").trim(),
+    score: match.score,
+    decision: match.decision,
+    rationale: match.rationale,
+    bestJdFileName: input.selectedJdFileName,
+    bestJdWhy: match.rationale,
+    matchingSkills: match.matchingSkills,
+    engine: "chips",
   };
+}
+
+export function compileSelectedJd(jdText: string): CompiledJd {
+  return compileJdForMatch(jdText);
 }

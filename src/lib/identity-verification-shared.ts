@@ -1,3 +1,11 @@
+/** Max size for a government ID photo upload (file on disk, before compress). */
+export const ID_UPLOAD_MAX_BYTES = 2 * 1024 * 1024;
+export const ID_UPLOAD_MAX_LABEL = "2 MB";
+
+export function formatFileMb(bytes: number): string {
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export const GOVERNMENT_ID_TYPES = [
   { value: "aadhaar", label: "Aadhar Card" },
   { value: "driving_license", label: "Driving License" },
@@ -28,6 +36,35 @@ export function isGovernmentIdType(value: unknown): value is GovernmentIdType {
 export function getIdTypeLabel(value: string | null | undefined): string {
   const found = GOVERNMENT_ID_TYPES.find((t) => t.value === value);
   return found?.label || value || "Unknown";
+}
+
+/** Candidate-facing copy. Never mention distance, confidence, or engine names. */
+export function candidateIdentityCopy(input: {
+  matched?: boolean;
+  failureCode?: VerificationFailureCode | string | null;
+  selectedIdType?: string | null;
+}): string {
+  if (input.matched) {
+    const label = getIdTypeLabel(input.selectedIdType);
+    return label && label !== "Unknown"
+      ? `${label} matched your live photo. You can continue.`
+      : "Your ID matched your live photo. You can continue.";
+  }
+  switch (input.failureCode) {
+    case "no_face_on_id":
+      return "We could not see a clear face on the ID. Upload a sharper photo of the card or take another picture.";
+    case "no_face_on_selfie":
+      return "We could not see a clear face in the selfie. Look at the camera with good lighting and try again.";
+    case "face_mismatch":
+      return "The face on the ID does not match the live photo. Use your own ID and look straight at the camera.";
+    case "invalid_id_type":
+    case "missing_id_type":
+      return "Select the type of government ID you are using.";
+    case "engine_error":
+      return "Identity check is unavailable right now. Your photos were saved for a recruiter to review.";
+    default:
+      return "We could not verify this ID against the live photo. Try a clearer ID photo or another selfie.";
+  }
 }
 
 const ID_TYPE_ALIASES: Record<GovernmentIdType, string[]> = {

@@ -30,14 +30,15 @@ module.exports = {
         ring: 'rgb(var(--ring) / <alpha-value>)',
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-playfair)', 'Georgia', 'serif'],
+        sans: ['var(--font-jakarta)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-jakarta)', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        'soft': '0 2px 15px -3px rgba(99, 102, 241, 0.12), 0 4px 6px -4px rgba(99, 102, 241, 0.08)',
-        'card': '0 0 0 1px rgba(99, 102, 241, 0.1), 0 4px 16px -2px rgba(99, 102, 241, 0.15)',
-        'hover': '0 4px 20px -2px rgba(99, 102, 241, 0.25), 0 8px 12px -4px rgba(99, 102, 241, 0.12)',
-        'nav': '0 1px 3px rgba(99, 102, 241, 0.08), 0 1px 2px rgba(99, 102, 241, 0.06)',
+        soft: '0 1px 2px rgb(15 23 42 / 0.04), 0 10px 28px -14px rgb(15 23 42 / 0.14)',
+        card: '0 1px 3px rgb(15 23 42 / 0.05), 0 14px 36px -18px rgb(15 23 42 / 0.18)',
+        hover: '0 10px 32px -14px rgb(15 23 42 / 0.2)',
+        nav: '0 1px 0 rgb(15 23 42 / 0.05), 0 8px 24px -20px rgb(15 23 42 / 0.12)',
+        focus: '0 0 0 3px rgb(var(--ring) / 0.22)',
       },
       borderRadius: {
         '4xl': '2rem',

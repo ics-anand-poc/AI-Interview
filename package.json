@@ -1,11 +1,13 @@
 {
-  "name": "resume-intelligence-platform",
+  "name": "talentscope",
   "version": "1.0.0",
-  "description": "100% Local Resume Intelligence",
+  "description": "TalentScope — talent screening, Corp Pool ranking, and employee assessments",
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
     "llm": "AI\\start.bat",
+    "laya": "AI\\laya\\start.bat",
+    "face": "faceproj\\start.bat",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

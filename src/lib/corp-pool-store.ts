@@ -1,4 +1,5 @@
 import { supabaseServer } from "@/lib/db";
+import { ensureCvVectors } from "@/lib/cv-vector";
 
 const SETTINGS_KEY = "corp_pool_roster";
 
@@ -50,7 +51,7 @@ export async function loadCorpPoolRoster<T extends { employee_id: string }>(): P
 }
 
 export async function saveCorpPoolRoster(employees: Array<{ employee_id: string }>): Promise<void> {
-  const value = asEmployeeList(employees);
+  const value = ensureCvVectors(asEmployeeList(employees) as any);
   cache = { at: Date.now(), value };
   const { error } = await supabaseServer.from("portal_settings").upsert(
     {

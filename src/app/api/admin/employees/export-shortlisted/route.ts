@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = "HR Screening Console";
+    workbook.creator = "TalentScope";
     const sheet = workbook.addWorksheet("Shortlisted Interviews");
     sheet.columns = [
       { header: "Name", key: "name", width: 28 },

@@ -7,9 +7,11 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 
-const DashboardRadarChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardRadarChartFrame), { ssr: false, loading: () => <div className="animate-pulse bg-secondary rounded-lg h-72 w-full min-h-[288px]" /> });
-const DashboardTrendChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardTrendChartFrame), { ssr: false, loading: () => <div className="animate-pulse bg-secondary rounded-lg h-72 w-full min-h-[288px]" /> });
-const DashboardWeeklyChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardWeeklyChartFrame), { ssr: false, loading: () => <div className="animate-pulse bg-secondary rounded-lg h-72 w-full min-h-[288px]" /> });
+const ChartBone = () => <div className="skeleton-screen h-72 w-full min-h-[288px] rounded-lg"><div className="skeleton h-full w-full rounded-lg" /></div>;
+const DashboardRadarChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardRadarChartFrame), { ssr: false, loading: ChartBone });
+const DashboardTrendChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardTrendChartFrame), { ssr: false, loading: ChartBone });
+const DashboardWeeklyChart = dynamic(() => import("./DashboardCharts").then(m => m.DashboardWeeklyChartFrame), { ssr: false, loading: ChartBone });
+import { CenteredPageLoading } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,7 +19,6 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { buildRadarDataFromBreakdown, buildRadarDataFromResults, computeReadinessScore, computeSkillLevel } from "@/lib/dashboard-analytics";
 
 import {
-  Loader2,
   Clock,
   Zap,
   Target,
@@ -225,20 +226,7 @@ export function DashboardInner() {
 
   // ── Render — loading
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#f0f4ff] flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-indigo-500/30 mx-auto"
-          >
-            <Loader2 className="w-6 h-6 text-white animate-spin" />
-          </motion.div>
-          <p className="text-slate-500 font-medium">Loading dashboard…</p>
-        </div>
-      </div>
-    );
+    return <CenteredPageLoading label="Loading dashboard" />;
   }
 
   // ── Render — error
@@ -265,27 +253,24 @@ export function DashboardInner() {
 
   // ── Render — main
   return (
-    <div className="min-h-screen bg-[#f0f4ff] dark:bg-slate-950 text-foreground transition-colors duration-300">
+    <div className="min-h-screen bg-transparent text-foreground transition-colors duration-300">
 
       {/* ── Page header ─────────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 text-white px-6 pt-10 pb-16 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-4 right-8 w-40 h-40 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-1/4 w-60 h-60 bg-violet-400 rounded-full blur-3xl" />
-        </div>
+      <div className="bg-card border-b border-border/70 text-foreground px-6 pt-8 pb-10 relative">
         <div className="max-w-full mx-auto px-6 md:px-12 flex flex-wrap items-end justify-between gap-4 relative z-10">
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <div>
-              <h1 className="text-3xl font-extrabold tracking-tight">Dashboard</h1>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary mb-1">Employee portal</p>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
               {employeeProfile && (
-                <p className="mt-1 text-sm font-semibold text-indigo-100">
+                <p className="mt-1 text-sm font-medium text-muted-foreground">
                   {employeeProfile.full_name?.trim() || employeeProfile.employee_id}
-                  <span className="mx-2 text-indigo-300">·</span>
+                  <span className="mx-2 text-border">·</span>
                   ID: {employeeProfile.employee_id}
                 </p>
               )}
-              <p className="text-indigo-200 text-sm mt-1.5">
+              <p className="text-muted-foreground text-sm mt-1.5">
                 {productQbEligible
                   ? "Your learning topics and assigned product question bank."
                   : "Your learning journey at a glance."}
@@ -293,17 +278,17 @@ export function DashboardInner() {
             </div>
           </div>
           <div className="text-right space-y-1">
-            <Badge className="bg-white/20 border-0 text-white backdrop-blur-sm capitalize">{skillLevel}</Badge>
-            <p className="text-xs text-indigo-200">
+            <Badge variant="default" className="capitalize">{skillLevel}</Badge>
+            <p className="text-xs text-muted-foreground">
               Readiness Score
-              <span className="ml-1 font-bold text-lg">{ars}</span>
-              <span className="text-indigo-300"> / 100</span>
+              <span className="ml-1 font-bold text-lg text-foreground">{ars}</span>
+              <span className="text-muted-foreground"> / 100</span>
             </p>
           </div>
         </div>
       </div>
 
-      <main className="max-w-full mx-auto px-6 md:px-12 -mt-6 pb-14 space-y-6 relative z-10">
+      <main className="max-w-full mx-auto px-6 md:px-12 pt-6 pb-14 space-y-6 relative z-10">
 
         {completedAssessment && productQbEligible && (
           <Card className="p-6 bg-card border border-emerald-200 dark:border-emerald-900/60 shadow-soft">

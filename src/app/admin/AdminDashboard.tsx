@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ScreeningTableSkeleton, Skeleton } from "@/components/ui/skeleton";
+import { CenteredPageLoading, PageLoadingSkeleton, ScreeningTableSkeleton, Skeleton } from "@/components/ui/skeleton";
 import { 
   Loader2, 
   ArrowLeft, 
@@ -74,7 +74,7 @@ import {
 } from "@/lib/portal-test-status";
 import { formatProductDisplayName } from "@/lib/product-display-name";
 import { getPortalPrimaryProctoring } from "@/lib/portal-proctor-display";
-import { calculateSkillMatch, candidateMatchText, decisionFromScore, employeeMatchText, extractJdMandatorySkills, extractJdPrimarySkills, QUALIFIED_COVERAGE_PERCENT, scoreOverrideForJd, type SkillBreakdownItem, type ScoreParts } from "@/lib/skill-match";
+import { calculateSkillMatch, candidateMatchText, compareMatchRank, compileJdForMatch, decisionFromScore, employeeMatchText, extractJdMandatorySkills, extractJdPrimarySkills, QUALIFIED_COVERAGE_PERCENT, scoreOverrideForJd, type SkillBreakdownItem, type ScoreParts } from "@/lib/skill-match";
 import { clearAdminAccessFlags, readAdminAccessFlags, storeAdminAccessFlags } from "@/lib/admin-accounts";
 import { isPortalMappingFileName } from "@/lib/portal-mapping-file";
 
@@ -2761,12 +2761,10 @@ export default function AdminDashboard() {
 
   const ingestUnifiedFile = async (file: File) => {
     let category = inferUnifiedCategory(file, uploadCategory);
-    const askQwen =
-      /\.(xlsx|xls|csv)$/i.test(file.name) ||
-      /\b(jd|br|requirement|job description|program manager|technical lead)\b/i.test(file.name);
+    const askPlace = /\.(xlsx|xls|csv|pdf|docx|doc|txt|html|htm)$/i.test(file.name);
 
-    if (askQwen) {
-      setPipelineStatus(`Ingestion: Qwen reading ${file.name}…`);
+    if (askPlace) {
+      setPipelineStatus(`Ingestion: Placing ${file.name}…`);
       try {
         const formData = new FormData();
         formData.append("file", file);
@@ -2796,7 +2794,7 @@ export default function AdminDashboard() {
         }
       } catch (err: any) {
         setActivityLogs((prev) => [
-          `[${new Date().toLocaleTimeString()}] Qwen file read skipped: ${err.message}`,
+          `[${new Date().toLocaleTimeString()}] File classify skipped: ${err.message}`,
           ...prev,
         ]);
       }
@@ -4849,16 +4847,25 @@ export default function AdminDashboard() {
     );
   });
 
-  const scoredEmployees = useMemo(() => {
+  const compiledSelectedJd = useMemo(() => {
     const jdText = jdSavedText.trim();
     const jdIsActive =
       Boolean(jdText) &&
       Boolean(selectedJdId) &&
       selectedJdId !== "all" &&
       !selectedJdId.includes("@");
-    if (!jdIsActive) return employees;
+    if (!jdIsActive) return null;
+    return compileJdForMatch(jdText);
+  }, [jdSavedText, selectedJdId]);
+
+  const scoredEmployees = useMemo(() => {
+    if (!compiledSelectedJd) return employees;
     return employees.map((emp) => {
-      const result = calculateSkillMatch(employeeMatchText(emp), jdText);
+      const result = calculateSkillMatch(
+        employeeMatchText(emp),
+        compiledSelectedJd.jdText,
+        compiledSelectedJd
+      );
       const computed = Number(result.score) || 0;
       const override = scoreOverrideForJd(emp, selectedJdId);
       const overridden = override != null;
@@ -4876,7 +4883,7 @@ export default function AdminDashboard() {
         familyRelation: result.familyRelation,
       };
     });
-  }, [employees, jdSavedText, selectedJdId]);
+  }, [employees, compiledSelectedJd, selectedJdId]);
 
   const jdCoverageQualifiedCount = scoredEmployees.filter((e) => {
     const score = Number(e.score);
@@ -4958,11 +4965,7 @@ export default function AdminDashboard() {
       if (Boolean(a.shortlisted) !== Boolean(b.shortlisted)) {
         return a.shortlisted ? -1 : 1;
       }
-      const scoreDelta = (b.score || 0) - (a.score || 0);
-      if (scoreDelta !== 0) return scoreDelta;
-      const matchDelta = (b.matchingSkills?.length || 0) - (a.matchingSkills?.length || 0);
-      if (matchDelta !== 0) return matchDelta;
-      return String(a.full_name || "").localeCompare(String(b.full_name || ""));
+      return compareMatchRank(a, b);
     });
 
   const selectedPoolIdSet = useMemo(() => new Set(selectedPool?.ids || []), [selectedPool]);
@@ -5032,25 +5035,13 @@ export default function AdminDashboard() {
     const totalGuess = poolIds.length;
     setQwenScoring(true);
     setQwenProgress({ done: 0, total: totalGuess });
-    setPipelineStatus(`Analyzing ${totalGuess} people in the selected pool…`);
+    setPipelineStatus(`Ranking ${totalGuess} people vs this JD…`);
     try {
-      let offset = 0;
       let total = totalGuess;
       let scoredCount = 0;
       let failedCount = 0;
       let jdFileName = "";
-      while (seq === qwenScanSeqRef.current) {
-        const res = await adminFetch("/api/admin/employees/llm-evaluate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ jdId, force: true, offset, limit: 1, scanId, employeeIds: poolIds }),
-        });
-        const result = await res.json();
-        if (seq !== qwenScanSeqRef.current) return;
-        if (!res.ok || !result.success) {
-          throw new Error(result.error || "Analyze failed");
-        }
-        if (result.aborted) return;
+      const applyHits = (result: any) => {
         jdFileName = result.jdFileName || jdFileName;
         total = Number(result.total) || total;
         scoredCount += Number(result.scored) || 0;
@@ -5070,22 +5061,49 @@ export default function AdminDashboard() {
             };
           })
         );
-        offset = Number(result.nextOffset) || offset + 1;
+      };
+      const CHUNK = 250;
+      let offset = 0;
+      let elapsedMs = 0;
+      while (offset < poolIds.length) {
+        if (seq !== qwenScanSeqRef.current) return;
+        const res = await adminFetch("/api/admin/employees/llm-evaluate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jdId,
+            force: true,
+            offset,
+            limit: CHUNK,
+            scanId,
+            employeeIds: poolIds,
+          }),
+        });
+        const result = await res.json();
+        if (!res.ok || !result.success) {
+          throw new Error(result.error || "Analyze failed");
+        }
+        if (result.aborted) return;
+        applyHits(result);
+        elapsedMs += Number(result.elapsedMs) || 0;
+        offset = Number(result.nextOffset) || offset + CHUNK;
+        total = Number(result.total) || total;
         setQwenProgress({ done: Math.min(offset, total), total });
-        setPipelineStatus(`Analyzing ${Math.min(offset, total)}/${total}…`);
+        setPipelineStatus(`Ranking ${Math.min(offset, total)} / ${total}…`);
         if (result.done) break;
       }
       if (seq !== qwenScanSeqRef.current) return;
+      const secs = Math.max(1, Math.round(elapsedMs / 1000));
       setActionSuccess(
-        `Analyzed ${scoredCount} people vs ${jdFileName || "this JD"}.${
+        `Ranked ${total} people vs ${jdFileName || "this JD"} in ~${secs}s.${
           failedCount ? ` ${failedCount} failed — click Analyze to retry.` : ""
         }`
       );
-      setTimeout(() => setActionSuccess(null), 8000);
+      setTimeout(() => setActionSuccess(null), 6000);
       setPipelineStatus("Ingestion: Idle");
     } catch (err: any) {
       if (seq !== qwenScanSeqRef.current) return;
-      setActionError(err.message || "Analyze failed. Keep npm run llm running.");
+      setActionError(err.message || "Analyze failed.");
       setTimeout(() => setActionError(null), 8000);
       setPipelineStatus("Ingestion: Idle");
     } finally {
@@ -5142,11 +5160,7 @@ export default function AdminDashboard() {
   });
 
   if (!authInitialized) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-slate-500 font-medium">Loading admin gateway…</div>
-      </div>
-    );
+    return <CenteredPageLoading label="Loading admin gateway" />;
   }
 
   if (!authenticated) {
@@ -5158,23 +5172,28 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground transition-colors duration-300">
-      <nav className="bg-card/80 backdrop-blur-md border-b border-border py-4 px-6 shadow-sm sticky top-0 z-50 transition-colors duration-300">
+    <div className="min-h-screen app-canvas font-sans text-foreground transition-colors duration-300">
+      <nav className="app-nav py-3.5 px-6">
         <div className="max-w-full mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-md shadow-violet-500/30">
-              <ClipboardList className="w-[18px] h-[18px] text-white" />
+            <div className="app-brand-mark">
+              <ClipboardList className="w-[18px] h-[18px]" />
             </div>
-            <span className="text-lg md:text-xl font-black tracking-tight text-primary">
-              <span className="hidden sm:inline">HR </span>Screening Console
-            </span>
+            <div className="leading-tight">
+              <p className="text-sm md:text-base font-bold tracking-tight text-foreground">
+                TalentScope
+              </p>
+              <p className="text-[11px] text-muted-foreground font-medium hidden sm:block">
+                Requirements · Corp Pool · Portal
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2 md:gap-3 flex-wrap">
             {canChangePassword && (
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-xl border-border text-primary hover:bg-secondary gap-1.5 md:gap-2 font-bold text-xs"
+                className="gap-1.5 md:gap-2 text-xs"
                 onClick={() => {
                   setPasswordModalError("");
                   setShowPasswordModal(true);
@@ -5187,7 +5206,7 @@ export default function AdminDashboard() {
             )}
             <ThemeToggle />
             <Link href="/">
-              <Button variant="outline" size="sm" className="rounded-xl border-border text-primary hover:bg-secondary gap-1.5 md:gap-2 font-bold text-xs">
+              <Button variant="outline" size="sm" className="gap-1.5 md:gap-2 text-xs">
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Candidate Portal</span>
                 <span className="inline sm:hidden">Portal</span>
@@ -5201,10 +5220,10 @@ export default function AdminDashboard() {
         
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-foreground flex items-center gap-2 mb-1">
+            <h1 className="app-section-title flex items-center gap-2.5 mb-1.5">
               <ClipboardList className="w-6 h-6 text-primary" /> Screening Dashboard
             </h1>
-            <p className="text-sm text-muted-foreground font-semibold leading-relaxed">
+            <p className="app-section-sub max-w-2xl">
               Upload job descriptions, screen candidate CVs in bulk, override suitability categories, and reset test sessions.
             </p>
           </div>
@@ -5223,13 +5242,13 @@ export default function AdminDashboard() {
         )}
 
         {/* SCREENING RESULTS TAB CONTAINER */}
-        <Card className="border-border shadow-md bg-card rounded-3xl overflow-hidden flex flex-col">
+        <Card className="border-border/70 shadow-card bg-card rounded-2xl overflow-hidden flex flex-col">
               
               {/* Tab Header Navigation */}
-              <div className="flex overflow-x-auto scrollbar-none border-b border-border bg-muted/50 shrink-0 w-full px-1 sm:px-2">
+              <div className="flex overflow-x-auto scrollbar-none border-b border-border/70 bg-muted/40 shrink-0 w-full px-1 sm:px-2">
                 <button
                   onClick={() => setActiveTab("requirements")}
-                  className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-black text-xs sm:text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
+                  className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-semibold text-xs sm:text-sm transition-all duration-200 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "requirements"
                       ? "border-primary text-foreground bg-card"
                       : "border-transparent text-muted-foreground hover:text-foreground"
@@ -5243,7 +5262,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={() => setActiveTab("employee")}
-                  className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-black text-xs sm:text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
+                  className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-semibold text-xs sm:text-sm transition-all duration-200 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "employee"
                       ? "border-primary text-foreground bg-card"
                       : "border-transparent text-muted-foreground hover:text-foreground"
@@ -5256,7 +5275,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={() => setActiveTab("suitable")}
-                  className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-black text-xs sm:text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
+                  className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-semibold text-xs sm:text-sm transition-all duration-200 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "suitable"
                       ? "border-primary text-foreground bg-card"
                       : "border-transparent text-muted-foreground hover:text-foreground"
@@ -5269,7 +5288,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={() => setActiveTab("unsuitable")}
-                  className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-black text-xs sm:text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
+                  className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-semibold text-xs sm:text-sm transition-all duration-200 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "unsuitable"
                       ? "border-primary text-foreground bg-card"
                       : "border-transparent text-muted-foreground hover:text-foreground"
@@ -5283,7 +5302,7 @@ export default function AdminDashboard() {
                 {canViewEmployeePortal && (
                 <button
                   onClick={() => setActiveTab("employee-portal")}
-                  className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-black text-xs sm:text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
+                  className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-semibold text-xs sm:text-sm transition-all duration-200 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "employee-portal"
                       ? "border-primary text-foreground bg-card"
                       : "border-transparent text-muted-foreground hover:text-foreground"
@@ -5300,7 +5319,7 @@ export default function AdminDashboard() {
                 )}
                 <button
                   onClick={() => setActiveTab("outbox")}
-                  className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-black text-xs sm:text-sm transition-all duration-300 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
+                  className={`flex-1 min-w-0 py-3.5 px-2 sm:px-3 lg:px-4 font-semibold text-xs sm:text-sm transition-all duration-200 border-b-2 flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                     activeTab === "outbox"
                       ? "border-primary text-foreground bg-card"
                       : "border-transparent text-muted-foreground hover:text-foreground"
@@ -5933,7 +5952,7 @@ export default function AdminDashboard() {
                               disabled={qwenScoring || !selectedPool?.ids.length}
                               onClick={handleQwenScoreCorpPool}
                               className="flex-1 sm:flex-none rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5 font-bold text-xs"
-                              title="Analyze only people in the selected pool against this JD"
+                              title="Analyze the selected pool against this JD."
                             >
                               {qwenScoring ? (
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -7308,10 +7327,7 @@ export default function AdminDashboard() {
                   </div>
                 ) : activeTab === "outbox" ? (
                   isEmailsLoading ? (
-                    <div className="flex-1 flex flex-col items-center justify-center py-24 gap-3">
-                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                      <p className="text-slate-500 font-bold text-sm">Loading outbox logs…</p>
-                    </div>
+                    <PageLoadingSkeleton label="Loading outbox logs" variant="panel" className="py-6" />
                   ) : emails.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center py-24 text-center space-y-2">
                       <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-500">
@@ -8301,10 +8317,7 @@ export default function AdminDashboard() {
             {/* Log Terminal Screen */}
             <div className="rounded-2xl border border-slate-900 bg-slate-950 text-slate-300 p-4 font-mono text-[10px] leading-relaxed shadow-inner flex flex-col">
               {isSystemLogsLoading ? (
-                <div className="flex flex-col items-center justify-center py-20 gap-3">
-                  <Loader2 className="w-7 h-7 animate-spin text-indigo-400" />
-                  <span className="text-slate-500 font-bold">Querying log stream...</span>
-                </div>
+                <PageLoadingSkeleton label="Loading system logs" variant="panel" className="py-4" />
               ) : systemLogs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-slate-500 font-semibold">
                   <span>No pipeline log entries matching current criteria.</span>
@@ -8922,25 +8935,25 @@ export default function AdminDashboard() {
                 <div className="rounded-2xl border border-border bg-slate-50/80 dark:bg-slate-950/40 p-3 space-y-2.5">
                   <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider block">How the score is built</span>
                   <ScorePartRow
-                    label="JD skills"
+                    label="Technical skills"
                     points={employeeMatchReport.scoreParts.weighted.coverage}
-                    max={45}
-                    hint={`${employeeMatchReport.scoreParts.coveragePct}% coverage`}
+                    max={50}
+                    hint={`${employeeMatchReport.scoreParts.coveragePct}% of JD tech skills`}
                   />
                   <ScorePartRow
                     label="Role family"
                     points={employeeMatchReport.scoreParts.weighted.family}
-                    max={30}
+                    max={25}
                     hint={`${employeeMatchReport.personFamily || "—"} → ${employeeMatchReport.jdFamily || "JD"}`}
                   />
                   <ScorePartRow
-                    label="Stack"
+                    label="Non-technical"
                     points={employeeMatchReport.scoreParts.weighted.stack}
                     max={15}
-                    hint={employeeMatchReport.jdFamily === "fullstack" ? "both sides of the stack" : "stack weight"}
+                    hint="JIRA, Agile, domain — cannot replace missing tech"
                   />
                   <ScorePartRow
-                    label="Level / years"
+                    label="Level"
                     points={employeeMatchReport.scoreParts.weighted.level}
                     max={10}
                     hint={[

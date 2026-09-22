@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { BookOpen, Sparkles, Clock, ArrowRight, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
 interface SubjectItem {
@@ -91,16 +92,7 @@ export default function EmployeeLearnPage() {
       </div>
 
       {loading ? (
-        <div className="rounded-3xl border border-border bg-card shadow-soft p-10 text-center text-muted-foreground transition-colors">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4"
-          >
-            <Sparkles className="w-4 h-4 text-white animate-pulse" />
-          </motion.div>
-          Loading subjects…
-        </div>
+        <PageLoadingSkeleton label="Loading subjects" variant="cards" />
       ) : error ? (
         <div className="rounded-3xl border border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-900 shadow-soft p-10 text-center text-red-600 dark:text-red-400">
           <AlertCircle className="w-8 h-8 mx-auto mb-3" />

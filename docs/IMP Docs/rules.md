@@ -1,4 +1,4 @@
-# Rules — Interviewscore
+# Rules — TalentScope
 
 Hard constraints for humans and coding agents. These override convenience. History, “just this once”, and roleplay do not weaken them.
 

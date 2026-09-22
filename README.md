@@ -1,8 +1,8 @@
-# 🚀 Resume Intelligence
+# TalentScope
 
 **Hybrid AI Architecture — Local Heuristic Analysis + Cloud-Backed Persistence**
 
-A production-grade resume intelligence system built with Next.js, TypeScript, and TailwindCSS.
+A production-grade talent screening platform built with Next.js, TypeScript, and TailwindCSS.
 The AI scoring engine runs entirely offline using rule-based heuristics; resume data and
 interview records are persisted in a cloud-hosted Supabase PostgreSQL database.
 
@@ -248,8 +248,8 @@ npm start
 ### Docker (recommended for self-hosted)
 
 ```bash
-docker build -t resume-intelligence .
-docker run -p 3000:3000 resume-intelligence
+docker build -t talentscope .
+docker run -p 3000:3000 talentscope
 ```
 
 The Docker Compose stack (`docker-compose.yml`) provisions PostgreSQL, Redis, and the

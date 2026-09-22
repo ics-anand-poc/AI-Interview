@@ -7,6 +7,7 @@ import { ResultsView, ConfirmModal, type ResultReviewItem } from "@/components/t
 import { CheckCircle2, Clock, Flag, XCircle, Zap, ArrowRight, RotateCcw,
   Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import type { Test, TestQuestion } from "@/types/learning";
 import { useEmployeeProctoring, isFullscreenActive } from "@/hooks/useEmployeeProctoring";
 import type { EmployeeProctoringState } from "@/lib/employee-proctoring";
@@ -646,9 +647,8 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
   // ── phase: loading ─────────────────────────────────────────────
   if (phase === "loading") {
     return (
-      <div className="py-24 mx-auto max-w-xl text-center text-slate-500 space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-        <p className="font-medium">Preparing your test…</p>
+      <div className="py-16 mx-auto max-w-3xl">
+        <PageLoadingSkeleton label="Preparing your test" />
       </div>
     );
   }
@@ -667,9 +667,8 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
 
   if (!currentQ && phase === "running") {
     return (
-      <div className="py-24 mx-auto max-w-xl text-center text-slate-500 space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-        <p className="font-medium">Loading questions…</p>
+      <div className="py-16 mx-auto max-w-3xl">
+        <PageLoadingSkeleton label="Loading questions" />
       </div>
     );
   }
@@ -678,9 +677,8 @@ export default function TestRunnerClient({ testId }: { testId: string }) {
   if (phase === "submitting") {
     return (
       <div className="fixed inset-0 z-[300] flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm px-6">
-        <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
-        <h2 className="text-lg font-bold text-foreground">Submitting your assessment</h2>
-        <p className="text-sm text-muted-foreground mt-2 text-center max-w-sm">
+        <PageLoadingSkeleton label="Submitting your assessment" className="max-w-lg" />
+        <p className="text-sm text-muted-foreground mt-4 text-center max-w-sm">
           Saving your answers… Please do not close or refresh this page.
         </p>
       </div>

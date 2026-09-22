@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { BookOpen, Sparkles, ChevronRight, Clock, Zap, Loader2, ArrowLeft, AlertCircle } from "lucide-react";
+import { BookOpen, Sparkles, ChevronRight, Clock, Zap, ArrowLeft, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -121,15 +122,8 @@ export default function SubjectDetailPage() {
   // -------------------------------------------------------------------------
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="flex items-center gap-3 text-indigo-600"
-        >
-          <Loader2 className="w-7 h-7 animate-spin" />
-          <span className="font-medium">Loading subject…</span>
-        </motion.div>
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <PageLoadingSkeleton label="Loading subject" variant="cards" />
       </div>
     );
   }

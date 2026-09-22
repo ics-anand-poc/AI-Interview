@@ -91,6 +91,96 @@ function TableSkeleton({ rows = 8 }: { rows?: number }) {
   );
 }
 
+export function PageLoadingSkeleton({
+  label = "Loading",
+  variant = "page",
+  className,
+}: {
+  label?: string;
+  variant?: "page" | "panel" | "cards";
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "skeleton-screen w-full space-y-5",
+        variant === "page" && "max-w-3xl mx-auto p-6",
+        className
+      )}
+      role="status"
+      aria-busy="true"
+      aria-label={label}
+    >
+      <span className="sr-only">{label}</span>
+      {variant === "cards" ? (
+        <>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-2xl" />
+            <div className="space-y-2 flex-1">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-3 w-56" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-2xl border border-border p-4 space-y-3">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-4/5" />
+              </div>
+            ))}
+          </div>
+        </>
+      ) : variant === "panel" ? (
+        <>
+          <div className="flex gap-3">
+            <Skeleton className="h-9 flex-1 rounded-xl" />
+            <Skeleton className="h-9 w-28 rounded-xl" />
+          </div>
+          <TableSkeleton rows={6} />
+        </>
+      ) : (
+        <>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-12 w-12 rounded-2xl" />
+            <div className="space-y-2 flex-1">
+              <Skeleton className="h-4 w-44" />
+              <Skeleton className="h-3 w-64 max-w-full" />
+            </div>
+          </div>
+          <Skeleton className="h-28 w-full rounded-2xl" />
+          <div className="space-y-3">
+            <Skeleton className="h-10 w-full rounded-xl" />
+            <Skeleton className="h-10 w-full rounded-xl" />
+            <Skeleton className="h-10 w-4/5 rounded-xl" />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+export function CenteredPageLoading({
+  label = "Loading",
+  variant = "page",
+  className,
+}: {
+  label?: string;
+  variant?: "page" | "panel" | "cards";
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "min-h-screen bg-background flex items-center justify-center px-4 py-10",
+        className
+      )}
+    >
+      <PageLoadingSkeleton label={label} variant={variant} className="w-full" />
+    </div>
+  );
+}
+
 export function ScreeningTableSkeleton({
   variant = "table",
   className,

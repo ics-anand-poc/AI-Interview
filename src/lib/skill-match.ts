@@ -110,6 +110,11 @@ const CANONICAL_ALIASES: Record<string, string> = {
   postman: "postman",
   kafka: "kafka",
   rest: "rest",
+  "rest apis": "rest apis",
+  "rest api": "rest apis",
+  restful: "rest apis",
+  "restful webservices": "rest apis",
+  "restful web services": "rest apis",
   api: "api",
   apis: "api",
   microservices: "microservices",
@@ -178,8 +183,9 @@ const RELATED_EQUIVALENCE: Record<string, string[]> = {
   unix: ["linux"],
   linux: ["unix", "bash"],
   bash: ["linux", "shell"],
-  spring: ["java"],
-  java: ["spring"],
+  spring: ["java", "j2ee"],
+  java: ["spring", "j2ee"],
+  j2ee: ["java", "spring"],
   kubernetes: ["openshift", "caas", "eks"],
   eks: ["kubernetes"],
   fargate: ["docker"],
@@ -216,6 +222,21 @@ const WEAK_BODY_SKILLS = new Set([
 const TABLE_STAKES_SKILLS = new Set([
   "git", "github", "html", "css", "rest", "api",
 ]);
+
+/** Process, tools, and domain — never a substitute for the JD's technical stack. */
+const NON_TECHNICAL_SKILLS = new Set([
+  "jira", "agile", "scrum", "kanban", "sdlc", "waterfall", "confluence", "excel",
+  "servicenow", "itil", "banking", "capital markets", "capital market", "pmp", "manual testing",
+]);
+
+function isNonTechnicalSkill(skill: string): boolean {
+  const canon = canonicalizeToken(skill) || skill;
+  return NON_TECHNICAL_SKILLS.has(canon);
+}
+
+function isTechnicalFamily(family: JobFamily): boolean {
+  return family !== "manager" && family !== "support" && family !== "other";
+}
 
 const FE_FRAMEWORKS = new Set(["react", "angular", "vue", "next.js"]);
 const BE_LANGUAGES = new Set([
@@ -476,6 +497,50 @@ function collectEmployeeSkills(employeeText: string): { canonical: Set<string>; 
   return { canonical, raw };
 }
 
+let skillAxisCache: string[] | null = null;
+
+export function skillAxis(): string[] {
+  if (!skillAxisCache) {
+    skillAxisCache = Array.from(new Set(Object.values(CANONICAL_ALIASES))).sort();
+  }
+  return skillAxisCache;
+}
+
+/** Sparse CV vector: only known tech skills, not resume sentences. */
+export function vectorizeCvText(text: string): string[] {
+  const axis = new Set(skillAxis());
+  const { canonical } = collectEmployeeSkills(text);
+  return Array.from(canonical)
+    .filter((s) => axis.has(s) && !TABLE_STAKES_SKILLS.has(s))
+    .sort();
+}
+
+export function vectorizeJdText(jdText: string): string[] {
+  const axis = new Set(skillAxis());
+  const parsed = parseJdRequirements(jdText);
+  const labeled = [
+    ...extractJdMandatorySkills(jdText),
+    ...extractJdPrimarySkills(jdText),
+    ...parsed.required,
+    ...parsed.mandatoryRaw,
+  ];
+  const keys = new Set<string>();
+  for (const item of labeled) {
+    const canon = canonicalizeToken(item);
+    if (canon && axis.has(canon) && !TABLE_STAKES_SKILLS.has(canon)) keys.add(canon);
+  }
+  for (const extra of vectorizeCvText(jdText)) keys.add(extra);
+  return Array.from(keys).sort();
+}
+
+export function cosineSparse(a: string[], b: string[]): number {
+  if (!a.length || !b.length) return 0;
+  const other = new Set(b);
+  let hit = 0;
+  for (const k of a) if (other.has(k)) hit += 1;
+  return hit / Math.sqrt(a.length * b.length);
+}
+
 function employeeHasSkill(emp: { canonical: Set<string>; raw: string }, required: string): boolean {
   const canon = canonicalizeToken(required);
   if (emp.canonical.has(required) || emp.canonical.has(canon)) return true;
@@ -675,6 +740,31 @@ export function scoreOverrideForJd(
   return jd === selected ? Number(emp.score_override) : null;
 }
 
+/** Short skill chips — same filter as the Corp Pool table. Not the raw resume blob. */
+export function employeeSkillChips(skills: string | null | undefined): string[] {
+  const fromSkills = String(skills || "")
+    .split(/[,;|/]+/)
+    .map((skill) => skill.replace(/\s+/g, " ").trim())
+    .filter((skill) => {
+      if (skill.length < 2 || skill.length > 48) return false;
+      if (skill.toLowerCase() === "none listed") return false;
+      if (/^\d+\s*of\s*\d+$/i.test(skill)) return false;
+      if (!/[A-Za-z]{2,}/.test(skill)) return false;
+      if (/[^\x20-\x7E]/.test(skill)) return false;
+      return true;
+    });
+  const seen = new Set<string>();
+  const unique: string[] = [];
+  for (const skill of fromSkills) {
+    const key = skill.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(skill);
+  }
+  return unique;
+}
+
+/** Profile text used for scoring — fuller than table chips so ranking stays trustworthy. */
 export function employeeMatchText(emp: {
   skills?: string | null;
   product?: string | null;
@@ -684,10 +774,15 @@ export function employeeMatchText(emp: {
   grade?: string | null;
 }): string {
   const skip = new Set(["", "general", "employee", "beginner"]);
-  return [emp.skills, emp.product, emp.designation, emp.role, emp.grade]
+  const chips = employeeSkillChips(emp.skills).slice(0, 48).join(", ");
+  const skillsBlob = String(emp.skills || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 1600);
+  return [chips || skillsBlob, skillsBlob && chips ? skillsBlob : "", emp.designation, emp.role, emp.grade, emp.product]
     .map((v) => String(v || "").trim())
     .filter((v) => v && !skip.has(v.toLowerCase()))
-    .join(", ");
+    .join(". ");
 }
 
 export function candidateMatchText(row: {
@@ -1006,35 +1101,112 @@ export function decisionFromScore(score: number): MatchDecision {
 }
 
 function decide(score: number, relation: FamilyRelation, coveragePct: number, stack: number, jdFamily: JobFamily): MatchDecision {
-  const fullstackComplete = jdFamily !== "fullstack" || stack === 100;
-  if (score >= 75 && coveragePct >= 50 && fullstackComplete) return "interview";
+  if (score >= 75 && coveragePct >= 50) return "interview";
   if (score >= QUALIFIED_COVERAGE_PERCENT) return "screen";
   if (score >= 30) return "hold";
   return "reject";
 }
 
+export type CompiledJd = {
+  jdText: string;
+  parsed: ReturnType<typeof parseJdRequirements>;
+  required: string[];
+  scoredSkills: string[];
+  core: string[];
+  extra: string[];
+  jdFamily: JobFamily;
+  emptyReason?: string;
+};
+
+/** Parse a JD once; reuse across every Corp Pool profile for that requirement. */
+export function compileJdForMatch(jdSkills: string): CompiledJd {
+  const text = String(jdSkills || "").trim();
+  if (!text) {
+    return {
+      jdText: "",
+      parsed: { title: "", mandatoryRaw: [], required: [] },
+      required: [],
+      scoredSkills: [],
+      core: [],
+      extra: [],
+      jdFamily: "other",
+      emptyReason: "No skills or requirement text to score.",
+    };
+  }
+
+  const parsed = parseJdRequirements(text);
+  const labeled = [...extractJdMandatorySkills(text), ...extractJdPrimarySkills(text)];
+  const required: string[] = [];
+  const pushReq = (raw: string) => {
+    const canon = canonicalizeToken(raw) || String(raw || "").toLowerCase().trim();
+    if (canon.length < 2 || TABLE_STAKES_SKILLS.has(canon)) return;
+    if (!required.includes(canon)) required.push(canon);
+  };
+  for (const item of parsed.required) pushReq(item);
+  for (const item of labeled) pushReq(item);
+
+  if (required.length === 0) {
+    return {
+      jdText: text,
+      parsed,
+      required: [],
+      scoredSkills: [],
+      core: [],
+      extra: [],
+      jdFamily: inferJobFamily(text, parsed.title),
+      emptyReason: "No required JD skills to score against.",
+    };
+  }
+
+  const scoringRequired = required.filter((s) => !TABLE_STAKES_SKILLS.has(s));
+  const scoredSkills = scoringRequired.length > 0 ? scoringRequired : required;
+  const { core, extra } = pickCoreSkills(
+    `${parsed.title} ${parsed.required.join(" ")}`.trim(),
+    scoredSkills
+  );
+  return {
+    jdText: text,
+    parsed,
+    required,
+    scoredSkills,
+    core,
+    extra,
+    jdFamily: inferJobFamily(text, parsed.title),
+  };
+}
+
 export function calculateSkillMatch(
   employeeSkills: string,
-  jdSkills: string
+  jdSkills: string,
+  compiled?: CompiledJd
 ): SkillMatchResult {
   if (!employeeSkills?.trim() || !jdSkills?.trim()) {
     return emptyMatch();
   }
 
-  const parsed = parseJdRequirements(jdSkills);
-  const required = parsed.required;
-  if (required.length === 0) {
-    return emptyMatch("No required JD skills to score against.");
+  const jd =
+    compiled && compiled.jdText === String(jdSkills || "").trim()
+      ? compiled
+      : compileJdForMatch(jdSkills);
+  if (jd.emptyReason) return emptyMatch(jd.emptyReason);
+
+  const { parsed, required, scoredSkills, core, extra, jdFamily } = jd;
+
+  const chips = employeeSkillChips(employeeSkills).slice(0, 48);
+  const chipBlob = chips.join(", ");
+  const header = employeeSkills.split(/\n/).slice(0, 10).join(" ").slice(0, 900);
+  const profileBlob = [chipBlob, header].filter(Boolean).join(". ").slice(0, 2200);
+  const emp = collectEmployeeSkills(profileBlob);
+  const personFamily = inferJobFamily(profileBlob, header || chipBlob);
+  let alignment = familyAlignment(jdFamily, personFamily);
+  if (isTechnicalFamily(jdFamily) && !isTechnicalFamily(personFamily)) {
+    alignment = { score: Math.min(alignment.score, 28), relation: "mismatch" };
+  } else if (!isTechnicalFamily(jdFamily) && isTechnicalFamily(personFamily)) {
+    alignment = {
+      score: Math.min(alignment.score, 48),
+      relation: alignment.relation === "match" ? "adjacent" : alignment.relation,
+    };
   }
-
-  const scoringRequired = required.filter((s) => !TABLE_STAKES_SKILLS.has(s));
-  const scoredSkills = scoringRequired.length > 0 ? scoringRequired : required;
-  const { core, extra } = pickCoreSkills(parsed.title, scoredSkills);
-
-  const emp = collectEmployeeSkills(employeeSkills);
-  const jdFamily = inferJobFamily(jdSkills, parsed.title);
-  const personFamily = inferJobFamily(employeeSkills);
-  const alignment = familyAlignment(jdFamily, personFamily);
 
   const credits = new Map<string, number>();
   const matchedFull: string[] = [];
@@ -1046,28 +1218,44 @@ export function calculateSkillMatch(
 
   const avgCredit = (skills: string[]) =>
     skills.length ? skills.reduce((sum, skill) => sum + (credits.get(skill) || 0), 0) / skills.length : 0;
-  const coreCoverage = avgCredit(core);
-  const extraCoverage = extra.length ? avgCredit(extra) : coreCoverage;
-  const coverage = 0.82 * coreCoverage + 0.18 * extraCoverage;
-  const coveragePct = coverage * 100;
-  const corePct = coreCoverage * 100;
-  const stack = stackFit(jdFamily, scoredSkills, credits, coreCoverage);
+  const techSkills = scoredSkills.filter((s) => !isNonTechnicalSkill(s));
+  const nonTechSkills = scoredSkills.filter((s) => isNonTechnicalSkill(s));
+  const techCore = core.filter((s) => !isNonTechnicalSkill(s));
+  const coreCoverage = avgCredit(techCore.length ? techCore : core);
+  const extraTech = extra.filter((s) => !isNonTechnicalSkill(s));
+  const extraCoverage = extraTech.length ? avgCredit(extraTech) : coreCoverage;
+  const coveragePct = (0.82 * coreCoverage + 0.18 * extraCoverage) * 100;
+  const nonTechPct = nonTechSkills.length ? avgCredit(nonTechSkills) * 100 : 70;
+  const nonTechUsed = coveragePct < 40 ? Math.max(20, nonTechPct) * 0.35 : Math.max(55, nonTechPct);
+  const stack = Math.round(nonTechUsed);
   const level = levelFit(emp.raw, parsed.title, personFamily);
+  const fullstackSides = stackFit(jdFamily, scoredSkills, credits, coreCoverage);
 
   let score = Math.round(
-    0.45 * coveragePct +
-    0.28 * alignment.score +
-    0.15 * stack +
-    0.12 * level
+    0.5 * coveragePct +
+    0.25 * alignment.score +
+    0.15 * nonTechUsed +
+    0.1 * level
   );
 
   const years = parseYears(emp.raw);
-  if (jdFamily === "fullstack" && stack < 100) {
+  if (jdFamily === "fullstack" && fullstackSides < 100) {
     score = Math.min(score, 72);
     if (years != null && years < 3) score = Math.min(score, 58);
   }
+  if (isTechnicalFamily(jdFamily) && coveragePct < 35) {
+    score = Math.min(score, 52);
+  }
+  const coreTech = (techCore.length ? techCore : techSkills).slice(0, 4);
+  const headEmp = collectEmployeeSkills(chips.slice(0, 3).join(", "));
+  const headTechPct = coreTech.length
+    ? (coreTech.reduce((sum, skill) => sum + skillCredit(headEmp, skill), 0) / coreTech.length) * 100
+    : 0;
+  if (isTechnicalFamily(jdFamily) && headTechPct < 15) {
+    score = Math.min(score, 54);
+  }
 
-  const titleCritical = scoredSkills.filter((skill) => {
+  const titleCritical = techSkills.filter((skill) => {
     const canon = canonicalizeToken(skill) || skill;
     if (hasPhrase(parsed.title.toLowerCase(), canon) || hasPhrase(parsed.title.toLowerCase(), skill)) {
       return true;
@@ -1078,30 +1266,11 @@ export function calculateSkillMatch(
     );
   });
   const titleCoverage = titleCritical.length ? avgCredit(titleCritical) : 1;
-
-  const solidHits = scoredSkills.filter((skill) => (credits.get(skill) || 0) >= 0.5).length;
-  if (titleCoverage >= 0.5) {
-    if (solidHits >= 2) score = Math.max(score, 58);
-    else if (solidHits >= 1) score = Math.max(score, 48);
-    if (corePct >= 70) score = Math.max(score, 64);
-    if (alignment.relation === "match" && corePct >= 50) score = Math.max(score, 60);
-  } else if (solidHits >= 1) {
-    score = Math.max(score, 36);
-  }
-
   if (titleCritical.length > 0 && titleCoverage < 0.35) {
     score = Math.min(score, 48);
   }
   if ((jdFamily === "devops" || jdFamily === "qa") && titleCoverage < 0.45) {
     score = Math.min(score, 50);
-  }
-
-  const titleSkills = scoredSkills.filter((skill) => hasPhrase(parsed.title.toLowerCase(), skill));
-  if (jdFamily !== "devops" && jdFamily !== "qa" && titleSkills.length > 0 && avgCredit(titleSkills) >= 0.5) {
-    score = Math.max(score, 60);
-  }
-  if ((jdFamily === "devops" || jdFamily === "qa") && titleCoverage >= 0.5) {
-    score = Math.max(score, 60);
   }
 
   score = Math.max(0, Math.min(100, score));
@@ -1120,14 +1289,16 @@ export function calculateSkillMatch(
   const rationaleParts = [
     `${decision === "screen" ? "Screen" : decision === "interview" ? "Interview" : decision === "hold" ? "Hold" : "Reject"} as ${personFamily} for a ${jdFamily} req`,
     matchingSkills.length
-      ? `solid hits: ${matchingSkills.join(", ")}`
-      : "no solid required-skill hits",
+      ? `technical hits: ${matchingSkills.join(", ")}`
+      : "no solid technical hits",
   ];
   if (missingCore.length) rationaleParts.push(`missing or weak: ${missingCore.join(", ")}`);
   if (alignment.relation === "mismatch") {
-    rationaleParts.push("job family does not match this requirement");
-  } else if (jdFamily === "fullstack" && stack <= 50) {
-    rationaleParts.push("only one side of the stack");
+    rationaleParts.push(
+      isTechnicalFamily(jdFamily) && !isTechnicalFamily(personFamily)
+        ? "non-technical profile on a technical requirement"
+        : "job family does not match this requirement"
+    );
   }
 
   const breakdownSeen = new Set<string>();
@@ -1167,10 +1338,10 @@ export function calculateSkillMatch(
     years,
     grade: parseGrade(emp.raw),
     weighted: {
-      coverage: Math.round(0.45 * coveragePct),
-      family: Math.round(0.28 * alignment.score),
+      coverage: Math.round(0.5 * coveragePct),
+      family: Math.round(0.25 * alignment.score),
       stack: Math.round(0.15 * stack),
-      level: Math.round(0.12 * level),
+      level: Math.round(0.1 * level),
     },
   };
 
@@ -1188,4 +1359,41 @@ export function calculateSkillMatch(
     bonusSkills: bonusSkills.slice(0, 16),
     scoreParts,
   };
+}
+
+/** Rank many profiles against one JD. JD is compiled once — targets ~1000 scores/min easily. */
+export function batchScoreAgainstJd<T extends {
+  employee_id?: string;
+  skills?: string | null;
+  designation?: string | null;
+  grade?: string | null;
+  role?: string | null;
+  product?: string | null;
+  department?: string | null;
+}>(
+  people: T[],
+  jdText: string,
+  compiled?: CompiledJd
+): Array<T & { match: SkillMatchResult }> {
+  const jd = compiled && compiled.jdText === String(jdText || "").trim()
+    ? compiled
+    : compileJdForMatch(jdText);
+  return people.map((person) => ({
+    ...person,
+    match: calculateSkillMatch(employeeMatchText(person), jd.jdText || jdText, jd),
+  }));
+}
+
+/** Stable rank: score desc, then matching skills, then name/id. */
+export function compareMatchRank(
+  a: { score?: number | null; matchingSkills?: string[] | null; full_name?: string | null; employee_id?: string | null },
+  b: { score?: number | null; matchingSkills?: string[] | null; full_name?: string | null; employee_id?: string | null }
+): number {
+  const scoreDelta = (Number(b.score) || 0) - (Number(a.score) || 0);
+  if (scoreDelta !== 0) return scoreDelta;
+  const matchDelta = (b.matchingSkills?.length || 0) - (a.matchingSkills?.length || 0);
+  if (matchDelta !== 0) return matchDelta;
+  const nameDelta = String(a.full_name || "").localeCompare(String(b.full_name || ""));
+  if (nameDelta !== 0) return nameDelta;
+  return String(a.employee_id || "").localeCompare(String(b.employee_id || ""));
 }

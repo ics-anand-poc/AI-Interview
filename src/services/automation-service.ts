@@ -60,6 +60,9 @@ export interface EmployeeRecord {
   score_override_jd_id?: string | null;
   /** When true, a later Corp Pool scan keeps these edited profile fields. */
   manually_edited?: boolean;
+  /** Canonical skill vector built on upload. Analyze uses this instead of re-reading the CV. */
+  cv_vec?: string[];
+  cv_hash?: string;
 }
 
 /**
@@ -935,6 +938,16 @@ async function persistMasterRequirements(
   });
 
   let processed = 0;
+  try {
+    const { saveJdVectors } = await import("@/lib/cv-vector");
+    await saveJdVectors(
+      upsertRows.map((row) => ({
+        id: String(row.id),
+        jdText: String(row.jd_text || ""),
+        fileName: String(row.file_name || ""),
+      }))
+    );
+  } catch {}
   for (let i = 0; i < upsertRows.length; i += 50) {
     const chunk = upsertRows.slice(i, i + 50);
     const { error } = await supabase.from("job_descriptions").upsert(chunk);
@@ -1105,6 +1118,7 @@ function mergeBrRequirements(rows: ParsedBrRequirement[]): ParsedBrRequirement[]
 export async function refreshRequirements(opts?: {
   incomingBrFiles?: string[];
   incomingJdFiles?: string[];
+  incomingFileBuffers?: Array<{ filename: string; buffer: Buffer; kind?: "jd" | "br" }>;
   actorEmail?: string;
 }): Promise<{ success: boolean; processedBRs: number; convertedJDs: number; incomingBrRows: number }> {
   await ensureDocsStorage();
@@ -1116,6 +1130,20 @@ export async function refreshRequirements(opts?: {
   const jdFiles = await listDocFiles("JD");
   const incomingBr = new Set((opts?.incomingBrFiles || []).map((f) => f.toLowerCase()));
   const incomingJd = new Set((opts?.incomingJdFiles || []).map((f) => f.toLowerCase()));
+  const incomingJdBuffers = new Map<string, Buffer>();
+  const incomingBrBuffers = new Map<string, Buffer>();
+  for (const item of opts?.incomingFileBuffers || []) {
+    const name = String(item.filename || "").trim();
+    if (!name) continue;
+    const kind = item.kind || (/\.(xlsx|xls|csv)$/i.test(name) ? "br" : "jd");
+    if (kind === "br") {
+      incomingBr.add(name.toLowerCase());
+      incomingBrBuffers.set(name.toLowerCase(), item.buffer);
+    } else {
+      incomingJd.add(name.toLowerCase());
+      incomingJdBuffers.set(name.toLowerCase(), item.buffer);
+    }
+  }
   const actorEmail = String(opts?.actorEmail || "").trim().toLowerCase();
   const deletedRequirements = await loadDeletedRequirements();
   const blockedBrIds = deletedBrIdSet(deletedRequirements);
@@ -1176,7 +1204,15 @@ export async function refreshRequirements(opts?: {
   } catch {}
 
   const xlsxBrFiles = brFiles.filter((f) => f.endsWith(".xlsx") || f.endsWith(".xls"));
+  for (const name of incomingBrBuffers.keys()) {
+    if (!xlsxBrFiles.some((f) => f.toLowerCase() === name)) xlsxBrFiles.push(name);
+  }
   const actualJdFiles = jdFiles.filter((f) => JD_DOCUMENT_EXT.test(f));
+  for (const name of incomingJdBuffers.keys()) {
+    if (JD_DOCUMENT_EXT.test(name) && !actualJdFiles.some((f) => f.toLowerCase() === name)) {
+      actualJdFiles.push(name);
+    }
+  }
 
   const { workbook: masterWorkbook, filename: masterFilename } = await loadMasterBrWorkbook();
   const masterSheet = findMasterBrSheet(masterWorkbook);
@@ -1209,7 +1245,7 @@ export async function refreshRequirements(opts?: {
     }
     try {
       const source = new ExcelJS.Workbook();
-      const buffer = await readDocFileBuffer("BR", file);
+      const buffer = incomingBrBuffers.get(file.toLowerCase()) || await readDocFileBuffer("BR", file);
       await source.xlsx.load(buffer as any);
       const incomingIds = collectWorkbookAutoReqIds(source);
       for (const id of await restoreIncomingBrIds(incomingIds, blockedBrIds)) keepIds.add(id);
@@ -1241,7 +1277,7 @@ export async function refreshRequirements(opts?: {
       const alreadyLinked = localJds.some(
         (j: any) => String(j.fileName || "").toLowerCase().includes(file.toLowerCase())
       );
-      const buffer = await readDocFileBuffer("JD", file);
+      const buffer = incomingJdBuffers.get(file.toLowerCase()) || await readDocFileBuffer("JD", file);
       const jdText = await resumeService.extractTextFromBuffer(buffer, file);
       if (!jdText.trim()) {
         await writeLog("requirements", "CONVERT_JD_EMPTY", "failed", `No text extracted from JD ${file}`);

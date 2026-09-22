@@ -108,21 +108,32 @@ export async function localLlmComplete(
     opts?.system ||
     "You are a precise assistant for an HR screening app. Do not use chain-of-thought. Reply with the requested output only.";
 
+  const messages = [
+    { role: "system", content: system },
+    { role: "user", content: prompt },
+  ];
   const chatBody = {
     model: localLlmModelName(),
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: prompt },
-    ],
+    messages,
     temperature,
     max_tokens: maxTokens,
     stream: false,
     chat_template_kwargs: { enable_thinking: false },
     reasoning: "off",
   };
+  const slimBody = {
+    model: localLlmModelName(),
+    messages,
+    temperature,
+    max_tokens: maxTokens,
+    stream: false,
+  };
 
   try {
-    const chatRes = await postJson(`${base}/v1/chat/completions`, chatBody, timeoutMs);
+    let chatRes = await postJson(`${base}/v1/chat/completions`, chatBody, timeoutMs);
+    if (chatRes.status === 400) {
+      chatRes = await postJson(`${base}/v1/chat/completions`, slimBody, timeoutMs);
+    }
     if (chatRes.status === 401 || chatRes.status === 403) {
       throw new Error(
         "Local Qwen rejected LOCAL_LLM_API_KEY. Put the same secret in .env.local and AI/.llm-api-key, then restart npm run dev."

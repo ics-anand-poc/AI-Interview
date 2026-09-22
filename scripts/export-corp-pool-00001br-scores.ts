@@ -67,7 +67,7 @@ async function main() {
     .sort((a, b) => b.score - a.score || String(a.emp.full_name).localeCompare(String(b.emp.full_name)));
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = "AI Interview";
+  wb.creator = "TalentScope";
   wb.created = new Date();
 
   const summary = wb.addWorksheet("Summary");

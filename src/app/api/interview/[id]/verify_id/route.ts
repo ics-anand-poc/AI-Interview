@@ -13,6 +13,10 @@ import {
   isGovernmentIdType,
   getIdTypeLabel,
 } from "@/lib/identity-verification";
+import {
+  ID_UPLOAD_MAX_BYTES,
+  ID_UPLOAD_MAX_LABEL,
+} from "@/lib/identity-verification-shared";
 
 function getUploadsRoot() {
   return process.env.VERCEL === "1" ? "/tmp" : join(process.cwd(), "uploads");
@@ -62,7 +66,7 @@ function parseBase64(base64Str: string) {
   return { mimeType: "image/jpeg", buffer: Buffer.from(base64Str, "base64") };
 }
 
-const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
+const MAX_IMAGE_BYTES = ID_UPLOAD_MAX_BYTES;
 
 export async function POST(
   request: NextRequest,
@@ -103,7 +107,7 @@ export async function POST(
 
     if (parsedId.buffer.length > MAX_IMAGE_BYTES || parsedSelfie.buffer.length > MAX_IMAGE_BYTES) {
       return NextResponse.json(
-        { error: "Image too large. Please recapture or upload a smaller file (max ~5MB)." },
+        { error: `Image too large. Upload an ID photo of ${ID_UPLOAD_MAX_LABEL} or smaller.` },
         { status: 413 }
       );
     }

@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ClipboardList, FileText, Sparkles, ShieldAlert, Volume2, Video, Search, Play, Pause, VolumeX, Maximize } from "lucide-react";
 import AdminAuthGate from "@/components/AdminAuthGate";
+import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 
 function adminFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const token = typeof window !== "undefined" ? window.sessionStorage.getItem("admin_token") : null;
@@ -441,15 +442,8 @@ export default function AdminResponseReviewPage() {
           </div>
 
           {loading ? (
-            <Card className="p-10 bg-card border border-border shadow-soft text-center">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4"
-              >
-                <Sparkles className="w-5 h-5 text-white animate-pulse" />
-              </motion.div>
-              <div className="text-slate-505 dark:text-slate-400 font-medium">Loading response review…</div>
+            <Card className="p-6 bg-card border border-border shadow-soft">
+              <PageLoadingSkeleton label="Loading response review" />
             </Card>
           ) : error ? (
             <Card className="p-10 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 shadow-soft text-center text-red-600 dark:text-red-450">

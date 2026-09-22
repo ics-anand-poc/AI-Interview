@@ -10,11 +10,14 @@ import { supabase } from "@/lib/db";
 import { loadCorpPoolRoster, saveCorpPoolRoster } from "@/lib/corp-pool-store";
 import { writePersistedJson, getRuntimeUploadsRoot } from "@/lib/runtime-data";
 import { cacheStore } from "@/lib/cache-store";
-import { scorePersonAgainstJdsWithLlm } from "@/lib/corp-pool-llm";
+import { compileSelectedJd, scorePersonAgainstJdsWithLlm } from "@/lib/corp-pool-llm";
 import { jsonPublicError } from "@/lib/api-errors";
 import type { EmployeeRecord } from "@/services/automation-service";
 
 let activeEvaluateScanId = "";
+
+/** Cap per request so UI can show progress; still scores hundreds per second in-memory. */
+const MAX_BATCH = 500;
 
 export async function POST(request: NextRequest) {
   if (!checkCsrf(request)) {
@@ -60,7 +63,9 @@ export async function POST(request: NextRequest) {
     const force = body.force !== false;
     const offset = Math.max(0, Number(body.offset) || 0);
     const hasLimit = body.limit != null && body.limit !== "";
-    const limit = hasLimit ? Math.min(5, Math.max(1, Number(body.limit) || 1)) : scoreTargets.length;
+    const limit = hasLimit
+      ? Math.min(MAX_BATCH, Math.max(1, Number(body.limit) || 250))
+      : Math.min(MAX_BATCH, scoreTargets.length);
     const scanId = String(body.scanId || "").trim();
     if (offset === 0 || !activeEvaluateScanId) {
       activeEvaluateScanId = scanId || `${jdId}-${Date.now()}`;
@@ -77,24 +82,28 @@ export async function POST(request: NextRequest) {
         nextOffset: offset,
         done: false,
         results: [],
+        elapsedMs: 0,
       });
     }
 
-    const persist = async (filesToo: boolean) => {
+    const persist = async () => {
       await saveCorpPoolRoster(employees);
-      if (!filesToo) return;
       const serialized = JSON.stringify(employees, null, 2);
       await writeFile(join(getRuntimeUploadsRoot(), "employees.json"), serialized, "utf8").catch(() => {});
       await writePersistedJson("employees.json", serialized);
       cacheStore.invalidate("employees");
     };
 
+    const compiledJd = compileSelectedJd(jd.jd_text);
     const batch = scoreTargets.slice(offset, offset + limit);
     const results = [];
     let skipped = 0;
     const errors: string[] = [];
+    const started = Date.now();
+
     for (const emp of batch) {
       if (scanId && scanId !== activeEvaluateScanId) {
+        if (results.length) await persist();
         return NextResponse.json({
           success: true,
           aborted: true,
@@ -107,6 +116,7 @@ export async function POST(request: NextRequest) {
           nextOffset: offset + results.length + skipped + errors.length,
           done: false,
           results,
+          elapsedMs: Date.now() - started,
         });
       }
       const already =
@@ -128,11 +138,15 @@ export async function POST(request: NextRequest) {
             designation: emp.designation,
             grade: emp.grade,
             skills: emp.skills,
+            product: (emp as any).product,
+            role: (emp as any).role,
           },
+          compiledJd,
         });
         emp.score = scored.score;
         emp.score_override = scored.score;
         emp.score_override_jd_id = jdId;
+        if (scored.matchingSkills?.length) emp.matchingSkills = scored.matchingSkills;
         (emp as any).llm_rationale = scored.rationale;
         (emp as any).llm_best_jd = scored.bestJdFileName;
         (emp as any).llm_best_jd_why = scored.bestJdWhy;
@@ -141,14 +155,15 @@ export async function POST(request: NextRequest) {
           full_name: emp.full_name,
           ...scored,
         });
-        await persist(false);
       } catch (err: any) {
         errors.push(`${emp.employee_id}: ${err?.message || "score failed"}`);
-        await persist(true);
       }
     }
 
-    await persist(true);
+    // Persist once per batch — not per person (was the 1000-person bottleneck).
+    if (results.length || skipped || errors.length) {
+      await persist();
+    }
 
     const nextOffset = offset + batch.length;
     return NextResponse.json({
@@ -163,8 +178,9 @@ export async function POST(request: NextRequest) {
       nextOffset,
       done: nextOffset >= scoreTargets.length,
       results,
+      elapsedMs: Date.now() - started,
     });
   } catch (error: any) {
-    return jsonPublicError(error, error?.message || "Qwen scoring failed");
+    return jsonPublicError(error, error?.message || "Analyze failed");
   }
 }
