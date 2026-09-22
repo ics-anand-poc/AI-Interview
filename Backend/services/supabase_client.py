@@ -1,6 +1,12 @@
 import os
 from typing import Optional
 
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except Exception:
+    pass
+
 from supabase import Client, create_client
 
 _client: Optional[Client] = None
