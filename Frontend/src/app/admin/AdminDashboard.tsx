@@ -4013,7 +4013,7 @@ export default function AdminDashboard() {
                       : "border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-white"
                   }`}
                 >
-                  Employee Data
+                  Corp Pool
                   <Badge className={`border-0 text-[10px] ${activeTab === "employee" ? "bg-indigo-100 text-indigo-700 dark:bg-slate-800 dark:text-violet-400" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
                     {isDashboardBootstrapping || isEmployeeDataPending ? "…" : employees.length}
                   </Badge>
