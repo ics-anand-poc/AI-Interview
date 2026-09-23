@@ -4,6 +4,10 @@ venv/
 __pycache__/
 *.pyc
 
+/supabase/
+/Backend/
+/docs/
+
 # Environment Files
 .env
 .env.local

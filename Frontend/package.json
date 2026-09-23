@@ -4,6 +4,8 @@
   "description": "100% Local Resume Intelligence",
   "private": true,
   "scripts": {
+    "predev": "node -e \"const fs=require('fs'),path=require('path');const r=path.resolve('../.env.local'),f=path.resolve('.env.local');if(fs.existsSync(r)){fs.copyFileSync(r,f);console.log('[env] Synced root .env.local to Frontend/.env.local');}\"",
+    "prebuild": "node -e \"const fs=require('fs'),path=require('path');const r=path.resolve('../.env.local'),f=path.resolve('.env.local');if(fs.existsSync(r)){fs.copyFileSync(r,f);console.log('[env] Synced root .env.local to Frontend/.env.local');}\"",
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
